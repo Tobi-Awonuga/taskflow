@@ -1,0 +1,33 @@
+// TODO: Define full data models (User, Task, Department, etc.)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── Placeholder models ─────────────────────────────────────────────────────────
+
+model User {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  name       String
+  role       String   @default("member") // "admin" | "manager" | "member"
+  // TODO: add passwordHash, departmentId, createdAt, updatedAt
+}
+
+model Department {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  // TODO: add members[], tasks[]
+}
+
+model Task {
+  id     Int    @id @default(autoincrement())
+  title  String
+  status String @default("open") // "open" | "in_progress" | "done"
+  // TODO: add assigneeId, departmentId, dueDate, priority, description, createdAt, updatedAt
+}

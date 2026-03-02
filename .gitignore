@@ -1,0 +1,19 @@
+# Node
+node_modules
+client/node_modules
+server/node_modules
+
+# Env files
+.env
+server/.env
+
+# Prisma / DB
+server/dev.db
+server/prisma/migrations
+
+# Build output
+client/dist
+
+# OS junk
+.DS_Store
+Thumbs.db
