@@ -5,9 +5,26 @@ const { validateStatusTransition, validateAssignment } = require('../lib/taskVal
 
 const router = Router();
 
-// TODO: GET    /api/tasks        – list tasks (filtered by role/dept)
-router.get('/', requireAuth, (req, res) => {
-  res.status(501).json({ error: 'Not implemented' });
+router.get('/', requireAuth, async (req, res) => {
+  try {
+    const { role, departmentId } = req.user;
+
+    const where = role === 'ADMIN'
+      ? {}
+      : { departmentId };
+
+    const tasks = await prisma.task.findMany({
+      where,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    res.json(tasks);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch tasks' });
+  }
 });
 
 // TODO: POST   /api/tasks        – create task
