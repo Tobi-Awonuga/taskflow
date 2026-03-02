@@ -46,8 +46,8 @@ Fields:
 
 ## 3. System Invariants (Must Always Hold)
 
-1. Every task has a creator.
-2. Every task belongs to a department.
+1. Every task has a creator (createdByUserId required).
+2. Every task belongs to a department (departmentId required).
 3. If assigned, the assignee MUST belong to the same department as the task.
 4. A task MUST be assigned before moving to IN_PROGRESS.
 5. When status becomes DONE, completedAt must be set.
@@ -59,25 +59,60 @@ Fields:
 ## 4. Creation Rules
 
 - Default: task.departmentId = creator.departmentId
-- ADMIN may override department during creation.
+- ADMIN may override department during creation (cross-department creation).
 - Only SUPER and ADMIN may set or modify dueAt.
 
 ---
 
-## 5. Assignment Rules
+## 5. Permission Model (Granular - Model B)
 
-Assignment is optional in TODO state.
+Permissions come from two sources:
+1) **Role-based authority** (ADMIN/SUPER/USER)
+2) **Context-based authority** (CREATOR/ASSIGNEE relationship to a specific task)
 
-Who can assign/reassign:
+### 5.1 Role-Based Authority
 
+**ADMIN**
+- Full control over all tasks across all departments.
+
+**SUPER**
+- Can manage tasks within their own department.
+- Includes: assigning/reassigning, unassigning, and status updates (within department boundaries).
+
+**USER**
+- No department-wide authority.
+- Permissions depend on whether they are the task creator or assignee.
+
+### 5.2 Context-Based Authority
+
+**CREATOR (any role)**
+- The creator is the user who created the task (createdByUserId).
+- Can manage tasks they created, as long as department rules are respected.
+- Does not override ADMIN rules and cannot break invariants.
+
+**ASSIGNEE**
+- The assignee is the user currently assigned to the task (assignedToUserId).
+- Can move the status of tasks assigned to them (within status transition rules).
+- May self-unassign only if status = TODO.
+- Cannot assign/reassign a task to another user unless also SUPER or ADMIN.
+
+---
+
+## 6. Assignment Rules
+
+- Assignment is optional while status is TODO.
+- A task MUST be assigned before moving to IN_PROGRESS.
+- If assigned, assignee must belong to the same department as the task.
+
+Who can assign/reassign/unassign:
 - ADMIN: any task, any department
-- SUPER: tasks within their department
-- CREATOR: tasks they created (within department)
+- SUPER: tasks in their department
+- CREATOR: tasks they created (must still respect department rules)
 - ASSIGNEE: may self-unassign only if status = TODO
 
 ---
 
-## 6. Status Transition Rules
+## 7. Status Transition Rules
 
 TODO → IN_PROGRESS
 - Must be assigned
