@@ -1,28 +1,22 @@
 import './styles.css';
 
-// ── Mock data ──────────────────────────────────────────────────────────────────
+// ── User (auth wiring is a separate sprint) ────────────────────────────────────
+const MOCK_USER = { name: 'Alex Johnson', role: 'SUPER', avatar: 'AJ' };
 
-const MOCK_USER = {
-  name: 'Alex Johnson',
-  role: 'SUPER',
-  avatar: 'AJ',
+// ── State ──────────────────────────────────────────────────────────────────────
+const state = {
+  tasks:      [],
+  total:      0,
+  page:       1,
+  pageSize:   10,
+  totalPages: 1,
+  status:     '',
+  priority:   '',
+  loading:    true,
+  error:      '',
 };
 
-const MOCK_TASKS = [
-  { id: 1,  title: 'Design onboarding flow',       status: 'IN_PROGRESS', priority: 'HIGH',   updatedAt: '2026-02-28T10:00:00Z', assignedTo: 'Alex Johnson' },
-  { id: 2,  title: 'Fix payment gateway bug',       status: 'BLOCKED',     priority: 'URGENT', updatedAt: '2026-02-27T15:30:00Z', assignedTo: 'Sam Lee' },
-  { id: 3,  title: 'Write Q1 report',               status: 'TODO',        priority: 'MEDIUM', updatedAt: '2026-02-26T09:00:00Z', assignedTo: null },
-  { id: 4,  title: 'Update API documentation',      status: 'DONE',        priority: 'LOW',    updatedAt: '2026-02-25T14:00:00Z', assignedTo: 'Jordan Kim' },
-  { id: 5,  title: 'Conduct user interviews',       status: 'IN_PROGRESS', priority: 'HIGH',   updatedAt: '2026-02-24T11:00:00Z', assignedTo: 'Alex Johnson' },
-  { id: 6,  title: 'Deploy staging environment',    status: 'TODO',        priority: 'MEDIUM', updatedAt: '2026-02-23T16:00:00Z', assignedTo: 'Sam Lee' },
-  { id: 7,  title: 'Review security audit',         status: 'BLOCKED',     priority: 'URGENT', updatedAt: '2026-02-22T13:00:00Z', assignedTo: 'Jordan Kim' },
-  { id: 8,  title: 'Create marketing materials',    status: 'CANCELLED',   priority: 'LOW',    updatedAt: '2026-02-21T10:00:00Z', assignedTo: null },
-  { id: 9,  title: 'Migrate legacy database',       status: 'TODO',        priority: 'HIGH',   updatedAt: '2026-02-20T09:30:00Z', assignedTo: 'Alex Johnson' },
-  { id: 10, title: 'Set up CI/CD pipeline',         status: 'DONE',        priority: 'MEDIUM', updatedAt: '2026-02-19T17:00:00Z', assignedTo: 'Sam Lee' },
-];
-
 // ── Design tokens ──────────────────────────────────────────────────────────────
-
 const STATUS_COLOR = {
   TODO:        '#4C8DFF',
   IN_PROGRESS: '#F4A23A',
@@ -39,7 +33,6 @@ const PRIORITY_COLOR = {
 };
 
 // ── Helper renderers ───────────────────────────────────────────────────────────
-
 function statusBadge(status) {
   const c = STATUS_COLOR[status] ?? '#9CA3AF';
   const label = status.replace('_', ' ');
@@ -59,7 +52,6 @@ function formatDate(iso) {
 }
 
 // ── Component renderers ────────────────────────────────────────────────────────
-
 function renderNavItem(label, active, count) {
   if (active) {
     return `<button class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold bg-[#F0654D] text-white">
@@ -81,9 +73,10 @@ function renderStatCard(label, count, color) {
 }
 
 function renderTaskRow(task, idx) {
-  const stripe = idx % 2 === 1 ? 'bg-gray-50/40' : '';
-  const assignee = task.assignedTo
-    ? `<span class="block text-xs text-gray-400 mt-0.5">${task.assignedTo}</span>`
+  const stripe  = idx % 2 === 1 ? 'bg-gray-50/40' : '';
+  // Real API returns assignedToUserId (int | null), not a name
+  const assignee = task.assignedToUserId
+    ? `<span class="block text-xs text-gray-400 mt-0.5">User #${task.assignedToUserId}</span>`
     : '';
   return `<tr class="border-b border-gray-50 hover:bg-orange-50/40 transition-colors cursor-pointer ${stripe}">
     <td class="px-5 py-3.5">
@@ -97,7 +90,7 @@ function renderTaskRow(task, idx) {
 }
 
 function renderQuickFilter(label, count, color, highlight) {
-  const bg   = highlight ? `background:${color}12;border:1px solid ${color}30` : 'background:#f9fafb;border:1px solid #f3f4f6';
+  const bg = highlight ? `background:${color}12;border:1px solid ${color}30` : 'background:#f9fafb;border:1px solid #f3f4f6';
   return `<div style="${bg}" class="rounded-2xl p-4 cursor-pointer hover:brightness-95 transition-all">
     <div class="flex items-center justify-between">
       <span class="text-sm font-medium text-gray-700">${label}</span>
@@ -106,16 +99,120 @@ function renderQuickFilter(label, count, color, highlight) {
   </div>`;
 }
 
-// ── Main render ────────────────────────────────────────────────────────────────
+// ── Data loading ───────────────────────────────────────────────────────────────
+async function devLoginAdmin() {
+  state.loading = true;
+  state.error = '';
+  render();
 
+  try {
+    const res = await fetch('/api/dev/login-as/1', {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    if (!res.ok) {
+      state.error = `Dev login failed (${res.status}).`;
+      state.loading = false;
+      render();
+      return;
+    }
+
+    await loadTasks();
+    state.error = '';
+  } catch {
+    state.error = 'Network error during dev login.';
+    state.loading = false;
+    render();
+  }
+}
+
+async function loadTasks() {
+  state.loading = true;
+  state.error   = '';
+  render();
+
+  const params = new URLSearchParams({ page: state.page, pageSize: state.pageSize });
+  if (state.status)   params.set('status',   state.status);
+  if (state.priority) params.set('priority', state.priority);
+
+  try {
+    const res = await fetch(`/api/tasks?${params}`, { credentials: 'include' });
+
+    if (res.status === 401) {
+      state.error = 'Unauthorized. Use Dev Login.';
+      state.tasks = [];
+      state.total = 0;
+      state.totalPages = 1;
+    } else if (!res.ok) {
+      state.error = `Server error (${res.status}). Please try again.`;
+      state.tasks = [];
+    } else {
+      const data = await res.json();
+      state.tasks      = data.tasks;
+      state.total      = data.total;
+      state.page       = data.page;
+      state.pageSize   = data.pageSize;
+      state.totalPages = data.totalPages;
+    }
+  } catch {
+    state.error = 'Network error. Is the server running?';
+    state.tasks = [];
+  }
+
+  state.loading = false;
+  render();
+}
+
+// ── Main render ────────────────────────────────────────────────────────────────
 function renderApp() {
-  const open        = MOCK_TASKS.filter(t => t.status === 'TODO').length;
-  const inProgress  = MOCK_TASKS.filter(t => t.status === 'IN_PROGRESS').length;
-  const done        = MOCK_TASKS.filter(t => t.status === 'DONE').length;
-  const blocked     = MOCK_TASKS.filter(t => t.status === 'BLOCKED').length;
-  const cancelled   = MOCK_TASKS.filter(t => t.status === 'CANCELLED').length;
-  const myTasks     = MOCK_TASKS.filter(t => t.assignedTo === MOCK_USER.name).length;
-  const highPrio    = MOCK_TASKS.filter(t => t.priority === 'HIGH' || t.priority === 'URGENT').length;
+  // Page-level counts (sufficient for sprint 1)
+  const open       = state.tasks.filter(t => t.status === 'TODO').length;
+  const inProgress = state.tasks.filter(t => t.status === 'IN_PROGRESS').length;
+  const done       = state.tasks.filter(t => t.status === 'DONE').length;
+  const blocked    = state.tasks.filter(t => t.status === 'BLOCKED').length;
+  const cancelled  = state.tasks.filter(t => t.status === 'CANCELLED').length;
+  const assigned   = state.tasks.filter(t => t.assignedToUserId !== null).length; // TODO: filter by current user id once auth is wired
+  const highPrio   = state.tasks.filter(t => t.priority === 'HIGH' || t.priority === 'URGENT').length;
+
+  // Pagination helpers
+  const from        = state.total === 0 ? 0 : (state.page - 1) * state.pageSize + 1;
+  const to          = Math.min(state.page * state.pageSize, state.total);
+  const prevEnabled = state.page > 1 && !state.loading;
+  const nextEnabled = state.page < state.totalPages && !state.loading;
+
+  // Table body
+  let tableBody;
+  if (state.loading) {
+    tableBody = `<tr><td colspan="4" class="px-5 py-10 text-center text-sm text-gray-400">Loading…</td></tr>`;
+  } else if (state.tasks.length === 0) {
+    tableBody = `<tr><td colspan="4" class="px-5 py-10 text-center text-sm text-gray-400">No tasks found.</td></tr>`;
+  } else {
+    tableBody = state.tasks.map(renderTaskRow).join('');
+  }
+
+  // Error banner
+  const isUnauthorized = state.error.includes('Unauthorized');
+
+  const errorBanner = state.error
+    ? `<div class="flex items-center justify-between gap-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
+        <span>${state.error}</span>
+        ${isUnauthorized ? `
+          <button id="btn-dev-login"
+            class="shrink-0 px-3 py-1.5 rounded-lg bg-[#F0654D] text-white font-semibold hover:bg-[#E85B44] transition-colors">
+            Dev Login (Admin)
+          </button>
+        ` : ''}
+      </div>`
+    : '';
+
+  // Select options helper
+  const statusOpts = ['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED', 'CANCELLED']
+    .map(s => `<option value="${s}" ${state.status === s ? 'selected' : ''}>${s}</option>`)
+    .join('');
+  const priorityOpts = ['LOW', 'MEDIUM', 'HIGH', 'URGENT']
+    .map(p => `<option value="${p}" ${state.priority === p ? 'selected' : ''}>${p}</option>`)
+    .join('');
 
   return `
     <div class="h-screen overflow-hidden bg-[#F6F7F9] grid grid-cols-[260px_1fr_320px]">
@@ -149,10 +246,10 @@ function renderApp() {
             <!-- Nav -->
             <nav class="flex flex-col gap-1">
               <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 px-1">Menu</p>
-              ${renderNavItem('All Tasks',  true,  MOCK_TASKS.length)}
-              ${renderNavItem('My Tasks',   false, myTasks)}
-              ${renderNavItem('Completed',  false, done)}
-              ${renderNavItem('Cancelled',  false, cancelled)}
+              ${renderNavItem('All Tasks', true,  state.total)}
+              ${renderNavItem('My Tasks',  false, assigned)}
+              ${renderNavItem('Completed', false, done)}
+              ${renderNavItem('Cancelled', false, cancelled)}
             </nav>
 
             <div class="flex-1"></div>
@@ -198,25 +295,22 @@ function renderApp() {
                 <input type="text" placeholder="Search tasks…"
                   class="w-full pl-9 pr-3 py-2 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#F0654D]/20 focus:border-[#F0654D] text-gray-700 placeholder-gray-400" />
               </div>
-              <select class="text-sm bg-white border border-gray-200 rounded-xl px-3 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#F0654D]/20 focus:border-[#F0654D]">
-                <option value="">All Statuses</option>
-                <option>TODO</option>
-                <option>IN_PROGRESS</option>
-                <option>DONE</option>
-                <option>BLOCKED</option>
-                <option>CANCELLED</option>
+              <select id="status-filter"
+                class="text-sm bg-white border border-gray-200 rounded-xl px-3 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#F0654D]/20 focus:border-[#F0654D]">
+                <option value="" ${state.status === '' ? 'selected' : ''}>All Statuses</option>
+                ${statusOpts}
               </select>
-              <select class="text-sm bg-white border border-gray-200 rounded-xl px-3 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#F0654D]/20 focus:border-[#F0654D]">
-                <option value="">All Priorities</option>
-                <option>LOW</option>
-                <option>MEDIUM</option>
-                <option>HIGH</option>
-                <option>URGENT</option>
+              <select id="priority-filter"
+                class="text-sm bg-white border border-gray-200 rounded-xl px-3 py-2 text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#F0654D]/20 focus:border-[#F0654D]">
+                <option value="" ${state.priority === '' ? 'selected' : ''}>All Priorities</option>
+                ${priorityOpts}
               </select>
             </div>
 
+            ${errorBanner}
+
             <!-- Task table -->
-            <div class="bg-white rounded-2xl border border-black/5 shadow-sm">
+            <div class="bg-white rounded-2xl border border-black/5 shadow-sm overflow-hidden">
               <table class="w-full">
                 <thead>
                   <tr class="border-b border-gray-100">
@@ -226,19 +320,23 @@ function renderApp() {
                     <th class="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Updated</th>
                   </tr>
                 </thead>
-                <tbody>
-                  ${MOCK_TASKS.map(renderTaskRow).join('')}
-                </tbody>
+                <tbody>${tableBody}</tbody>
               </table>
             </div>
 
             <!-- Pagination -->
             <div class="flex items-center justify-between text-sm text-gray-400">
-              <span>Showing 1–${MOCK_TASKS.length} of ${MOCK_TASKS.length} tasks</span>
+              <span>Showing ${from}–${to} of ${state.total} tasks</span>
               <div class="flex items-center gap-1">
-                <button disabled class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-300 cursor-not-allowed">Previous</button>
-                <button class="px-3 py-1.5 rounded-lg bg-[#F0654D] text-white font-semibold">1</button>
-                <button disabled class="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-300 cursor-not-allowed">Next</button>
+                <button id="btn-prev" ${prevEnabled ? '' : 'disabled'}
+                  class="px-3 py-1.5 rounded-lg border border-gray-200 ${prevEnabled ? 'hover:bg-gray-50 text-gray-600 cursor-pointer' : 'text-gray-300 cursor-not-allowed'}">
+                  Previous
+                </button>
+                <button class="px-3 py-1.5 rounded-lg bg-[#F0654D] text-white font-semibold">${state.page}</button>
+                <button id="btn-next" ${nextEnabled ? '' : 'disabled'}
+                  class="px-3 py-1.5 rounded-lg border border-gray-200 ${nextEnabled ? 'hover:bg-gray-50 text-gray-600 cursor-pointer' : 'text-gray-300 cursor-not-allowed'}">
+                  Next
+                </button>
               </div>
             </div>
           </main>
@@ -246,14 +344,47 @@ function renderApp() {
           <!-- ── Right panel ───────────────────────────────────────────────── -->
           <aside class="border-l border-black/5 p-6 flex flex-col gap-3 overflow-y-auto">
             <h2 class="text-base font-semibold text-gray-800 mb-1">Quick Filters</h2>
-            ${renderQuickFilter('All Tasks',      MOCK_TASKS.length, '#F0654D', false)}
-            ${renderQuickFilter('My Tasks',       myTasks,           '#4C8DFF', false)}
-            ${renderQuickFilter('Blocked',        blocked,           '#F05A5A', true)}
-            ${renderQuickFilter('High Priority',  highPrio,          '#F97316', true)}
+            ${renderQuickFilter('All Tasks',     state.total, '#F0654D', false)}
+            ${renderQuickFilter('My Tasks',      assigned,    '#4C8DFF', false)}
+            ${renderQuickFilter('Blocked',       blocked,     '#F05A5A', true)}
+            ${renderQuickFilter('High Priority', highPrio,    '#F97316', true)}
           </aside>
 
     </div>
   `;
 }
 
-document.getElementById('app').innerHTML = renderApp();
+// ── Event wiring ───────────────────────────────────────────────────────────────
+function attachListeners() {
+  document.getElementById('status-filter')?.addEventListener('change', e => {
+    state.status = e.target.value;
+    state.page   = 1;
+    loadTasks();
+  });
+
+  document.getElementById('priority-filter')?.addEventListener('change', e => {
+    state.priority = e.target.value;
+    state.page     = 1;
+    loadTasks();
+  });
+
+  document.getElementById('btn-prev')?.addEventListener('click', () => {
+    if (state.page > 1) { state.page--; loadTasks(); }
+  });
+
+  document.getElementById('btn-next')?.addEventListener('click', () => {
+    if (state.page < state.totalPages) { state.page++; loadTasks(); }
+  });
+
+  document.getElementById('btn-dev-login')?.addEventListener('click', () => {
+    devLoginAdmin();
+  });
+}
+
+function render() {
+  document.getElementById('app').innerHTML = renderApp();
+  attachListeners();
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+loadTasks();
