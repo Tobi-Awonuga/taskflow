@@ -27,9 +27,104 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// TODO: POST   /api/tasks        – create task
-router.post('/', requireAuth, (req, res) => {
-  res.status(501).json({ error: 'Not implemented' });
+router.post('/', requireAuth, async (req, res) => {
+  try {
+    const actor = req.user;
+    const { departmentId, id: createdByUserId } = actor;
+
+    // ── Input normalisation ──────────────────────────────────────────────────
+
+    const title = typeof req.body.title === 'string' ? req.body.title.trim() : undefined;
+    if (!title) {
+      return res.status(400).json({ error: '"title" is required and must be a non-empty string' });
+    }
+
+    const description = typeof req.body.description === 'string' ? req.body.description : '';
+
+    const VALID_PRIORITIES = new Set(['LOW', 'MEDIUM', 'HIGH', 'URGENT']);
+    const priority = req.body.priority !== undefined ? req.body.priority : 'MEDIUM';
+    if (!VALID_PRIORITIES.has(priority)) {
+      return res.status(400).json({ error: `"priority" must be one of: ${[...VALID_PRIORITIES].join(', ')}` });
+    }
+
+    const VALID_STATUSES = new Set(['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED']);
+    const desiredStatus = req.body.status !== undefined ? req.body.status : 'TODO';
+    if (!VALID_STATUSES.has(desiredStatus)) {
+      return res.status(400).json({ error: `"status" must be one of: ${[...VALID_STATUSES].join(', ')}` });
+    }
+
+    let dueAt = undefined;
+    if (req.body.dueAt !== undefined) {
+      const d = new Date(req.body.dueAt);
+      if (isNaN(d.getTime())) {
+        return res.status(400).json({ error: '"dueAt" must be a valid ISO date string' });
+      }
+      dueAt = d;
+    }
+
+    let assignedToUserId = null;
+    let newAssignee = null;
+    if (req.body.assignedToUserId !== undefined && req.body.assignedToUserId !== null) {
+      assignedToUserId = parseInt(req.body.assignedToUserId, 10);
+      if (isNaN(assignedToUserId)) {
+        return res.status(400).json({ error: '"assignedToUserId" must be an integer or null' });
+      }
+      newAssignee = await prisma.user.findUnique({ where: { id: assignedToUserId } });
+      if (!newAssignee) {
+        return res.status(400).json({ error: `User ${assignedToUserId} not found` });
+      }
+    }
+
+    // ── Validate assignment ──────────────────────────────────────────────────
+    // taskLike represents what the task will look like on creation.
+    const taskLike = {
+      departmentId,
+      createdByUserId,
+      assignedToUserId,
+      status: 'TODO',
+    };
+
+    if (newAssignee !== null) {
+      const assignResult = validateAssignment(taskLike, newAssignee, actor);
+      if (!assignResult.ok) {
+        return res.status(assignResult.status).json({ error: assignResult.error });
+      }
+    }
+
+    // ── Validate status (if not TODO) ────────────────────────────────────────
+    let completedAt = undefined;
+    if (desiredStatus !== 'TODO') {
+      const effectiveTaskLike = { ...taskLike, assignedToUserId };
+      const statusResult = validateStatusTransition('TODO', desiredStatus, actor, effectiveTaskLike);
+      if (!statusResult.ok) {
+        return res.status(statusResult.status).json({ error: statusResult.error });
+      }
+      if (statusResult.updates && statusResult.updates.completedAt !== undefined) {
+        completedAt = statusResult.updates.completedAt;
+      }
+    }
+
+    // ── Create task ──────────────────────────────────────────────────────────
+    const task = await prisma.task.create({
+      data: {
+        title,
+        description,
+        priority,
+        status: desiredStatus,
+        departmentId,
+        createdByUserId,
+        assignedToUserId,
+        ...(dueAt !== undefined && { dueAt }),
+        ...(completedAt !== undefined && { completedAt }),
+      },
+    });
+
+    return res.status(201).json(task);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to create task' });
+  }
 });
 
 // TODO: GET    /api/tasks/:id    – get single task
