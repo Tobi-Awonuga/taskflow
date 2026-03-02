@@ -40,6 +40,12 @@ app.use('/api/users',       userRoutes);
 app.use('/api/departments', deptRoutes);
 app.use('/api/tasks',       taskRoutes);
 
+// DEV ONLY — remove before production (see routes/dev.routes.js)
+if (process.env.NODE_ENV !== 'production') {
+  const devRoutes = require('./routes/dev.routes');
+  app.use('/api/dev', devRoutes);
+}
+
 // ── Start ──────────────────────────────────────────────────────────────────────
 
 app.listen(PORT, () => {

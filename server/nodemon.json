@@ -1,0 +1,6 @@
+{
+  "ignore": [
+    "body.json",
+    "cookies.txt"
+  ]
+}
