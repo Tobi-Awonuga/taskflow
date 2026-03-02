@@ -7,20 +7,87 @@ const router = Router();
 
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const { role, departmentId } = req.user;
+    const { role, departmentId: actorDeptId } = req.user;
+    const q = req.query;
 
-    const where = role === 'ADMIN'
-      ? {}
-      : { departmentId };
+    const LIST_STATUSES   = new Set(['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED', 'CANCELLED']);
+    const LIST_PRIORITIES = new Set(['LOW', 'MEDIUM', 'HIGH', 'URGENT']);
 
-    const tasks = await prisma.task.findMany({
-      where,
-      orderBy: {
-        createdAt: 'desc',
-      },
+    // ── Pagination ────────────────────────────────────────────────────────────
+    const page     = parseInt(q.page     ?? '1',  10);
+    const pageSize = parseInt(q.pageSize ?? '20', 10);
+
+    if (isNaN(page) || page < 1) {
+      return res.status(400).json({ error: '"page" must be a positive integer' });
+    }
+    if (isNaN(pageSize) || pageSize < 1 || pageSize > 100) {
+      return res.status(400).json({ error: '"pageSize" must be an integer between 1 and 100' });
+    }
+
+    // ── Where clause ──────────────────────────────────────────────────────────
+    const where = {};
+
+    // Visibility: non-ADMIN always restricted to own department.
+    // Non-ADMIN departmentId param is silently ignored.
+    if (role !== 'ADMIN') {
+      where.departmentId = actorDeptId;
+    } else if (q.departmentId !== undefined) {
+      const deptId = parseInt(q.departmentId, 10);
+      if (isNaN(deptId)) {
+        return res.status(400).json({ error: '"departmentId" must be an integer' });
+      }
+      where.departmentId = deptId;
+    }
+
+    // ── Filters ───────────────────────────────────────────────────────────────
+    if (q.status !== undefined) {
+      if (!LIST_STATUSES.has(q.status)) {
+        return res.status(400).json({ error: `"status" must be one of: ${[...LIST_STATUSES].join(', ')}` });
+      }
+      where.status = q.status;
+    }
+
+    if (q.priority !== undefined) {
+      if (!LIST_PRIORITIES.has(q.priority)) {
+        return res.status(400).json({ error: `"priority" must be one of: ${[...LIST_PRIORITIES].join(', ')}` });
+      }
+      where.priority = q.priority;
+    }
+
+    if (q.assignedToUserId !== undefined) {
+      const uid = parseInt(q.assignedToUserId, 10);
+      if (isNaN(uid)) {
+        return res.status(400).json({ error: '"assignedToUserId" must be an integer' });
+      }
+      where.assignedToUserId = uid;
+    }
+
+    if (q.createdByUserId !== undefined) {
+      const uid = parseInt(q.createdByUserId, 10);
+      if (isNaN(uid)) {
+        return res.status(400).json({ error: '"createdByUserId" must be an integer' });
+      }
+      where.createdByUserId = uid;
+    }
+
+    // ── Query ─────────────────────────────────────────────────────────────────
+    const [total, tasks] = await Promise.all([
+      prisma.task.count({ where }),
+      prisma.task.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    ]);
+
+    return res.json({
+      tasks,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
     });
-
-    res.json(tasks);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch tasks' });
@@ -47,12 +114,16 @@ router.post('/', requireAuth, async (req, res) => {
       return res.status(400).json({ error: `"priority" must be one of: ${[...VALID_PRIORITIES].join(', ')}` });
     }
 
-    const VALID_STATUSES = new Set(['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED']);
-    const desiredStatus = req.body.status !== undefined ? req.body.status : 'TODO';
-    if (!VALID_STATUSES.has(desiredStatus)) {
-      return res.status(400).json({ error: `"status" must be one of: ${[...VALID_STATUSES].join(', ')}` });
-    }
-
+   const VALID_STATUSES = new Set(['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED', 'CANCELLED']);
+   const desiredStatus = req.body.status !== undefined ? req.body.status : 'TODO';
+  if (!VALID_STATUSES.has(desiredStatus)) {
+  return res.status(400).json({ error: `"status" must be one of: ${[...VALID_STATUSES].join(', ')}` });
+  }
+  if (desiredStatus === 'CANCELLED') {
+  return res.status(400).json({
+    error: 'Cannot create a task as CANCELLED. Create it first, then cancel it.',
+  });
+  }
     let dueAt = undefined;
     if (req.body.dueAt !== undefined) {
       const d = new Date(req.body.dueAt);
