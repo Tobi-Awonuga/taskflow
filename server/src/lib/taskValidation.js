@@ -10,7 +10,7 @@
  *                status: 400|403 }       – rejected; respond with status + error
  */
 
-const VALID_STATUSES = new Set(['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED']);
+const VALID_STATUSES = new Set(['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED', 'CANCELLED']);
 
 // ── Internal helpers ───────────────────────────────────────────────────────────
 
@@ -69,10 +69,42 @@ function validateStatusTransition(from, to, actor, task) {
     return { ok: false, status: 400, error: `Task status is already "${to}"` };
   }
 
-  // 3. Authority: assignee OR role authority (creator alone is NOT enough)
+  // 3. Guard: CANCELLED is a terminal status — no transitions out of it
+  if (from === 'CANCELLED') {
+    return {
+      ok: false,
+      status: 400,
+      error: 'CANCELLED tasks cannot be modified. This status is terminal.',
+    };
+  }
+
+  // 4. Authority flags (shared by all branches below)
   const roleAuth = hasRoleAuthority(actor, task);
   const assignee = isAssignee(actor, task);
+  const creator  = isCreator(actor, task);
 
+  // 5. CANCELLED transition — authority: ADMIN | SUPER (own dept) | CREATOR
+  //    Assignee alone is NOT enough; creator IS enough (unlike normal status changes).
+  if (to === 'CANCELLED') {
+    if (!roleAuth && !creator) {
+      return {
+        ok: false,
+        status: 403,
+        error: 'Only the task creator, a SUPER within this department, or an ADMIN may cancel a task',
+      };
+    }
+    return {
+      ok: true,
+      updates: {
+        cancelledAt: new Date(),
+        cancelledByUserId: actor.id,
+        completedAt: null,   // cancelled ≠ done; clear any prior completedAt
+      },
+    };
+  }
+
+  // 6. All other transitions — authority: ASSIGNEE | SUPER (own dept) | ADMIN
+  //    Creator alone is NOT enough (unchanged from original policy).
   if (!roleAuth && !assignee) {
     return {
       ok: false,
@@ -81,7 +113,7 @@ function validateStatusTransition(from, to, actor, task) {
     };
   }
 
-  // 4. Transition-specific rules
+  // 7. Transition-specific rules
   if (to === 'IN_PROGRESS') {
     // Invariant §3.4: must be assigned
     if (!task.assignedToUserId) {

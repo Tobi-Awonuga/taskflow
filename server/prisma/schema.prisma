@@ -28,8 +28,9 @@ model User {
   departmentId Int?
   department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
-  assignedTasks Task[] @relation("AssignedTasks")
-  createdTasks  Task[] @relation("CreatedTasks")
+  assignedTasks   Task[] @relation("AssignedTasks")
+  createdTasks    Task[] @relation("CreatedTasks")
+  cancelledTasks  Task[] @relation("CancelledTasks")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -41,7 +42,7 @@ model Task {
   id               Int      @id @default(autoincrement())
   title            String
   description      String?
-  status           String   @default("TODO")    // TODO | IN_PROGRESS | DONE | BLOCKED
+  status           String   @default("TODO")    // TODO | IN_PROGRESS | DONE | BLOCKED | CANCELLED
   priority         String   @default("MEDIUM")  // LOW | MEDIUM | HIGH | URGENT
 
   departmentId     Int?
@@ -53,7 +54,12 @@ model Task {
   createdByUserId  Int?
   createdByUser    User?    @relation("CreatedTasks", fields: [createdByUserId], references: [id], onDelete: SetNull)
 
-  completedAt DateTime?
+  completedAt       DateTime?
+
+  cancelledAt       DateTime?
+  cancelledByUserId Int?
+  cancelledByUser   User?    @relation("CancelledTasks", fields: [cancelledByUserId], references: [id], onDelete: SetNull)
+  cancelReason      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -61,4 +67,5 @@ model Task {
   @@index([departmentId])
   @@index([assignedToUserId])
   @@index([createdByUserId])
+  @@index([cancelledByUserId])
 }
