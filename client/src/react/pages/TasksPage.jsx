@@ -39,6 +39,7 @@ export default function TasksPage() {
     query, setQuery,
     tasks, total, page, pageSize, totalPages,
     loading, error, devLoginAdmin,
+    updateTaskStatus, updateTaskPriority,
   } = useTasks();
 
   // ── Scope filtering (client-side — backend has no scope param yet) ──────────
@@ -157,7 +158,12 @@ export default function TasksPage() {
         <ErrorBanner error={error} onDevLogin={devLoginAdmin} />
 
         {/* Task table */}
-        <TaskTable tasks={displayTasks} loading={loading} />
+        <TaskTable
+          tasks={displayTasks}
+          loading={loading}
+          onUpdateStatus={updateTaskStatus}
+          onUpdatePriority={updateTaskPriority}
+        />
 
         {/* Pagination */}
         <div className="flex items-center justify-between text-sm text-gray-400">

@@ -73,6 +73,50 @@ export function useTasks() {
     return () => { cancelled = true; };
   }, [query, refetchTick]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const updateTaskStatus = useCallback(async (taskId, status, cancelReason) => {
+    const body = { status };
+    if (status === 'CANCELLED' && cancelReason) body.cancelReason = cancelReason;
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error ?? `Failed to update task (${res.status}).`);
+        return false;
+      }
+      setRefetchTick(t => t + 1);
+      return true;
+    } catch {
+      setError('Network error. Could not update task.');
+      return false;
+    }
+  }, []);
+
+  const updateTaskPriority = useCallback(async (taskId, priority) => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priority }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error ?? `Failed to update task (${res.status}).`);
+        return false;
+      }
+      setRefetchTick(t => t + 1);
+      return true;
+    } catch {
+      setError('Network error. Could not update task.');
+      return false;
+    }
+  }, []);
+
   const devLoginAdmin = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -104,5 +148,7 @@ export function useTasks() {
     loading,
     error,
     devLoginAdmin,
+    updateTaskStatus,
+    updateTaskPriority,
   };
 }
