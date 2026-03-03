@@ -32,29 +32,6 @@ function StatCard({ label, count, color }) {
   );
 }
 
-function QuickFilter({ label, count, color, highlight, onClick, disabled }) {
-  const style = highlight
-    ? { background: `${color}12`, border: `1px solid ${color}30` }
-    : { background: '#f9fafb', border: '1px solid #f3f4f6' };
-  return (
-    <div
-      style={style}
-      onClick={disabled ? undefined : onClick}
-      className={`rounded-2xl p-4 transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:brightness-95'}`}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-700">{label}</span>
-          {disabled && (
-            <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">Coming soon</span>
-          )}
-        </div>
-        <span className="text-xl font-bold" style={{ color }}>{count}</span>
-      </div>
-    </div>
-  );
-}
-
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function TasksPage() {
@@ -75,7 +52,6 @@ export default function TasksPage() {
   const done        = displayTasks.filter(t => t.status === 'DONE').length;
   const cancelled   = displayTasks.filter(t => t.status === 'CANCELLED').length;
   const myTaskCount = tasks.filter(t => t.assignedToUserId === MOCK_USER.id).length;
-  const highPrio    = displayTasks.filter(t => t.priority === 'HIGH' || t.priority === 'URGENT').length;
 
   // ── Active nav view ─────────────────────────────────────────────────────────
   let activeView = 'ALL';
@@ -99,7 +75,7 @@ export default function TasksPage() {
   const nextEnabled = page < totalPages && !loading;
 
   return (
-    <div className="h-screen overflow-hidden bg-[#F6F7F9] grid grid-cols-[260px_1fr_320px]">
+    <div className="h-screen overflow-hidden bg-[#F6F7F9] grid grid-cols-[260px_1fr]">
 
       {/* ── Sidebar ────────────────────────────────────────────────────────── */}
       <aside className="bg-[#F5EDE6] flex flex-col p-6 gap-5 overflow-y-auto">
@@ -207,27 +183,6 @@ export default function TasksPage() {
           </div>
         </div>
       </main>
-
-      {/* ── Right panel ────────────────────────────────────────────────────── */}
-      <aside className="border-l border-black/5 p-6 flex flex-col gap-3 overflow-y-auto">
-        <h2 className="text-base font-semibold text-gray-800 mb-1">Quick Filters</h2>
-        <QuickFilter
-          label="All Tasks"     count={total}        color="#F0654D" highlight={false}
-          onClick={showAll}
-        />
-        <QuickFilter
-          label="My Tasks"      count={myTaskCount}  color="#4C8DFF" highlight={false}
-          onClick={showMine}
-        />
-        <QuickFilter
-          label="Blocked"       count={0}            color="#F05A5A" highlight
-          disabled
-        />
-        <QuickFilter
-          label="High Priority" count={highPrio}     color="#F97316" highlight
-          onClick={() => setQuery({ priority: 'HIGH' })}
-        />
-      </aside>
 
     </div>
   );
