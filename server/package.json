@@ -1,21 +1,26 @@
 {
   "name": "taskflow-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "commonjs",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "migrate": "node scripts/migrate.js",
+    "seed": "node scripts/seed.js",
+    "generate": "drizzle-kit generate:sqlite"
   },
   "dependencies": {
-    "@prisma/client": "^5.0.0",
     "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.6.2",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
+    "drizzle-orm": "^0.30.10",
     "express": "^4.18.0",
-    "express-session": "^1.17.3",
-    "prisma": "^5.0.0"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.20.14",
     "nodemon": "^3.0.0"
   }
 }

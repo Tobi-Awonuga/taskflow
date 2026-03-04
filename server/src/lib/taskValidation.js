@@ -1,216 +1,88 @@
 'use strict';
+const { canCancel, canReopen } = require('./rbac');
+
+const VALID_STATUSES   = new Set(['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED', 'CANCELLED']);
+const VALID_PRIORITIES = new Set(['LOW', 'MEDIUM', 'HIGH', 'URGENT']);
+
+// Structurally permitted transitions (before RBAC)
+const ALLOWED_TRANSITIONS = {
+  TODO:        new Set(['IN_PROGRESS', 'DONE', 'BLOCKED', 'CANCELLED']),
+  IN_PROGRESS: new Set(['TODO', 'DONE', 'BLOCKED', 'CANCELLED']),
+  DONE:        new Set(['TODO', 'IN_PROGRESS']),   // re-open or push back
+  BLOCKED:     new Set(['TODO', 'IN_PROGRESS', 'CANCELLED']),
+  CANCELLED:   new Set(['TODO']),                  // reopen only
+};
 
 /**
- * Centralized task validation — Model B (role + context authority).
- * Rules source: docs/architecture.md §3 (invariants), §5 (permissions), §6 (assignment), §7 (transitions).
+ * Validate a status transition against structure + RBAC.
  *
- * All exported functions return:
- *   { ok: true,  updates: {} }           – permitted; merge `updates` into Prisma payload
- *   { ok: false, error: string,
- *                status: 400|403 }       – rejected; respond with status + error
+ * @param {string} fromStatus  Current task.status
+ * @param {string} toStatus    Requested status
+ * @param {object} actor       req.user { id, role, departmentId }
+ * @param {object} task        Task row from DB
+ * @param {string} cancelReason Required when toStatus === 'CANCELLED'
+ *
+ * Returns:
+ *   { ok: true,  updates: { completedAt?, cancelledAt?, ... } }
+ *   { ok: false, status: HTTP_STATUS, error: message }
  */
-
-const VALID_STATUSES = new Set(['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED', 'CANCELLED']);
-
-// ── Internal helpers ───────────────────────────────────────────────────────────
-
-/** §5.1 — ADMIN: any dept. SUPER: own dept only. */
-function hasRoleAuthority(actor, task) {
-  if (actor.role === 'ADMIN') return true;
-  if (actor.role === 'SUPER' && actor.departmentId === task.departmentId) return true;
-  return false;
-}
-
-/** §5.2 — context authority: is actor the current assignee? */
-function isAssignee(actor, task) {
-  return task.assignedToUserId != null && task.assignedToUserId === actor.id;
-}
-
-/** §5.2 — context authority: is actor the creator? (used for assignment only, NOT status) */
-function isCreator(actor, task) {
-  return task.createdByUserId != null && task.createdByUserId === actor.id;
-}
-
-// ── Status transitions ─────────────────────────────────────────────────────────
-
-/**
- * Validate a status transition request.
- *
- * Authority for status changes (§7):
- *   Assignee | SUPER (own dept) | ADMIN
- *   Creator alone does NOT grant status-change rights.
- *
- * Transition matrix (§7):
- *   TODO        → IN_PROGRESS   must be assigned
- *   IN_PROGRESS → DONE          sets completedAt          (invariant §3.5)
- *   DONE        → IN_PROGRESS   SUPER/ADMIN only; clears completedAt (§3.6)
- *   Any         → BLOCKED       —
- *   BLOCKED     → TODO          —
- *   BLOCKED     → IN_PROGRESS   must be assigned
- *
- * @param {string} from   Current task.status
- * @param {string} to     Requested status
- * @param {object} actor  req.user  { id, role, departmentId }
- * @param {object} task   Task record (assignedToUserId may reflect in-request assignment change)
- * @returns {{ ok, error?, status?, updates? }}
- */
-function validateStatusTransition(from, to, actor, task) {
-  // 1. Guard: valid target status
-  if (!VALID_STATUSES.has(to)) {
-    return {
-      ok: false,
-      status: 400,
-      error: `Invalid status "${to}". Allowed: ${[...VALID_STATUSES].join(', ')}`,
-    };
+function validateStatusTransition(fromStatus, toStatus, actor, task, cancelReason) {
+  if (!VALID_STATUSES.has(toStatus)) {
+    return { ok: false, status: 400, error: `"status" must be one of: ${[...VALID_STATUSES].join(', ')}` };
+  }
+  if (fromStatus === toStatus) {
+    return { ok: false, status: 400, error: 'Task is already in that status' };
   }
 
-  // 2. Guard: no-op
-  if (from === to) {
-    return { ok: false, status: 400, error: `Task status is already "${to}"` };
+  const allowed = ALLOWED_TRANSITIONS[fromStatus];
+  if (!allowed || !allowed.has(toStatus)) {
+    return { ok: false, status: 400, error: `Cannot transition from ${fromStatus} to ${toStatus}` };
   }
 
-  // 3. Guard: CANCELLED is a terminal status — no transitions out of it
-  if (from === 'CANCELLED') {
-    return {
-      ok: false,
-      status: 400,
-      error: 'CANCELLED tasks cannot be modified. This status is terminal.',
-    };
-  }
+  const now = new Date().toISOString();
 
-  // 4. Authority flags (shared by all branches below)
-  const roleAuth = hasRoleAuthority(actor, task);
-  const assignee = isAssignee(actor, task);
-  const creator  = isCreator(actor, task);
-
-  // 5. CANCELLED transition — authority: ADMIN | SUPER (own dept) | CREATOR
-  //    Assignee alone is NOT enough; creator IS enough (unlike normal status changes).
-  if (to === 'CANCELLED') {
-    if (!roleAuth && !creator) {
-      return {
-        ok: false,
-        status: 403,
-        error: 'Only the task creator, a SUPER within this department, or an ADMIN may cancel a task',
-      };
+  // ── CANCEL ──────────────────────────────────────────────────────────────────
+  if (toStatus === 'CANCELLED') {
+    if (!canCancel(actor, task)) {
+      return { ok: false, status: 403, error: 'You do not have permission to cancel this task' };
+    }
+    if (!cancelReason || !cancelReason.trim()) {
+      return { ok: false, status: 400, error: '"cancelReason" is required when cancelling a task' };
     }
     return {
       ok: true,
       updates: {
-        cancelledAt: new Date(),
+        cancelledAt:       now,
         cancelledByUserId: actor.id,
-        completedAt: null,   // cancelled ≠ done; clear any prior completedAt
+        cancelReason:      cancelReason.trim(),
+        completedAt:       null,
       },
     };
   }
 
-  // 6. All other transitions — authority: ASSIGNEE | SUPER (own dept) | ADMIN
-  //    Creator alone is NOT enough (unchanged from original policy).
-  if (!roleAuth && !assignee) {
+  // ── REOPEN (CANCELLED → TODO) ────────────────────────────────────────────
+  if (fromStatus === 'CANCELLED') {
+    if (!canReopen(actor, task)) {
+      return { ok: false, status: 403, error: 'You do not have permission to reopen this task' };
+    }
     return {
-      ok: false,
-      status: 403,
-      error: 'Only the assignee, a SUPER within this department, or an ADMIN may change task status',
+      ok: true,
+      updates: { cancelledAt: null, cancelledByUserId: null, cancelReason: null, completedAt: null },
     };
   }
 
-  // 7. Transition-specific rules
-  if (to === 'IN_PROGRESS') {
-    // Invariant §3.4: must be assigned
-    if (!task.assignedToUserId) {
-      return {
-        ok: false,
-        status: 400,
-        error: 'Task must be assigned to a user before it can move to IN_PROGRESS',
-      };
-    }
+  // ── DONE ────────────────────────────────────────────────────────────────────
+  if (toStatus === 'DONE') {
+    return { ok: true, updates: { completedAt: now } };
+  }
 
-    // §7: DONE → IN_PROGRESS (reopen) requires SUPER or ADMIN
-    if (from === 'DONE' && !roleAuth) {
-      return {
-        ok: false,
-        status: 403,
-        error: 'Only a SUPER (in this department) or ADMIN may reopen a completed task',
-      };
-    }
-
-    // Invariant §3.6: clear completedAt when reopening
+  // ── RE-OPEN FROM DONE ──────────────────────────────────────────────────────
+  if (fromStatus === 'DONE') {
     return { ok: true, updates: { completedAt: null } };
   }
 
-  if (to === 'DONE') {
-    // Invariant §3.5: set completedAt
-    return { ok: true, updates: { completedAt: new Date() } };
-  }
-
-  // TODO, BLOCKED — authority already verified; no side-effect fields
+  // All other transitions (TODO↔IN_PROGRESS, ↔BLOCKED) — no side-effect fields
   return { ok: true, updates: {} };
 }
 
-// ── Assignment ─────────────────────────────────────────────────────────────────
-
-/**
- * Validate assigning, reassigning, or unassigning a task.
- *
- * Authority for assignment (§6):
- *   ADMIN    – any task, any department
- *   SUPER    – tasks in their own department
- *   CREATOR  – tasks they created (dept rule still applies)
- *   ASSIGNEE – self-unassign only when status = TODO
- *
- * Invariants:
- *   §3.3 – assignee must be in same department as task
- *   §5.2 – assignee cannot reassign to another user unless also SUPER/ADMIN/creator
- *
- * @param {object}      task            Current task record
- * @param {object|null} newAssigneeUser Full DB user record, or null to unassign
- * @param {object}      actor           req.user  { id, role, departmentId }
- * @returns {{ ok, error?, status? }}
- */
-function validateAssignment(task, newAssigneeUser, actor) {
-  const roleAuth = hasRoleAuthority(actor, task);
-  const creator  = isCreator(actor, task);
-  const assignee = isAssignee(actor, task);
-
-  // 1. Authority: must be at least one of role authority / creator / assignee
-  if (!roleAuth && !creator && !assignee) {
-    return {
-      ok: false,
-      status: 403,
-      error: 'Only the task creator, assignee (self-unassign at TODO), a SUPER in this department, or an ADMIN may change assignment',
-    };
-  }
-
-  if (newAssigneeUser === null) {
-    // 2a. Unassign — pure assignee (no role authority, not creator) may only self-unassign at TODO
-    if (assignee && !roleAuth && !creator && task.status !== 'TODO') {
-      return {
-        ok: false,
-        status: 403,
-        error: 'Assignees may only unassign themselves when the task status is TODO',
-      };
-    }
-    return { ok: true, updates: {} };
-  }
-
-  // 2b. Assign / reassign — pure assignee cannot assign to another user
-  if (assignee && !roleAuth && !creator) {
-    return {
-      ok: false,
-      status: 403,
-      error: 'Assignees cannot reassign a task to another user',
-    };
-  }
-
-  // 2c. Invariant §3.3: assignee must be in the same department as the task
-  if (newAssigneeUser.departmentId !== task.departmentId) {
-    return {
-      ok: false,
-      status: 400,
-      error: `Assignee (department ${newAssigneeUser.departmentId}) must belong to the same department as the task (department ${task.departmentId})`,
-    };
-  }
-
-  return { ok: true, updates: {} };
-}
-
-module.exports = { validateStatusTransition, validateAssignment };
+module.exports = { validateStatusTransition, VALID_STATUSES, VALID_PRIORITIES };

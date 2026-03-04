@@ -1,22 +1,22 @@
-const prisma = require('../db');
+'use strict';
+const { COOKIE_NAME, validateSession } = require('../lib/sessions');
 
-async function requireAuth(req, res, next) {
-  if (!req.session.userId) {
+/**
+ * Validates the session cookie and attaches req.user + req.sessionId.
+ * Returns 401 if missing, expired, revoked, or user is inactive.
+ * Synchronous — better-sqlite3 operations are blocking.
+ */
+function requireAuth(req, res, next) {
+  const sessionId = req.cookies[COOKIE_NAME];
+  const result    = validateSession(sessionId);
+
+  if (!result) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  try {
-    const user = await prisma.user.findUnique({ where: { id: req.session.userId } });
-    if (!user) {
-      // Session references a deleted/missing user
-      req.session.destroy(() => {});
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-    req.user = user; // { id, role, departmentId, ... } available to all downstream handlers
-    next();
-  } catch (err) {
-    next(err);
-  }
+  req.user      = result.user;
+  req.sessionId = sessionId;
+  next();
 }
 
 module.exports = requireAuth;

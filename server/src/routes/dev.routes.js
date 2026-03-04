@@ -1,42 +1,40 @@
 'use strict';
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// DEV ONLY — remove this entire file and its registration in index.js
-// before deploying to production or merging into a shared environment.
-// This route bypasses all authentication checks.
+// DEV ONLY — remove this file and its registration in index.js before
+// deploying to production. This route bypasses all authentication checks.
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 const { Router } = require('express');
-const prisma = require('../db');
+const { eq }     = require('drizzle-orm');
+const { db }     = require('../db/client');
+const { users }  = require('../db/schema');
+const { createSession, setSessionCookie } = require('../lib/sessions');
 
 const router = Router();
 
 // POST /api/dev/login-as/:userId
-// Sets a session as the given user without any credential check.
-// Use this to test protected routes during development.
-router.post('/login-as/:userId', async (req, res, next) => {
-  try {
-    const userId = parseInt(req.params.userId, 10);
-    if (isNaN(userId)) {
-      return res.status(400).json({ error: 'Invalid user id' });
-    }
-
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      return res.status(404).json({ error: `User ${userId} not found` });
-    }
-
-    req.session.userId = user.id;
-
-    return res.json({
-      id:           user.id,
-      email:        user.email,
-      role:         user.role,
-      departmentId: user.departmentId,
-    });
-  } catch (err) {
-    next(err);
+// Creates a real session for the given user without credential verification.
+router.post('/login-as/:userId', (req, res) => {
+  const userId = parseInt(req.params.userId, 10);
+  if (isNaN(userId)) {
+    return res.status(400).json({ error: 'Invalid user id' });
   }
+
+  const user = db.select().from(users).where(eq(users.id, userId)).get();
+  if (!user) {
+    return res.status(404).json({ error: `User ${userId} not found` });
+  }
+
+  const sessionId = createSession(user.id, {
+    ip:        req.ip,
+    userAgent: req.headers['user-agent'] ?? null,
+  });
+
+  setSessionCookie(res, sessionId);
+
+  const { passwordHash: _h, ...safeUser } = user;
+  return res.json(safeUser);
 });
 
 module.exports = router;
