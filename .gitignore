@@ -7,16 +7,17 @@ server/node_modules
 .env
 server/.env
 
-# Prisma / DB
-server/prisma/dev.db
-server/prisma/dev.db-journal
+# Databases (SQLite)
+**/*.db
+**/*.db-journal
+**/*.sqlite
+**/*.sqlite-journal
+**/*.sqlite3
 
-# local curl test artifacts (root) (root)
+# local curl / test artifacts
 body.json
 cookies.txt
 login.json
-
-# local test artifacts (server)
 server/body.json
 server/cookies.txt
 
