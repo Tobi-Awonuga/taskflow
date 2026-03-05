@@ -41,19 +41,24 @@ export default function TasksPage() {
 
   // users fetch
   useEffect(() => {
-    fetch('/api/users?pageSize=100', { credentials: 'include' })
+    const ctrl = new AbortController();
+    fetch('/api/users?pageSize=100', { credentials: 'include', signal: ctrl.signal })
       .then(r => r.ok ? r.json() : { users: [] })
-      .then(d => setAllUsers(d.users ?? []));
+      .then(d => setAllUsers(d.users ?? []))
+      .catch(() => {});
+    return () => ctrl.abort();
   }, []);
 
   // stats fetch — safe to reference query now
   useEffect(() => {
+    const ctrl = new AbortController();
     const params = new URLSearchParams();
     if (query.assignedToUserId) params.set('assignedToUserId', query.assignedToUserId);
-    fetch(`/api/tasks/stats?${params}`, { credentials: 'include' })
+    fetch(`/api/tasks/stats?${params}`, { credentials: 'include', signal: ctrl.signal })
       .then(r => r.ok ? r.json() : null)
       .then(d => d && setStats(d))
       .catch(() => {});
+    return () => ctrl.abort();
   }, [query.assignedToUserId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // scope=mine → server-side filter
@@ -94,7 +99,7 @@ export default function TasksPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <StatCard label="Open"        count={stats.todo}       color="#4C8DFF" />
         <StatCard label="In Progress" count={stats.inProgress} color="#F4A23A" />
         <StatCard label="Blocked"     count={stats.blocked}    color="#F05A5A" />

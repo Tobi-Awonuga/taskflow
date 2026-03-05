@@ -145,7 +145,8 @@ router.get('/stats', requireAuth, (req, res) => {
 
   if (q.assignedToUserId !== undefined) {
     const uid = parseInt(q.assignedToUserId, 10);
-    if (!isNaN(uid)) conditions.push(eq(tasks.assignedToUserId, uid));
+    if (isNaN(uid)) return res.status(400).json({ error: '"assignedToUserId" must be an integer' });
+    conditions.push(eq(tasks.assignedToUserId, uid));
   }
 
   const base = conditions.length ? and(...conditions) : undefined;

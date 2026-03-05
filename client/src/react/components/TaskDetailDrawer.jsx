@@ -270,8 +270,9 @@ export default function TaskDetailDrawer({ task, onClose, onUpdateStatus, onUpda
 
           {/* Assignee */}
           <div className="flex flex-col gap-1.5">
-            <span className={LABEL_CLS}>Assignee</span>
+            <label htmlFor="drawer-assignee" className={LABEL_CLS}>Assignee</label>
             <select
+              id="drawer-assignee"
               value={task.assignedToUserId ?? ''}
               onChange={e => {
                 const val = e.target.value;
@@ -285,7 +286,7 @@ export default function TaskDetailDrawer({ task, onClose, onUpdateStatus, onUpda
                 ? allUsers.filter(u => u.id === user.id)
                 : allUsers
               ).map(u => (
-                <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
+                <option key={u.id} value={u.id}>{u.name}</option>
               ))}
             </select>
           </div>
