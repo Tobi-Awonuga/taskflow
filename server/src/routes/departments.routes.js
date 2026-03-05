@@ -71,8 +71,8 @@ router.get('/:id', requireAuth, (req, res) => {
   if (actor.role === 'SUPER' && actor.departmentId !== deptId) {
     return res.status(404).json({ error: 'Department not found' });
   }
-  // USER cannot access departments
-  if (actor.role === 'USER') {
+  // USER can only access their own department
+  if (actor.role === 'USER' && actor.departmentId !== deptId) {
     return res.status(403).json({ error: 'Forbidden' });
   }
 

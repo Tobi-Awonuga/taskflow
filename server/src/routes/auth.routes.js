@@ -5,7 +5,7 @@ const { eq }       = require('drizzle-orm');
 const { db, sqlite } = require('../db/client');
 const { users }    = require('../db/schema');
 const rateLimit    = require('express-rate-limit');
-const { verifyPassword }              = require('../lib/password');
+const { verifyPassword, hashPassword } = require('../lib/password');
 const { createSession, revokeSession,
         setSessionCookie, clearSessionCookie } = require('../lib/sessions');
 const { writeAuditLog, AUDIT_ACTIONS } = require('../lib/audit');
@@ -87,6 +87,41 @@ router.post('/logout', requireAuth, (req, res) => {
 // GET /api/auth/me
 router.get('/me', requireAuth, (req, res) => {
   return res.json(safeUser(req.user));
+});
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, '"currentPassword" is required'),
+  newPassword:     z.string().min(8, 'New password must be at least 8 characters'),
+});
+
+router.post('/change-password', requireAuth, (req, res) => {
+  const parsed = changePasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0].message });
+  }
+
+  const { currentPassword, newPassword } = parsed.data;
+  const user = db.select().from(users).where(eq(users.id, req.user.id)).get();
+
+  if (!verifyPassword(currentPassword, user.passwordHash)) {
+    return res.status(400).json({ error: 'Current password is incorrect' });
+  }
+
+  sqlite.transaction(() => {
+    db.update(users)
+      .set({ passwordHash: hashPassword(newPassword), updatedAt: new Date().toISOString() })
+      .where(eq(users.id, req.user.id))
+      .run();
+    writeAuditLog({
+      actorUserId: req.user.id,
+      action:      AUDIT_ACTIONS.USER_UPDATED,
+      entityType:  'USER',
+      entityId:    req.user.id,
+      after:       { passwordChanged: true },
+    });
+  })();
+
+  return res.json({ ok: true });
 });
 
 module.exports = router;

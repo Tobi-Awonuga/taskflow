@@ -29,6 +29,7 @@ app.use('/api/auth',        authRoutes);
 app.use('/api/tasks',       taskRoutes);
 app.use('/api/departments', require('./routes/departments.routes'));
 app.use('/api/users',       require('./routes/users.routes'));
+app.use('/api/audit',       require('./routes/audit.routes'));
 
 // DEV ONLY — remove before production (see routes/dev.routes.js)
 if (process.env.NODE_ENV !== 'production') {
