@@ -127,6 +127,54 @@ router.get('/', requireAuth, (req, res) => {
   });
 });
 
+// ── GET /api/tasks/stats ────────────────────────────────────────────────────
+// Returns aggregate counts for visible tasks. Respects same visibility rules.
+// Supports ?assignedToUserId=X for scope=mine.
+
+router.get('/stats', requireAuth, (req, res) => {
+  const actor = req.user;
+  const q     = req.query;
+
+  const conditions = [];
+
+  if (actor.role !== 'ADMIN') {
+    conditions.push(
+      or(eq(tasks.departmentId, actor.departmentId), isNull(tasks.departmentId))
+    );
+  }
+
+  if (q.assignedToUserId !== undefined) {
+    const uid = parseInt(q.assignedToUserId, 10);
+    if (!isNaN(uid)) conditions.push(eq(tasks.assignedToUserId, uid));
+  }
+
+  const base = conditions.length ? and(...conditions) : undefined;
+
+  function countWhere(extra) {
+    const w = base ? and(base, extra) : extra;
+    return (db.select({ n: count() }).from(tasks).where(w).get()).n;
+  }
+
+  const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+
+  return res.json({
+    todo:       countWhere(eq(tasks.status, 'TODO')),
+    inProgress: countWhere(eq(tasks.status, 'IN_PROGRESS')),
+    blocked:    countWhere(eq(tasks.status, 'BLOCKED')),
+    done:       countWhere(eq(tasks.status, 'DONE')),
+    cancelled:  countWhere(eq(tasks.status, 'CANCELLED')),
+    overdue:    countWhere(and(
+      sql`${tasks.dueAt} IS NOT NULL`,
+      sql`${tasks.dueAt} < ${today}`,
+      or(
+        eq(tasks.status, 'TODO'),
+        eq(tasks.status, 'IN_PROGRESS'),
+        eq(tasks.status, 'BLOCKED'),
+      ),
+    )),
+  });
+});
+
 // ── POST /api/tasks ────────────────────────────────────────────────────────────
 
 router.post('/', requireAuth, (req, res) => {

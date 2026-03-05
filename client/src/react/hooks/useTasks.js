@@ -6,7 +6,8 @@ export const INITIAL_QUERY = {
   status:   '',
   priority: '',
   q:        '',
-  scope:    'ALL', // client-side only — not forwarded to backend
+  scope:            'ALL', // client-side only — not forwarded to backend
+  assignedToUserId: '',
 };
 
 export function useTasks() {
@@ -39,7 +40,8 @@ export function useTasks() {
       const params = new URLSearchParams({ page: query.page, pageSize: query.pageSize });
       if (query.status)   params.set('status',   query.status);
       if (query.priority) params.set('priority', query.priority);
-      if (query.q)        params.set('q',        query.q);
+      if (query.q)                params.set('q',               query.q);
+      if (query.assignedToUserId) params.set('assignedToUserId', query.assignedToUserId);
       // query.scope is client-side; not sent to backend
 
       try {

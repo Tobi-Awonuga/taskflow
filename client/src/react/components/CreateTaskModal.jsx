@@ -44,9 +44,11 @@ export default function CreateTaskModal({ open, onClose, onSubmit, user }) {
   if (!open) return null;
 
   // Assignee options: ADMIN filters by selected dept; others get full scoped list
-  const assignableUsers = user.role === 'ADMIN' && deptId
-    ? allUsers.filter(u => u.departmentId === parseInt(deptId, 10))
-    : allUsers;
+  const assignableUsers = user.role === 'USER'
+    ? allUsers.filter(u => u.id === user.id)
+    : user.role === 'ADMIN' && deptId
+      ? allUsers.filter(u => u.departmentId === parseInt(deptId, 10))
+      : allUsers;
 
   function handleDeptChange(val) {
     setDeptId(val);

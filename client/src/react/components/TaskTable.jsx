@@ -70,7 +70,7 @@ function dueBadge(dueAt, status) {
   return { label: dateLabel, cls: 'text-gray-400' };
 }
 
-export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePriority, onTaskClick }) {
+export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePriority, onTaskClick, userMap = {} }) {
   const [updatingId,       setUpdatingId]       = useState(null);
   const [updatingPrioId,   setUpdatingPrioId]   = useState(null);
   const [draftStatus,      setDraftStatus]      = useState({});
@@ -151,7 +151,7 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
             <span className="text-sm font-medium text-gray-800">{task.title}</span>
             {task.assignedToUserId && (
               <span className="block text-xs text-gray-400 mt-0.5">
-                User #{task.assignedToUserId}
+                {userMap[task.assignedToUserId]?.name ?? `User #${task.assignedToUserId}`}
               </span>
             )}
           </td>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams }     from 'react-router-dom';
 import { useAuth }             from '../context/AuthContext.jsx';
 import { useTasks }            from '../hooks/useTasks.js';
@@ -18,10 +18,13 @@ function StatCard({ label, count, color }) {
 }
 
 export default function TasksPage() {
-  const { user }      = useAuth();
+  const { user }       = useAuth();
   const [showCreate,   setShowCreate]   = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [allUsers,     setAllUsers]     = useState([]);
+  const [stats,        setStats]        = useState({ todo: 0, inProgress: 0, blocked: 0, done: 0, overdue: 0 });
 
+  // useTasks MUST come before any effect that reads `query`
   const {
     query, setQuery,
     tasks, total, page, pageSize, totalPages,
@@ -30,27 +33,42 @@ export default function TasksPage() {
   } = useTasks();
 
   const [searchParams] = useSearchParams();
-  // Sync URL scope param → query on mount and URL change
-  useEffect(() => {
-    const urlScope = searchParams.get('scope') === 'mine' ? 'MINE' : 'ALL';
-    setQuery({ scope: urlScope });
-  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Scope filtering (client-side) ───────────────────────────────────────────
-  const displayTasks = query.scope === 'MINE'
-    ? tasks.filter(t => t.assignedToUserId === user?.id)
-    : tasks;
+  const userMap = useMemo(
+    () => Object.fromEntries(allUsers.map(u => [u.id, u])),
+    [allUsers]
+  );
+
+  // users fetch
+  useEffect(() => {
+    fetch('/api/users?pageSize=100', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : { users: [] })
+      .then(d => setAllUsers(d.users ?? []));
+  }, []);
+
+  // stats fetch — safe to reference query now
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (query.assignedToUserId) params.set('assignedToUserId', query.assignedToUserId);
+    fetch(`/api/tasks/stats?${params}`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d && setStats(d))
+      .catch(() => {});
+  }, [query.assignedToUserId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // scope=mine → server-side filter
+  useEffect(() => {
+    const isMine = searchParams.get('scope') === 'mine';
+    setQuery({
+      scope:            isMine ? 'MINE' : 'ALL',
+      assignedToUserId: isMine ? (user?.id ?? '') : '',
+    });
+  }, [searchParams, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keep drawer in sync with refetched task data
   const drawerTask = selectedTask
     ? (tasks.find(t => t.id === selectedTask.id) ?? selectedTask)
     : null;
-
-  // ── Derived counts ──────────────────────────────────────────────────────────
-  const open       = displayTasks.filter(t => t.status === 'TODO').length;
-  const inProgress = displayTasks.filter(t => t.status === 'IN_PROGRESS').length;
-  const done       = displayTasks.filter(t => t.status === 'DONE').length;
-  const cancelled  = displayTasks.filter(t => t.status === 'CANCELLED').length;
 
   // ── Filter bar handler ──────────────────────────────────────────────────────
   const handleFilterChange = (key, value) => setQuery({ [key]: value });
@@ -76,10 +94,12 @@ export default function TasksPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-3 gap-4">
-        <StatCard label="Open"        count={open}       color="#4C8DFF" />
-        <StatCard label="In Progress" count={inProgress} color="#F4A23A" />
-        <StatCard label="Completed"   count={done}       color="#43B96D" />
+      <div className="grid grid-cols-5 gap-4">
+        <StatCard label="Open"        count={stats.todo}       color="#4C8DFF" />
+        <StatCard label="In Progress" count={stats.inProgress} color="#F4A23A" />
+        <StatCard label="Blocked"     count={stats.blocked}    color="#F05A5A" />
+        <StatCard label="Overdue"     count={stats.overdue}    color="#EF4444" />
+        <StatCard label="Done"        count={stats.done}       color="#43B96D" />
       </div>
 
       {/* Filters */}
@@ -95,11 +115,12 @@ export default function TasksPage() {
 
       {/* Task table */}
       <TaskTable
-        tasks={displayTasks}
+        tasks={tasks}
         loading={loading}
         onUpdateStatus={updateTaskStatus}
         onUpdatePriority={updateTaskPriority}
         onTaskClick={setSelectedTask}
+        userMap={userMap}
       />
 
       {/* Pagination */}
@@ -139,6 +160,9 @@ export default function TasksPage() {
         onUpdateStatus={updateTaskStatus}
         onUpdatePriority={updateTaskPriority}
         onUpdateTask={updateTask}
+        allUsers={allUsers}
+        userMap={userMap}
+        user={user}
       />
 
     </main>

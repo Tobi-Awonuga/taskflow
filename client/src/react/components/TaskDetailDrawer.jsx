@@ -141,7 +141,7 @@ function EditableDescription({ value, onSave }) {
 
 // ── TaskDetailDrawer ────────────────────────────────────────────────────────
 
-export default function TaskDetailDrawer({ task, onClose, onUpdateStatus, onUpdatePriority, onUpdateTask }) {
+export default function TaskDetailDrawer({ task, onClose, onUpdateStatus, onUpdatePriority, onUpdateTask, allUsers = [], userMap = {}, user = null }) {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [draftStatus,     setDraftStatus]     = useState(null);
   const [updatingStatus,  setUpdatingStatus]  = useState(false);
@@ -271,9 +271,23 @@ export default function TaskDetailDrawer({ task, onClose, onUpdateStatus, onUpda
           {/* Assignee */}
           <div className="flex flex-col gap-1.5">
             <span className={LABEL_CLS}>Assignee</span>
-            <p className="text-sm text-gray-700">
-              {task.assignedToUserId ? `User #${task.assignedToUserId}` : 'Unassigned'}
-            </p>
+            <select
+              value={task.assignedToUserId ?? ''}
+              onChange={e => {
+                const val = e.target.value;
+                onUpdateTask(task.id, { assignedToUserId: val ? parseInt(val, 10) : null });
+              }}
+              className={SELECT_CLS}
+              disabled={task.status === 'DONE' || task.status === 'CANCELLED'}
+            >
+              <option value="">Unassigned</option>
+              {(user?.role === 'USER'
+                ? allUsers.filter(u => u.id === user.id)
+                : allUsers
+              ).map(u => (
+                <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
+              ))}
+            </select>
           </div>
 
           {/* Cancel Reason — only when cancelled */}
