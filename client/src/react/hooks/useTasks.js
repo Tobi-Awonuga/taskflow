@@ -96,6 +96,25 @@ export function useTasks() {
     }
   }, []);
 
+  const createTask = useCallback(async (body) => {
+    try {
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        return { ok: false, error: data.error ?? `Failed to create task (${res.status}).` };
+      }
+      setRefetchTick(t => t + 1);
+      return { ok: true };
+    } catch {
+      return { ok: false, error: 'Network error. Could not create task.' };
+    }
+  }, []);
+
   const updateTaskPriority = useCallback(async (taskId, priority) => {
     try {
       const res = await fetch(`/api/tasks/${taskId}`, {
@@ -150,5 +169,6 @@ export function useTasks() {
     devLoginAdmin,
     updateTaskStatus,
     updateTaskPriority,
+    createTask,
   };
 }
