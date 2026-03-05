@@ -30,9 +30,10 @@ const patchSchema = z.object({
   status:           z.enum([...VALID_STATUSES]).optional(),
   assignedToUserId: z.number().int().positive().nullable().optional(),
   cancelReason:     z.string().min(1).optional(),
+  priority:         z.enum([...VALID_PRIORITIES]).optional(),
 }).refine(
-  (d) => d.status !== undefined || d.assignedToUserId !== undefined,
-  { message: 'Provide at least one field to update: status, assignedToUserId' },
+  (d) => d.status !== undefined || d.assignedToUserId !== undefined || d.priority !== undefined,
+  { message: 'Provide at least one field to update: status, assignedToUserId, priority' },
 );
 
 // ── GET /api/tasks ─────────────────────────────────────────────────────────────
@@ -216,7 +217,7 @@ router.patch('/:id', requireAuth, (req, res) => {
     return res.status(400).json({ error: parsed.error.issues[0].message });
   }
 
-  let { status, assignedToUserId, cancelReason } = parsed.data;
+  let { status, assignedToUserId, cancelReason, priority } = parsed.data;
   const actor = req.user;
 
   const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get();
@@ -251,6 +252,16 @@ router.patch('/:id', requireAuth, (req, res) => {
       before:       { assignedToUserId: prevId },
       after:        { assignedToUserId },
     });
+  }
+
+  // ── Priority change ──────────────────────────────────────────────────────────
+  if (priority !== undefined) {
+    auditRows.push({
+      action: AUDIT_ACTIONS.TASK_PRIORITY_CHANGED,
+      before: { priority: task.priority },
+      after:  { priority },
+    });
+    updates.priority = priority;
   }
 
   // ── Status transition ────────────────────────────────────────────────────────
