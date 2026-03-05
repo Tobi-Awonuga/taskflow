@@ -1,10 +1,10 @@
-import { useTasks }   from '../hooks/useTasks.js';
-import ErrorBanner    from '../components/ErrorBanner.jsx';
-import FiltersBar     from '../components/FiltersBar.jsx';
-import TaskTable      from '../components/TaskTable.jsx';
-
-// Still mocked — auth wiring is a separate sprint
-const MOCK_USER = { name: 'Alex Johnson', role: 'SUPER', avatar: 'AJ', id: 1 };
+import { useState }   from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTasks }    from '../hooks/useTasks.js';
+import { useAuth }     from '../context/AuthContext.jsx';
+import ErrorBanner     from '../components/ErrorBanner.jsx';
+import FiltersBar      from '../components/FiltersBar.jsx';
+import TaskTable       from '../components/TaskTable.jsx';
 
 // ── Small local components ─────────────────────────────────────────────────────
 
@@ -35,6 +35,10 @@ function StatCard({ label, count, color }) {
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function TasksPage() {
+  const { user, setUser } = useAuth();
+  const navigate          = useNavigate();
+  const [signingOut, setSigningOut] = useState(false);
+
   const {
     query, setQuery,
     tasks, total, page, pageSize, totalPages,
@@ -42,9 +46,22 @@ export default function TasksPage() {
     updateTaskStatus, updateTaskPriority,
   } = useTasks();
 
+  const initials = user ? user.name.split(' ').map(w => w[0]).join('').slice(0, 2) : '??';
+
+  // ── Logout ──────────────────────────────────────────────────────────────────
+  async function handleLogout() {
+    setSigningOut(true);
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } finally {
+      setUser(null);
+      navigate('/login');
+    }
+  }
+
   // ── Scope filtering (client-side — backend has no scope param yet) ──────────
   const displayTasks = query.scope === 'MINE'
-    ? tasks.filter(t => t.assignedToUserId === MOCK_USER.id)
+    ? tasks.filter(t => t.assignedToUserId === user?.id)
     : tasks;
 
   // ── Derived counts (page-level) ─────────────────────────────────────────────
@@ -52,7 +69,7 @@ export default function TasksPage() {
   const inProgress  = displayTasks.filter(t => t.status === 'IN_PROGRESS').length;
   const done        = displayTasks.filter(t => t.status === 'DONE').length;
   const cancelled   = displayTasks.filter(t => t.status === 'CANCELLED').length;
-  const myTaskCount = tasks.filter(t => t.assignedToUserId === MOCK_USER.id).length;
+  const myTaskCount = tasks.filter(t => t.assignedToUserId === user?.id).length;
 
   // ── Active nav view ─────────────────────────────────────────────────────────
   let activeView = 'ALL';
@@ -96,11 +113,11 @@ export default function TasksPage() {
         {/* User card */}
         <div className="flex items-center gap-3 p-3 bg-white/60 rounded-2xl">
           <div className="w-10 h-10 bg-[#F0654D] rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0">
-            {MOCK_USER.avatar}
+            {initials}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-gray-800 truncate">{MOCK_USER.name}</p>
-            <p className="text-xs text-gray-500">{MOCK_USER.role}</p>
+            <p className="text-sm font-semibold text-gray-800 truncate">{user?.name}</p>
+            <p className="text-xs text-gray-500">{user?.role}</p>
           </div>
         </div>
 
@@ -116,12 +133,16 @@ export default function TasksPage() {
         <div className="flex-1" />
 
         {/* Log out */}
-        <button className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-500 hover:text-[#F0654D] hover:bg-white/60 rounded-xl transition-colors w-full">
+        <button
+          onClick={handleLogout}
+          disabled={signingOut}
+          className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-500 hover:text-[#F0654D] hover:bg-white/60 rounded-xl transition-colors w-full disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
             <path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             <path d="M10 11l3-3-3-3M13 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Log Out
+          {signingOut ? 'Signing out…' : 'Log Out'}
         </button>
       </aside>
 
