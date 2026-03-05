@@ -24,14 +24,10 @@ app.use(cookieParser());
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
-app.use('/api/auth',  authRoutes);
-app.use('/api/tasks', taskRoutes);
-
-// GET /api/me — convenience alias expected by the frontend
-app.get('/api/me', requireAuth, (req, res) => {
-  const { passwordHash: _h, ...safe } = req.user;
-  res.json(safe);
-});
+app.use('/api/auth',        authRoutes);
+app.use('/api/tasks',       taskRoutes);
+app.use('/api/departments', require('./routes/departments.routes'));
+app.use('/api/users',       require('./routes/users.routes'));
 
 // DEV ONLY — remove before production (see routes/dev.routes.js)
 if (process.env.NODE_ENV !== 'production') {

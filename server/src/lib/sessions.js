@@ -56,7 +56,7 @@ function validateSession(sessionId) {
   const user = db
     .select()
     .from(users)
-    .where(and(eq(users.id, session.userId), eq(users.isActive, 1)))
+    .where(and(eq(users.id, session.userId), eq(users.isActive, true)))
     .get();
 
   if (!user) return null;

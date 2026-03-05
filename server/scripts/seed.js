@@ -42,7 +42,7 @@ function upsertUser({ email, name, role, password, departmentId }) {
     role,
     passwordHash: hashPassword(password),
     departmentId,
-    isActive: 1,
+    isActive: true,
   }).returning().get();
 }
 

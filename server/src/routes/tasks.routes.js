@@ -23,6 +23,7 @@ const createSchema = z.object({
   priority:         z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
   dueAt:            z.string().datetime({ message: '"dueAt" must be a valid ISO datetime string' }).optional(),
   assignedToUserId: z.number().int().positive().nullable().optional(),
+  departmentId:     z.number().int().positive().optional(),
 });
 
 const patchSchema = z.object({
@@ -120,13 +121,19 @@ router.post('/', requireAuth, (req, res) => {
     return res.status(400).json({ error: parsed.error.issues[0].message });
   }
 
-  const { title, description, priority, dueAt, assignedToUserId } = parsed.data;
+  const { title, description, priority, dueAt, assignedToUserId, departmentId } = parsed.data;
   const actor = req.user;
 
   // Cannot create a task directly as CANCELLED
   if (req.body.status === 'CANCELLED') {
     return res.status(400).json({ error: 'Cannot create a task as CANCELLED' });
   }
+
+  // ADMIN must specify departmentId; others use their own
+  if (actor.role === 'ADMIN' && !departmentId) {
+    return res.status(400).json({ error: '"departmentId" is required for ADMIN users' });
+  }
+  const taskDeptId = actor.role === 'ADMIN' ? departmentId : actor.departmentId;
 
   // Validate assignment
   if (assignedToUserId != null) {
@@ -137,7 +144,7 @@ router.post('/', requireAuth, (req, res) => {
     if (!canAssign(actor, null, assignedToUserId)) {
       return res.status(403).json({ error: 'You can only assign tasks to yourself' });
     }
-    if (assignee.departmentId !== actor.departmentId && actor.role !== 'ADMIN') {
+    if (assignee.departmentId !== taskDeptId && actor.role !== 'ADMIN') {
       return res.status(400).json({ error: 'Assignee must be in the same department as the task' });
     }
   }
@@ -147,7 +154,7 @@ router.post('/', requireAuth, (req, res) => {
     description,
     priority,
     status:           'TODO',
-    departmentId:     actor.departmentId,
+    departmentId:     taskDeptId,
     createdByUserId:  actor.id,
     assignedToUserId: assignedToUserId ?? null,
     dueAt:            dueAt ?? null,

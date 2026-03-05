@@ -5,22 +5,22 @@ const requireRole = require('../middleware/requireRole');
 const router = Router();
 
 // TODO: GET    /api/users       – list all users (admin only)
-router.get('/', requireAuth, requireRole('admin'), (req, res) => {
+router.get('/', requireAuth, requireRole('ADMIN'), (req, res) => {
   res.status(501).json({ error: 'Not implemented' });
 });
 
 // TODO: POST   /api/users       – create user (admin only)
-router.post('/', requireAuth, requireRole('admin'), (req, res) => {
+router.post('/', requireAuth, requireRole('ADMIN'), (req, res) => {
   res.status(501).json({ error: 'Not implemented' });
 });
 
 // TODO: PATCH  /api/users/:id   – update user (admin only)
-router.patch('/:id', requireAuth, requireRole('admin'), (req, res) => {
+router.patch('/:id', requireAuth, requireRole('ADMIN'), (req, res) => {
   res.status(501).json({ error: 'Not implemented' });
 });
 
 // TODO: DELETE /api/users/:id   – delete user (admin only)
-router.delete('/:id', requireAuth, requireRole('admin'), (req, res) => {
+router.delete('/:id', requireAuth, requireRole('ADMIN'), (req, res) => {
   res.status(501).json({ error: 'Not implemented' });
 });
 
