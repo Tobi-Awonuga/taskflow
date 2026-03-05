@@ -1,11 +1,11 @@
 'use strict';
 const { Router }  = require('express');
 const { z }       = require('zod');
-const { and, eq, count, desc, sql } = require('drizzle-orm');
+const { and, eq, count, desc, sql, or, isNull } = require('drizzle-orm');
 const { db, sqlite } = require('../db/client');
 const { tasks, users } = require('../db/schema');
 const requireAuth = require('../middleware/requireAuth');
-const { canAssign, canView, visibilityDeptId } = require('../lib/rbac');
+const { canAssign, canView } = require('../lib/rbac');
 const { validateStatusTransition, VALID_STATUSES, VALID_PRIORITIES } = require('../lib/taskValidation');
 const { writeAuditLog, AUDIT_ACTIONS } = require('../lib/audit');
 
@@ -64,9 +64,12 @@ router.get('/', requireAuth, (req, res) => {
   // Build WHERE conditions
   const conditions = [];
 
-  // Visibility — ADMIN sees all; others restricted to own department
-  const deptFilter = visibilityDeptId(actor);
-  if (deptFilter !== null) conditions.push(eq(tasks.departmentId, deptFilter));
+  // Visibility — ADMIN sees all; others see own department + org-wide (null dept)
+  if (actor.role !== 'ADMIN') {
+    conditions.push(
+      or(eq(tasks.departmentId, actor.departmentId), isNull(tasks.departmentId))
+    );
+  }
 
   // Optional: ADMIN may further filter by departmentId
   if (actor.role === 'ADMIN' && q.departmentId !== undefined) {
@@ -140,11 +143,7 @@ router.post('/', requireAuth, (req, res) => {
     return res.status(400).json({ error: 'Cannot create a task as CANCELLED' });
   }
 
-  // ADMIN must specify departmentId; others use their own
-  if (actor.role === 'ADMIN' && !departmentId) {
-    return res.status(400).json({ error: '"departmentId" is required for ADMIN users' });
-  }
-  const taskDeptId = actor.role === 'ADMIN' ? departmentId : actor.departmentId;
+  const taskDeptId = actor.role === 'ADMIN' ? (departmentId ?? null) : actor.departmentId;
 
   // Validate assignment
   if (assignedToUserId != null) {

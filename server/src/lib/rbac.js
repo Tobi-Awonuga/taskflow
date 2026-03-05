@@ -6,7 +6,7 @@
  */
 function canView(actor, task) {
   if (actor.role === 'ADMIN') return true;
-  return task.departmentId === actor.departmentId;
+  return task.departmentId === null || task.departmentId === actor.departmentId;
 }
 
 /**
@@ -39,7 +39,7 @@ function canReopen(actor, task) {
   if (actor.role === 'ADMIN' || actor.role === 'SUPER') return true;
   return (
     task.createdByUserId === actor.id &&
-    task.departmentId   === actor.departmentId
+    (task.departmentId === null || task.departmentId === actor.departmentId)
   );
 }
 
