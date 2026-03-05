@@ -22,7 +22,8 @@ function now() { return new Date().toISOString(); }
 
 // ── GET /api/users ────────────────────────────────────────────────────────────
 
-router.get('/', requireAuth, requireRole('ADMIN'), (req, res) => {
+router.get('/', requireAuth, (req, res) => {
+  const actor    = req.user;
   const q        = req.query;
   const page     = parseInt(q.page     ?? '1',  10);
   const pageSize = parseInt(q.pageSize ?? '20', 10);
@@ -36,24 +37,31 @@ router.get('/', requireAuth, requireRole('ADMIN'), (req, res) => {
 
   const conditions = [];
 
-  if (q.role !== undefined) {
-    if (!['ADMIN', 'SUPER', 'USER'].includes(q.role)) {
-      return res.status(400).json({ error: '"role" must be ADMIN, SUPER, or USER' });
+  if (actor.role !== 'ADMIN') {
+    // Non-ADMIN: always scoped to own department, active users only
+    conditions.push(eq(users.departmentId, actor.departmentId));
+    conditions.push(eq(users.isActive, true));
+  } else {
+    // ADMIN: optional filters
+    if (q.role !== undefined) {
+      if (!['ADMIN', 'SUPER', 'USER'].includes(q.role)) {
+        return res.status(400).json({ error: '"role" must be ADMIN, SUPER, or USER' });
+      }
+      conditions.push(eq(users.role, q.role));
     }
-    conditions.push(eq(users.role, q.role));
-  }
 
-  if (q.departmentId !== undefined) {
-    const d = parseInt(q.departmentId, 10);
-    if (isNaN(d)) return res.status(400).json({ error: '"departmentId" must be an integer' });
-    conditions.push(eq(users.departmentId, d));
-  }
-
-  if (q.isActive !== undefined) {
-    if (q.isActive !== 'true' && q.isActive !== 'false') {
-      return res.status(400).json({ error: '"isActive" must be true or false' });
+    if (q.departmentId !== undefined) {
+      const d = parseInt(q.departmentId, 10);
+      if (isNaN(d)) return res.status(400).json({ error: '"departmentId" must be an integer' });
+      conditions.push(eq(users.departmentId, d));
     }
-    conditions.push(eq(users.isActive, q.isActive === 'true'));
+
+    if (q.isActive !== undefined) {
+      if (q.isActive !== 'true' && q.isActive !== 'false') {
+        return res.status(400).json({ error: '"isActive" must be true or false' });
+      }
+      conditions.push(eq(users.isActive, q.isActive === 'true'));
+    }
   }
 
   const where = conditions.length ? and(...conditions) : undefined;
