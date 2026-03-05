@@ -8,7 +8,7 @@ const rateLimit    = require('express-rate-limit');
 const { verifyPassword }              = require('../lib/password');
 const { createSession, revokeSession,
         setSessionCookie, clearSessionCookie } = require('../lib/sessions');
-const { writeAuditLog }               = require('../lib/audit');
+const { writeAuditLog, AUDIT_ACTIONS } = require('../lib/audit');
 const requireAuth                     = require('../middleware/requireAuth');
 
 const DUMMY_HASH = '$2b$12$invalidhashpaddingtoensureconstanttimexxxxxxxxxxxxxxxxxxx';
@@ -56,7 +56,7 @@ router.post('/login', loginLimiter, (req, res) => {
     const sessionId = createSession(user.id, { ip, userAgent });
     writeAuditLog({
       actorUserId:  user.id,
-      action:       'LOGIN_SUCCESS',
+      action:       AUDIT_ACTIONS.LOGIN_SUCCESS,
       entityType:   'SESSION',
       departmentId: user.departmentId,
       after:        { userId: user.id, ip },
@@ -76,7 +76,7 @@ router.post('/logout', requireAuth, (req, res) => {
 
   writeAuditLog({
     actorUserId:  req.user.id,
-    action:       'LOGOUT',
+    action:       AUDIT_ACTIONS.LOGOUT,
     entityType:   'SESSION',
     departmentId: req.user.departmentId,
   });

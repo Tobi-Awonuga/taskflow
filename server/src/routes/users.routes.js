@@ -7,7 +7,7 @@ const { users }  = require('../db/schema');
 const requireAuth = require('../middleware/requireAuth');
 const requireRole = require('../middleware/requireRole');
 const { hashPassword } = require('../lib/password');
-const { writeAuditLog } = require('../lib/audit');
+const { writeAuditLog, AUDIT_ACTIONS } = require('../lib/audit');
 
 const router = Router();
 
@@ -111,7 +111,7 @@ router.post('/', requireAuth, requireRole('ADMIN'), (req, res) => {
 
     writeAuditLog({
       actorUserId: req.user.id,
-      action:      'USER_CREATED',
+      action:      AUDIT_ACTIONS.USER_CREATED,
       entityType:  'USER',
       entityId:    user.id,
       after:       { email: user.email, name, role, departmentId: departmentId ?? null },
@@ -207,7 +207,7 @@ router.patch('/:id', requireAuth, (req, res) => {
     }
     writeAuditLog({
       actorUserId: actor.id,
-      action:      'USER_UPDATED',
+      action:      AUDIT_ACTIONS.USER_UPDATED,
       entityType:  'USER',
       entityId:    userId,
       before,
@@ -237,7 +237,7 @@ router.delete('/:id', requireAuth, requireRole('ADMIN'), (req, res) => {
     db.update(users).set({ isActive: false, updatedAt: now() }).where(eq(users.id, userId)).run();
     writeAuditLog({
       actorUserId: actor.id,
-      action:      'USER_DEACTIVATED',
+      action:      AUDIT_ACTIONS.USER_DEACTIVATED,
       entityType:  'USER',
       entityId:    userId,
       before:      { isActive: true },

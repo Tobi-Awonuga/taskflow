@@ -1,13 +1,13 @@
 'use strict';
 const { Router }  = require('express');
 const { z }       = require('zod');
-const { and, eq, like, count, desc } = require('drizzle-orm');
+const { and, eq, count, desc, sql } = require('drizzle-orm');
 const { db, sqlite } = require('../db/client');
 const { tasks, users } = require('../db/schema');
 const requireAuth = require('../middleware/requireAuth');
 const { canAssign, canView, visibilityDeptId } = require('../lib/rbac');
 const { validateStatusTransition, VALID_STATUSES, VALID_PRIORITIES } = require('../lib/taskValidation');
-const { writeAuditLog } = require('../lib/audit');
+const { writeAuditLog, AUDIT_ACTIONS } = require('../lib/audit');
 
 const router = Router();
 
@@ -29,7 +29,7 @@ const createSchema = z.object({
 const patchSchema = z.object({
   status:           z.enum([...VALID_STATUSES]).optional(),
   assignedToUserId: z.number().int().positive().nullable().optional(),
-  cancelReason:     z.string().optional(),
+  cancelReason:     z.string().min(1).optional(),
 }).refine(
   (d) => d.status !== undefined || d.assignedToUserId !== undefined,
   { message: 'Provide at least one field to update: status, assignedToUserId' },
@@ -92,7 +92,8 @@ router.get('/', requireAuth, (req, res) => {
   }
 
   if (q.q) {
-    conditions.push(like(tasks.title, `%${q.q}%`));
+    const escaped = q.q.replace(/%/g, '\\%').replace(/_/g, '\\_');
+    conditions.push(sql`${tasks.title} LIKE ${'%' + escaped + '%'} ESCAPE '\\'`);
   }
 
   const where = conditions.length ? and(...conditions) : undefined;
@@ -163,7 +164,7 @@ router.post('/', requireAuth, (req, res) => {
 
     writeAuditLog({
       actorUserId:  actor.id,
-      action:       'TASK_CREATED',
+      action:       AUDIT_ACTIONS.TASK_CREATED,
       entityType:   'TASK',
       entityId:     result.id,
       departmentId: taskDeptId,
@@ -173,7 +174,7 @@ router.post('/', requireAuth, (req, res) => {
     if (assignedToUserId != null) {
       writeAuditLog({
         actorUserId:  actor.id,
-        action:       'TASK_ASSIGNED',
+        action:       AUDIT_ACTIONS.TASK_ASSIGNED,
         entityType:   'TASK',
         entityId:     result.id,
         departmentId: taskDeptId,
@@ -246,7 +247,7 @@ router.patch('/:id', requireAuth, (req, res) => {
     updates.assignedToUserId = assignedToUserId;
 
     auditRows.push({
-      action:       assignedToUserId === null ? 'TASK_UNASSIGNED' : 'TASK_ASSIGNED',
+      action:       assignedToUserId === null ? AUDIT_ACTIONS.TASK_UNASSIGNED : AUDIT_ACTIONS.TASK_ASSIGNED,
       before:       { assignedToUserId: prevId },
       after:        { assignedToUserId },
     });
@@ -268,9 +269,9 @@ router.patch('/:id', requireAuth, (req, res) => {
     updates.status = status;
     Object.assign(updates, result.updates);
 
-    const auditAction = status === 'CANCELLED' ? 'TASK_CANCELLED'
-      : (task.status === 'CANCELLED' && status === 'TODO') ? 'TASK_REOPENED'
-      : 'TASK_STATUS_CHANGED';
+    const auditAction = status === 'CANCELLED' ? AUDIT_ACTIONS.TASK_CANCELLED
+      : (task.status === 'CANCELLED' && status === 'TODO') ? AUDIT_ACTIONS.TASK_REOPENED
+      : AUDIT_ACTIONS.TASK_STATUS_CHANGED;
 
     auditRows.push({
       action: auditAction,

@@ -6,7 +6,7 @@ const { db, sqlite } = require('../db/client');
 const { departments, users, tasks } = require('../db/schema');
 const requireAuth = require('../middleware/requireAuth');
 const requireRole = require('../middleware/requireRole');
-const { writeAuditLog } = require('../lib/audit');
+const { writeAuditLog, AUDIT_ACTIONS } = require('../lib/audit');
 
 const router = Router();
 
@@ -49,7 +49,7 @@ router.post('/', requireAuth, requireRole('ADMIN'), (req, res) => {
     const dept = db.insert(departments).values({ name }).returning().get();
     writeAuditLog({
       actorUserId: req.user.id,
-      action:      'DEPT_CREATED',
+      action:      AUDIT_ACTIONS.DEPT_CREATED,
       entityType:  'DEPARTMENT',
       entityId:    dept.id,
       after:       { name },
