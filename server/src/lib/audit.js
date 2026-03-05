@@ -1,4 +1,20 @@
 'use strict';
+
+const AUDIT_ACTIONS = {
+  LOGIN_SUCCESS:       'LOGIN_SUCCESS',
+  LOGOUT:              'LOGOUT',
+  TASK_CREATED:        'TASK_CREATED',
+  TASK_STATUS_CHANGED: 'TASK_STATUS_CHANGED',
+  TASK_CANCELLED:      'TASK_CANCELLED',
+  TASK_REOPENED:       'TASK_REOPENED',
+  TASK_ASSIGNED:       'TASK_ASSIGNED',
+  TASK_UNASSIGNED:     'TASK_UNASSIGNED',
+  USER_CREATED:        'USER_CREATED',
+  USER_UPDATED:        'USER_UPDATED',
+  USER_DEACTIVATED:    'USER_DEACTIVATED',
+  DEPT_CREATED:        'DEPT_CREATED',
+};
+
 const { db } = require('../db/client');
 const { auditLogs } = require('../db/schema');
 
@@ -37,4 +53,4 @@ function writeAuditLog({
   }).run();
 }
 
-module.exports = { writeAuditLog };
+module.exports = { writeAuditLog, AUDIT_ACTIONS };

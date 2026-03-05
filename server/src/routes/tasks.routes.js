@@ -2,7 +2,7 @@
 const { Router }  = require('express');
 const { z }       = require('zod');
 const { and, eq, like, count, desc } = require('drizzle-orm');
-const { db }      = require('../db/client');
+const { db, sqlite } = require('../db/client');
 const { tasks, users } = require('../db/schema');
 const requireAuth = require('../middleware/requireAuth');
 const { canAssign, canView, visibilityDeptId } = require('../lib/rbac');
@@ -149,38 +149,43 @@ router.post('/', requireAuth, (req, res) => {
     }
   }
 
-  const result = db.insert(tasks).values({
-    title,
-    description,
-    priority,
-    status:           'TODO',
-    departmentId:     taskDeptId,
-    createdByUserId:  actor.id,
-    assignedToUserId: assignedToUserId ?? null,
-    dueAt:            dueAt ?? null,
-  }).returning().get();
+  const insertWithAudit = sqlite.transaction(() => {
+    const result = db.insert(tasks).values({
+      title,
+      description,
+      priority,
+      status:           'TODO',
+      departmentId:     taskDeptId,
+      createdByUserId:  actor.id,
+      assignedToUserId: assignedToUserId ?? null,
+      dueAt:            dueAt ?? null,
+    }).returning().get();
 
-  writeAuditLog({
-    actorUserId:  actor.id,
-    action:       'TASK_CREATED',
-    entityType:   'TASK',
-    entityId:     result.id,
-    departmentId: actor.departmentId,
-    after:        { title, priority, status: 'TODO', assignedToUserId: assignedToUserId ?? null },
-  });
-
-  if (assignedToUserId != null) {
     writeAuditLog({
       actorUserId:  actor.id,
-      action:       'TASK_ASSIGNED',
+      action:       'TASK_CREATED',
       entityType:   'TASK',
       entityId:     result.id,
-      departmentId: actor.departmentId,
-      before:       { assignedToUserId: null },
-      after:        { assignedToUserId },
+      departmentId: taskDeptId,
+      after:        { title, priority, status: 'TODO', assignedToUserId: assignedToUserId ?? null },
     });
-  }
 
+    if (assignedToUserId != null) {
+      writeAuditLog({
+        actorUserId:  actor.id,
+        action:       'TASK_ASSIGNED',
+        entityType:   'TASK',
+        entityId:     result.id,
+        departmentId: taskDeptId,
+        before:       { assignedToUserId: null },
+        after:        { assignedToUserId },
+      });
+    }
+
+    return result;
+  });
+
+  const result = insertWithAudit();
   return res.status(201).json(result);
 });
 
@@ -275,19 +280,21 @@ router.patch('/:id', requireAuth, (req, res) => {
     });
   }
 
-  const updated = db.update(tasks).set(updates).where(eq(tasks.id, taskId)).returning().get();
+  const updateWithAudit = sqlite.transaction(() => {
+    const updated = db.update(tasks).set(updates).where(eq(tasks.id, taskId)).returning().get();
+    for (const row of auditRows) {
+      writeAuditLog({
+        actorUserId:  actor.id,
+        entityType:   'TASK',
+        entityId:     taskId,
+        departmentId: task.departmentId,
+        ...row,
+      });
+    }
+    return updated;
+  });
 
-  for (const row of auditRows) {
-    writeAuditLog({
-      actorUserId:  actor.id,
-      entityType:   'TASK',
-      entityId:     taskId,
-      departmentId: task.departmentId,
-      ...row,
-    });
-  }
-
-  return res.json(updated);
+  return res.json(updateWithAudit());
 });
 
 // DELETE — not yet implemented

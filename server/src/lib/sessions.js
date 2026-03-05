@@ -82,7 +82,7 @@ function setSessionCookie(res, sessionId) {
     httpOnly: true,
     sameSite: 'lax',
     maxAge:   TTL_DAYS * 24 * 60 * 60 * 1000,
-    // secure: true  — enable in production behind HTTPS
+    secure: process.env.NODE_ENV === 'production',
   });
 }
 
