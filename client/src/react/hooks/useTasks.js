@@ -136,6 +136,23 @@ export function useTasks() {
     }
   }, []);
 
+  const updateTask = useCallback(async (taskId, fields) => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fields),
+      });
+      const data = await res.json();
+      if (!res.ok) return { ok: false, error: data.error || 'Update failed' };
+      setRefetchTick(t => t + 1);
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }, []);
+
   const devLoginAdmin = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -169,6 +186,7 @@ export function useTasks() {
     devLoginAdmin,
     updateTaskStatus,
     updateTaskPriority,
+    updateTask,
     createTask,
   };
 }

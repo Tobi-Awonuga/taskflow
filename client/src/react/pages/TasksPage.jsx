@@ -6,6 +6,7 @@ import ErrorBanner             from '../components/ErrorBanner.jsx';
 import FiltersBar              from '../components/FiltersBar.jsx';
 import TaskTable               from '../components/TaskTable.jsx';
 import CreateTaskModal         from '../components/CreateTaskModal.jsx';
+import TaskDetailDrawer        from '../components/TaskDetailDrawer.jsx';
 
 function StatCard({ label, count, color }) {
   return (
@@ -18,13 +19,14 @@ function StatCard({ label, count, color }) {
 
 export default function TasksPage() {
   const { user }      = useAuth();
-  const [showCreate, setShowCreate] = useState(false);
+  const [showCreate,   setShowCreate]   = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
 
   const {
     query, setQuery,
     tasks, total, page, pageSize, totalPages,
     loading, error, devLoginAdmin,
-    updateTaskStatus, updateTaskPriority, createTask,
+    updateTaskStatus, updateTaskPriority, updateTask, createTask,
   } = useTasks();
 
   const [searchParams] = useSearchParams();
@@ -38,6 +40,11 @@ export default function TasksPage() {
   const displayTasks = query.scope === 'MINE'
     ? tasks.filter(t => t.assignedToUserId === user?.id)
     : tasks;
+
+  // Keep drawer in sync with refetched task data
+  const drawerTask = selectedTask
+    ? (tasks.find(t => t.id === selectedTask.id) ?? selectedTask)
+    : null;
 
   // ── Derived counts ──────────────────────────────────────────────────────────
   const open       = displayTasks.filter(t => t.status === 'TODO').length;
@@ -92,6 +99,7 @@ export default function TasksPage() {
         loading={loading}
         onUpdateStatus={updateTaskStatus}
         onUpdatePriority={updateTaskPriority}
+        onTaskClick={setSelectedTask}
       />
 
       {/* Pagination */}
@@ -123,6 +131,14 @@ export default function TasksPage() {
         onClose={() => setShowCreate(false)}
         onSubmit={createTask}
         user={user}
+      />
+
+      <TaskDetailDrawer
+        task={drawerTask}
+        onClose={() => setSelectedTask(null)}
+        onUpdateStatus={updateTaskStatus}
+        onUpdatePriority={updateTaskPriority}
+        onUpdateTask={updateTask}
       />
 
     </main>

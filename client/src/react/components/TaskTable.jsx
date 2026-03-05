@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CancelReasonModal from './CancelReasonModal.jsx';
 
 const STATUSES = [
   { value: 'TODO',        label: 'To Do' },
@@ -60,11 +61,12 @@ function dueBadge(dueAt, status) {
   return { label: dateLabel, cls: 'text-gray-400' };
 }
 
-export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePriority }) {
+export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePriority, onTaskClick }) {
   const [updatingId,       setUpdatingId]       = useState(null);
   const [updatingPrioId,   setUpdatingPrioId]   = useState(null);
   const [draftStatus,      setDraftStatus]      = useState({});
   const [draftPriority,    setDraftPriority]    = useState({});
+  const [cancelTarget,     setCancelTarget]     = useState(null);
 
   const clearDraft  = (taskId) =>
     setDraftStatus(prev => { const next = { ...prev }; delete next[taskId]; return next; });
@@ -89,19 +91,8 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
     setDraftStatus(prev => ({ ...prev, [task.id]: newStatus }));
 
     if (newStatus === 'CANCELLED') {
-      const reason = window.prompt('Reason for cancellation:');
-      if (reason === null || reason.trim() === '') {
-        revertDraft(task.id, task.status);
-        return;
-      }
-      setUpdatingId(task.id);
-      try {
-        const ok = await onUpdateStatus(task.id, newStatus, reason.trim());
-        if (!ok) revertDraft(task.id, task.status);
-        else clearDraft(task.id);
-      } finally {
-        setUpdatingId(null);
-      }
+      setCancelTarget(task);
+      return;
     } else {
       setUpdatingId(task.id);
       try {
@@ -144,7 +135,8 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
       return (
         <tr
           key={task.id}
-          className={`border-b border-gray-50 hover:bg-orange-50/40 transition-colors ${idx % 2 === 1 ? 'bg-gray-50/40' : ''}`}
+          onClick={() => onTaskClick && onTaskClick(task)}
+          className={`border-b border-gray-50 hover:bg-orange-50/40 transition-colors cursor-pointer ${idx % 2 === 1 ? 'bg-gray-50/40' : ''}`}
         >
           <td className="px-5 py-3.5">
             <span className="text-sm font-medium text-gray-800">{task.title}</span>
@@ -156,31 +148,35 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
           </td>
 
           <td className="px-4 py-3.5">
-            <select
-              value={displayStatus}
-              disabled={busy}
-              onChange={e => handleStatusChange(task, e.target.value)}
-              style={{ color: statusColor, borderColor: `${statusColor}60` }}
-              className={SELECT_CLS}
-            >
-              {STATUSES.map(({ value, label }) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
+            <div onClick={e => e.stopPropagation()}>
+              <select
+                value={displayStatus}
+                disabled={busy}
+                onChange={e => handleStatusChange(task, e.target.value)}
+                style={{ color: statusColor, borderColor: `${statusColor}60` }}
+                className={SELECT_CLS}
+              >
+                {STATUSES.map(({ value, label }) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
           </td>
 
           <td className="px-4 py-3.5">
-            <select
-              value={displayPriority}
-              disabled={busyPrio}
-              onChange={e => handlePriorityChange(task, e.target.value)}
-              style={{ color: priorityColor, borderColor: `${priorityColor}60` }}
-              className={SELECT_CLS}
-            >
-              {PRIORITIES.map(({ value, label }) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
+            <div onClick={e => e.stopPropagation()}>
+              <select
+                value={displayPriority}
+                disabled={busyPrio}
+                onChange={e => handlePriorityChange(task, e.target.value)}
+                style={{ color: priorityColor, borderColor: `${priorityColor}60` }}
+                className={SELECT_CLS}
+              >
+                {PRIORITIES.map(({ value, label }) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </div>
           </td>
 
           <td className="px-4 py-3.5 whitespace-nowrap">
@@ -196,18 +192,37 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-black/5 shadow-sm overflow-hidden">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-gray-100">
-            <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5">Title</th>
-            <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Status</th>
-            <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Priority</th>
-            <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Due</th>
-          </tr>
-        </thead>
-        <tbody>{body}</tbody>
-      </table>
-    </div>
+    <>
+      <div className="bg-white rounded-2xl border border-black/5 shadow-sm overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-gray-100">
+              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5">Title</th>
+              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Status</th>
+              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Priority</th>
+              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Due</th>
+            </tr>
+          </thead>
+          <tbody>{body}</tbody>
+        </table>
+      </div>
+
+      <CancelReasonModal
+        open={cancelTarget !== null}
+        onClose={() => { setCancelTarget(null); revertDraft(cancelTarget?.id, cancelTarget?.status); }}
+        onConfirm={async (reason) => {
+          const t = cancelTarget;
+          setCancelTarget(null);
+          setUpdatingId(t.id);
+          try {
+            const ok = await onUpdateStatus(t.id, 'CANCELLED', reason);
+            if (!ok) revertDraft(t.id, t.status);
+            else clearDraft(t.id);
+          } finally {
+            setUpdatingId(null);
+          }
+        }}
+      />
+    </>
   );
 }
