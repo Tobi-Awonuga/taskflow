@@ -6,9 +6,9 @@ const VALID_PRIORITIES = new Set(['LOW', 'MEDIUM', 'HIGH', 'URGENT']);
 
 // Structurally permitted transitions (before RBAC)
 const ALLOWED_TRANSITIONS = {
-  TODO:        new Set(['IN_PROGRESS', 'DONE', 'BLOCKED', 'CANCELLED']),
+  TODO:        new Set(['IN_PROGRESS', 'BLOCKED', 'CANCELLED']),
   IN_PROGRESS: new Set(['TODO', 'DONE', 'BLOCKED', 'CANCELLED']),
-  DONE:        new Set(['TODO', 'IN_PROGRESS']),   // re-open or push back
+  DONE:        new Set(['TODO']),   // reopen to TODO first, then move to IN_PROGRESS
   BLOCKED:     new Set(['TODO', 'IN_PROGRESS', 'CANCELLED']),
   CANCELLED:   new Set(['TODO']),                  // reopen only
 };

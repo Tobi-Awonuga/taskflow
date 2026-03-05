@@ -5,8 +5,17 @@ const STATUSES = [
   { value: 'TODO',        label: 'To Do' },
   { value: 'IN_PROGRESS', label: 'In Progress' },
   { value: 'DONE',        label: 'Done' },
+  { value: 'BLOCKED',     label: 'Blocked' },
   { value: 'CANCELLED',   label: 'Cancelled' },
 ];
+
+const ALLOWED_TRANSITIONS = {
+  TODO:        ['IN_PROGRESS', 'BLOCKED', 'CANCELLED'],
+  IN_PROGRESS: ['TODO', 'DONE', 'BLOCKED', 'CANCELLED'],
+  DONE:        ['TODO'],
+  BLOCKED:     ['TODO', 'IN_PROGRESS', 'CANCELLED'],
+  CANCELLED:   ['TODO'],
+};
 
 const PRIORITIES = [
   { value: 'LOW',    label: 'Low' },
@@ -156,7 +165,10 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
                 style={{ color: statusColor, borderColor: `${statusColor}60` }}
                 className={SELECT_CLS}
               >
-                {STATUSES.map(({ value, label }) => (
+                {STATUSES.filter(s =>
+                  s.value === displayStatus ||
+                  (ALLOWED_TRANSITIONS[displayStatus] ?? []).includes(s.value)
+                ).map(({ value, label }) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
               </select>

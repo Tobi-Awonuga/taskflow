@@ -44,6 +44,16 @@ function canReopen(actor, task) {
 }
 
 /**
+ * Can actor change the priority of this task?
+ *   ADMIN + SUPER: yes for any visible task
+ *   USER: only if they created the task
+ */
+function canChangePriority(actor, task) {
+  if (actor.role === 'ADMIN' || actor.role === 'SUPER') return true;
+  return task.createdByUserId === actor.id;
+}
+
+/**
  * Build a Drizzle WHERE condition fragment for department visibility.
  * Returns the departmentId to filter on, or null for ADMIN (no filter).
  */
@@ -51,4 +61,4 @@ function visibilityDeptId(actor) {
   return actor.role === 'ADMIN' ? null : actor.departmentId;
 }
 
-module.exports = { canView, canAssign, canCancel, canReopen, visibilityDeptId };
+module.exports = { canView, canAssign, canCancel, canReopen, canChangePriority, visibilityDeptId };

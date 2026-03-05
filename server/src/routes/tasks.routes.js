@@ -5,7 +5,7 @@ const { and, eq, count, desc, sql, or, isNull } = require('drizzle-orm');
 const { db, sqlite } = require('../db/client');
 const { tasks, users } = require('../db/schema');
 const requireAuth = require('../middleware/requireAuth');
-const { canAssign, canView } = require('../lib/rbac');
+const { canAssign, canView, canChangePriority } = require('../lib/rbac');
 const { validateStatusTransition, VALID_STATUSES, VALID_PRIORITIES } = require('../lib/taskValidation');
 const { writeAuditLog, AUDIT_ACTIONS } = require('../lib/audit');
 
@@ -264,6 +264,9 @@ router.patch('/:id', requireAuth, (req, res) => {
 
   // ── Priority change ──────────────────────────────────────────────────────────
   if (priority !== undefined) {
+    if (!canChangePriority(actor, task)) {
+      return res.status(403).json({ error: 'Only the task creator can change priority' });
+    }
     auditRows.push({
       action: AUDIT_ACTIONS.TASK_PRIORITY_CHANGED,
       before: { priority: task.priority },
