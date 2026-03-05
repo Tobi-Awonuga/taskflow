@@ -31,9 +31,18 @@ const patchSchema = z.object({
   assignedToUserId: z.number().int().positive().nullable().optional(),
   cancelReason:     z.string().min(1).optional(),
   priority:         z.enum([...VALID_PRIORITIES]).optional(),
+  title:            z.string().min(1).max(200).optional(),
+  description:      z.string().optional(),
+  dueAt:            z.string().datetime({ message: '"dueAt" must be a valid ISO datetime string' }).nullable().optional(),
 }).refine(
-  (d) => d.status !== undefined || d.assignedToUserId !== undefined || d.priority !== undefined,
-  { message: 'Provide at least one field to update: status, assignedToUserId, priority' },
+  (d) =>
+    d.status !== undefined ||
+    d.assignedToUserId !== undefined ||
+    d.priority !== undefined ||
+    d.title !== undefined ||
+    d.description !== undefined ||
+    d.dueAt !== undefined,
+  { message: 'Provide at least one field to update' },
 );
 
 // ── GET /api/tasks ─────────────────────────────────────────────────────────────
@@ -217,7 +226,7 @@ router.patch('/:id', requireAuth, (req, res) => {
     return res.status(400).json({ error: parsed.error.issues[0].message });
   }
 
-  let { status, assignedToUserId, cancelReason, priority } = parsed.data;
+  let { status, assignedToUserId, cancelReason, priority, title, description, dueAt } = parsed.data;
   const actor = req.user;
 
   const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get();
@@ -262,6 +271,45 @@ router.patch('/:id', requireAuth, (req, res) => {
       after:  { priority },
     });
     updates.priority = priority;
+  }
+
+  // ── Content edits (title, description, dueAt) ────────────────────────────
+  // USER can only edit tasks they created or are assigned to
+  const canEditContent =
+    actor.role === 'ADMIN' ||
+    actor.role === 'SUPER' ||
+    task.createdByUserId === actor.id ||
+    task.assignedToUserId === actor.id;
+
+  if ((title !== undefined || description !== undefined || dueAt !== undefined) && !canEditContent) {
+    return res.status(403).json({ error: 'You can only edit tasks you created or are assigned to' });
+  }
+
+  if (title !== undefined) {
+    auditRows.push({
+      action: AUDIT_ACTIONS.TASK_UPDATED,
+      before: { title: task.title },
+      after:  { title },
+    });
+    updates.title = title;
+  }
+
+  if (description !== undefined) {
+    auditRows.push({
+      action: AUDIT_ACTIONS.TASK_UPDATED,
+      before: { description: task.description },
+      after:  { description },
+    });
+    updates.description = description;
+  }
+
+  if (dueAt !== undefined) {
+    auditRows.push({
+      action: AUDIT_ACTIONS.TASK_UPDATED,
+      before: { dueAt: task.dueAt },
+      after:  { dueAt },
+    });
+    updates.dueAt = dueAt;
   }
 
   // ── Status transition ────────────────────────────────────────────────────────

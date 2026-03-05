@@ -14,6 +14,7 @@ const AUDIT_ACTIONS = {
   USER_DEACTIVATED:    'USER_DEACTIVATED',
   DEPT_CREATED:          'DEPT_CREATED',
   TASK_PRIORITY_CHANGED: 'TASK_PRIORITY_CHANGED',
+  TASK_UPDATED:          'TASK_UPDATED',
 };
 
 const { db } = require('../db/client');
