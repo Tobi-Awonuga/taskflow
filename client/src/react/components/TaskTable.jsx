@@ -40,14 +40,49 @@ function formatDate(iso) {
   });
 }
 
-export default function TaskTable({ tasks, loading, onUpdateStatus }) {
-  const [updatingId,  setUpdatingId]  = useState(null);
-  const [draftStatus, setDraftStatus] = useState({});
+function dueBadge(dueAt, status) {
+  if (!dueAt) return null;
+
+  const isDone = status === 'DONE' || status === 'CANCELLED';
+  const due    = new Date(dueAt);
+  const now    = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dueStart   = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+  const diffDays   = Math.round((dueStart - todayStart) / (1000 * 60 * 60 * 24));
+
+  const dateLabel = due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  if (isDone) return { label: dateLabel, cls: 'text-gray-400' };
+  if (diffDays < 0)  return { label: `Overdue · ${dateLabel}`,   cls: 'text-red-500 font-semibold' };
+  if (diffDays === 0) return { label: `Due today · ${dateLabel}`, cls: 'text-orange-500 font-semibold' };
+  if (diffDays === 1) return { label: `Tomorrow · ${dateLabel}`,  cls: 'text-amber-500' };
+  if (diffDays <= 3)  return { label: `In ${diffDays} days · ${dateLabel}`, cls: 'text-amber-500' };
+  return { label: dateLabel, cls: 'text-gray-400' };
+}
+
+export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePriority }) {
+  const [updatingId,       setUpdatingId]       = useState(null);
+  const [updatingPrioId,   setUpdatingPrioId]   = useState(null);
+  const [draftStatus,      setDraftStatus]      = useState({});
+  const [draftPriority,    setDraftPriority]    = useState({});
 
   const clearDraft  = (taskId) =>
     setDraftStatus(prev => { const next = { ...prev }; delete next[taskId]; return next; });
   const revertDraft = (taskId, original) =>
     setDraftStatus(prev => ({ ...prev, [taskId]: original }));
+
+  const handlePriorityChange = async (task, newPriority) => {
+    if (newPriority === task.priority) return;
+    setDraftPriority(prev => ({ ...prev, [task.id]: newPriority }));
+    setUpdatingPrioId(task.id);
+    try {
+      const ok = await onUpdatePriority(task.id, newPriority);
+      if (!ok) setDraftPriority(prev => ({ ...prev, [task.id]: task.priority }));
+      else setDraftPriority(prev => { const n = { ...prev }; delete n[task.id]; return n; });
+    } finally {
+      setUpdatingPrioId(null);
+    }
+  };
 
   const handleStatusChange = async (task, newStatus) => {
     if (newStatus === task.status) return;
@@ -100,10 +135,12 @@ export default function TaskTable({ tasks, loading, onUpdateStatus }) {
     );
   } else {
     body = tasks.map((task, idx) => {
-      const busy          = updatingId === task.id;
-      const displayStatus = draftStatus[task.id] ?? task.status;
-      const statusColor   = STATUS_COLOR[displayStatus]   ?? '#9CA3AF';
-      const priorityColor = PRIORITY_COLOR[task.priority] ?? '#9CA3AF';
+      const busy            = updatingId === task.id;
+      const busyPrio        = updatingPrioId === task.id;
+      const displayStatus   = draftStatus[task.id]   ?? task.status;
+      const displayPriority = draftPriority[task.id] ?? task.priority;
+      const statusColor     = STATUS_COLOR[displayStatus]     ?? '#9CA3AF';
+      const priorityColor   = PRIORITY_COLOR[displayPriority] ?? '#9CA3AF';
       return (
         <tr
           key={task.id}
@@ -134,10 +171,10 @@ export default function TaskTable({ tasks, loading, onUpdateStatus }) {
 
           <td className="px-4 py-3.5">
             <select
-              value={task.priority}
-              disabled
-              title="Priority editing coming soon"
-              style={{ color: priorityColor }}
+              value={displayPriority}
+              disabled={busyPrio}
+              onChange={e => handlePriorityChange(task, e.target.value)}
+              style={{ color: priorityColor, borderColor: `${priorityColor}60` }}
               className={SELECT_CLS}
             >
               {PRIORITIES.map(({ value, label }) => (
@@ -146,8 +183,12 @@ export default function TaskTable({ tasks, loading, onUpdateStatus }) {
             </select>
           </td>
 
-          <td className="px-4 py-3.5 text-xs text-gray-400 whitespace-nowrap">
-            {formatDate(task.updatedAt)}
+          <td className="px-4 py-3.5 whitespace-nowrap">
+            {(() => {
+              const badge = dueBadge(task.dueAt, task.status);
+              if (!badge) return <span className="text-xs text-gray-300">—</span>;
+              return <span className={`text-xs ${badge.cls}`}>{badge.label}</span>;
+            })()}
           </td>
         </tr>
       );
@@ -162,7 +203,7 @@ export default function TaskTable({ tasks, loading, onUpdateStatus }) {
             <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5">Title</th>
             <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Status</th>
             <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Priority</th>
-            <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Updated</th>
+            <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Due</th>
           </tr>
         </thead>
         <tbody>{body}</tbody>
