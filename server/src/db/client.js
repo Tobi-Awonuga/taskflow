@@ -26,6 +26,20 @@ sqlite.exec(`
   )
 `);
 
+sqlite.exec(`
+  CREATE TABLE IF NOT EXISTS task_comments (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id    INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+    user_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    content    TEXT    NOT NULL,
+    edited_at  TEXT,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT    NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS comments_task_idx ON task_comments(task_id);
+  CREATE INDEX IF NOT EXISTS comments_user_idx ON task_comments(user_id);
+`);
+
 const db = drizzle(sqlite, { schema });
 
 module.exports = { db, sqlite };

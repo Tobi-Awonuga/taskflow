@@ -145,4 +145,40 @@ const passwordResetTokens = sqliteTable('password_reset_tokens', {
   userIdx:   index('prt_user_idx').on(t.userId),
 }));
 
-module.exports = { departments, users, tasks, sessions, auditLogs, passwordResetTokens };
+// ── task_collaborators ────────────────────────────────────────────────────────
+//
+// Junction table: any authenticated user can be invited to collaborate on a task
+// regardless of their department. Collaborators gain read + comment access.
+// The task still owns a single departmentId (primary ownership).
+
+const taskCollaborators = sqliteTable('task_collaborators', {
+  id:            integer('id').primaryKey({ autoIncrement: true }),
+  taskId:        integer('task_id').notNull()
+    .references(() => tasks.id, { onDelete: 'cascade' }),
+  userId:        integer('user_id').notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  addedByUserId: integer('added_by_user_id')
+    .references(() => users.id, { onDelete: 'set null' }),
+  createdAt:     text('created_at').notNull().default(sql`(datetime('now'))`),
+}, (t) => ({
+  taskUserUniq: uniqueIndex('tc_task_user_uniq').on(t.taskId, t.userId),
+  taskIdx:      index('tc_task_idx').on(t.taskId),
+  userIdx:      index('tc_user_idx').on(t.userId),
+}));
+
+// ── task_comments ─────────────────────────────────────────────────────────────
+
+const taskComments = sqliteTable('task_comments', {
+  id:        integer('id').primaryKey({ autoIncrement: true }),
+  taskId:    integer('task_id').notNull().references(() => tasks.id, { onDelete: 'cascade' }),
+  userId:    integer('user_id').references(() => users.id, { onDelete: 'set null' }),
+  content:   text('content').notNull(),
+  editedAt:  text('edited_at'),
+  createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
+  updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`),
+}, (t) => ({
+  taskIdx: index('comments_task_idx').on(t.taskId),
+  userIdx: index('comments_user_idx').on(t.userId),
+}));
+
+module.exports = { departments, users, tasks, sessions, auditLogs, passwordResetTokens, taskComments, taskCollaborators };

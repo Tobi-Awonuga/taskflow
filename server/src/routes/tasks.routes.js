@@ -3,7 +3,7 @@ const { Router }  = require('express');
 const { z }       = require('zod');
 const { and, eq, count, desc, sql, or, isNull } = require('drizzle-orm');
 const { db, sqlite } = require('../db/client');
-const { tasks, users } = require('../db/schema');
+const { tasks, users, taskCollaborators } = require('../db/schema');
 const requireAuth = require('../middleware/requireAuth');
 const { canAssign, canView, canChangePriority } = require('../lib/rbac');
 const { validateStatusTransition, VALID_STATUSES, VALID_PRIORITIES } = require('../lib/taskValidation');
@@ -64,10 +64,15 @@ router.get('/', requireAuth, (req, res) => {
   // Build WHERE conditions
   const conditions = [];
 
-  // Visibility — ADMIN sees all; others see own department + org-wide (null dept)
+  // Visibility — ADMIN sees all; others see own dept, org-wide (null dept), or tasks
+  // where they are an invited collaborator (cross-department access).
   if (actor.role !== 'ADMIN') {
     conditions.push(
-      or(eq(tasks.departmentId, actor.departmentId), isNull(tasks.departmentId))
+      or(
+        eq(tasks.departmentId, actor.departmentId),
+        isNull(tasks.departmentId),
+        sql`EXISTS (SELECT 1 FROM task_collaborators tc WHERE tc.task_id = ${tasks.id} AND tc.user_id = ${actor.id})`
+      )
     );
   }
 
@@ -150,7 +155,11 @@ router.get('/stats', requireAuth, (req, res) => {
 
   if (actor.role !== 'ADMIN') {
     conditions.push(
-      or(eq(tasks.departmentId, actor.departmentId), isNull(tasks.departmentId))
+      or(
+        eq(tasks.departmentId, actor.departmentId),
+        isNull(tasks.departmentId),
+        sql`EXISTS (SELECT 1 FROM task_collaborators tc WHERE tc.task_id = ${tasks.id} AND tc.user_id = ${actor.id})`
+      )
     );
   }
 
@@ -269,7 +278,12 @@ router.get('/:id', requireAuth, (req, res) => {
   if (isNaN(taskId)) return res.status(400).json({ error: 'Invalid task id' });
 
   const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get();
-  if (!task || !canView(req.user, task)) {
+  const isCollaborator = task
+    ? db.select({ n: count() }).from(taskCollaborators)
+        .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, req.user.id)))
+        .get().n > 0
+    : false;
+  if (!task || (!canView(req.user, task) && !isCollaborator)) {
     return res.status(404).json({ error: 'Task not found' });
   }
 
@@ -292,7 +306,12 @@ router.patch('/:id', requireAuth, (req, res) => {
   const actor = req.user;
 
   const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get();
-  if (!task || !canView(actor, task)) {
+  const isCollabPatch = task
+    ? db.select({ n: count() }).from(taskCollaborators)
+        .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, actor.id)))
+        .get().n > 0
+    : false;
+  if (!task || (!canView(actor, task) && !isCollabPatch)) {
     return res.status(404).json({ error: 'Task not found' });
   }
 
@@ -425,7 +444,155 @@ router.patch('/:id', requireAuth, (req, res) => {
   return res.json(updateWithAudit());
 });
 
-// DELETE — not yet implemented
+// ── GET /api/tasks/:id/collaborators ───────────────────────────────────────────
+// Returns all collaborators on a task with basic user info.
+
+router.get('/:id/collaborators', requireAuth, (req, res) => {
+  const taskId = parseInt(req.params.id, 10);
+  if (isNaN(taskId)) return res.status(400).json({ error: 'Invalid task id' });
+
+  const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get();
+  const isCollab = task
+    ? db.select({ n: count() }).from(taskCollaborators)
+        .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, req.user.id)))
+        .get().n > 0
+    : false;
+  if (!task || (!canView(req.user, task) && !isCollab)) {
+    return res.status(404).json({ error: 'Task not found' });
+  }
+
+  const rows = db.select({
+    id:            taskCollaborators.id,
+    userId:        taskCollaborators.userId,
+    addedByUserId: taskCollaborators.addedByUserId,
+    createdAt:     taskCollaborators.createdAt,
+    userName:      users.name,
+    userEmail:     users.email,
+    userRole:      users.role,
+    userDeptId:    users.departmentId,
+  })
+    .from(taskCollaborators)
+    .leftJoin(users, eq(taskCollaborators.userId, users.id))
+    .where(eq(taskCollaborators.taskId, taskId))
+    .all();
+
+  return res.json({ collaborators: rows });
+});
+
+// ── POST /api/tasks/:id/collaborators ──────────────────────────────────────────
+// Invite a user to collaborate. Only task creator, ADMIN, or SUPER may invite.
+
+router.post('/:id/collaborators', requireAuth, (req, res) => {
+  const taskId = parseInt(req.params.id, 10);
+  if (isNaN(taskId)) return res.status(400).json({ error: 'Invalid task id' });
+
+  const parsed = z.object({ userId: z.number().int().positive() }).safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
+
+  const { userId } = parsed.data;
+  const actor = req.user;
+
+  const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get();
+  if (!task || !canView(actor, task)) {
+    return res.status(404).json({ error: 'Task not found' });
+  }
+
+  // Only creator, ADMIN, or SUPER can manage collaborators
+  const canManage = actor.role === 'ADMIN' || actor.role === 'SUPER' || task.createdByUserId === actor.id;
+  if (!canManage) {
+    return res.status(403).json({ error: 'Only the task creator or an admin can invite collaborators' });
+  }
+
+  // Target user must exist and be active
+  const target = db.select().from(users).where(eq(users.id, userId)).get();
+  if (!target) return res.status(400).json({ error: `User ${userId} not found` });
+  if (!target.isActive) return res.status(400).json({ error: `User ${userId} is inactive` });
+
+  // Prevent adding the primary assignee or creator as a collaborator (they already have access)
+  // — we allow it silently rather than erroring, to keep UX simple
+
+  // Upsert-safe: check for existing record
+  const existing = db.select({ n: count() }).from(taskCollaborators)
+    .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, userId)))
+    .get().n;
+  if (existing > 0) {
+    return res.status(409).json({ error: 'User is already a collaborator on this task' });
+  }
+
+  const addWithAudit = sqlite.transaction(() => {
+    const row = db.insert(taskCollaborators).values({
+      taskId,
+      userId,
+      addedByUserId: actor.id,
+    }).returning().get();
+
+    writeAuditLog({
+      actorUserId:  actor.id,
+      action:       AUDIT_ACTIONS.TASK_COLLABORATOR_ADDED,
+      entityType:   'TASK',
+      entityId:     taskId,
+      departmentId: task.departmentId,
+      after:        { collaboratorUserId: userId, collaboratorName: target.name },
+    });
+
+    return row;
+  });
+
+  return res.status(201).json({ collaborator: addWithAudit() });
+});
+
+// ── DELETE /api/tasks/:id/collaborators/:userId ────────────────────────────────
+// Remove a collaborator. Creator, ADMIN, SUPER, or the collaborator themselves.
+
+router.delete('/:id/collaborators/:userId', requireAuth, (req, res) => {
+  const taskId = parseInt(req.params.id, 10);
+  const userId = parseInt(req.params.userId, 10);
+  if (isNaN(taskId) || isNaN(userId)) return res.status(400).json({ error: 'Invalid id' });
+
+  const actor = req.user;
+
+  const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get();
+  if (!task || !canView(actor, task)) {
+    return res.status(404).json({ error: 'Task not found' });
+  }
+
+  const canManage =
+    actor.role === 'ADMIN' ||
+    actor.role === 'SUPER' ||
+    task.createdByUserId === actor.id ||
+    actor.id === userId; // collaborator may remove themselves
+
+  if (!canManage) {
+    return res.status(403).json({ error: 'You cannot remove this collaborator' });
+  }
+
+  const existing = db.select({ n: count() }).from(taskCollaborators)
+    .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, userId)))
+    .get().n;
+  if (existing === 0) {
+    return res.status(404).json({ error: 'Collaborator not found on this task' });
+  }
+
+  const removeWithAudit = sqlite.transaction(() => {
+    db.delete(taskCollaborators)
+      .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, userId)))
+      .run();
+
+    writeAuditLog({
+      actorUserId:  actor.id,
+      action:       AUDIT_ACTIONS.TASK_COLLABORATOR_REMOVED,
+      entityType:   'TASK',
+      entityId:     taskId,
+      departmentId: task.departmentId,
+      before:       { collaboratorUserId: userId },
+    });
+  });
+
+  removeWithAudit();
+  return res.status(204).end();
+});
+
+// DELETE task — not yet implemented
 router.delete('/:id', requireAuth, (_req, res) => {
   res.status(501).json({ error: 'Not implemented' });
 });
