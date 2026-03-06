@@ -1,13 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import CancelReasonModal from './CancelReasonModal.jsx';
 
-const STATUSES = [
-  { value: 'TODO',        label: 'To Do' },
-  { value: 'IN_PROGRESS', label: 'In Progress' },
-  { value: 'DONE',        label: 'Done' },
-  { value: 'BLOCKED',     label: 'Blocked' },
-  { value: 'CANCELLED',   label: 'Cancelled' },
-];
+// ── Config ─────────────────────────────────────────────────────────────────────
 
 const ALLOWED_TRANSITIONS = {
   TODO:        ['IN_PROGRESS', 'BLOCKED', 'CANCELLED'],
@@ -17,119 +11,161 @@ const ALLOWED_TRANSITIONS = {
   CANCELLED:   ['TODO'],
 };
 
-const PRIORITIES = [
-  { value: 'LOW',    label: 'Low' },
-  { value: 'MEDIUM', label: 'Medium' },
-  { value: 'HIGH',   label: 'High' },
-  { value: 'URGENT', label: 'Urgent' },
-];
-
-const STATUS_COLOR = {
-  TODO:        '#4C8DFF',
-  IN_PROGRESS: '#F4A23A',
-  DONE:        '#43B96D',
-  BLOCKED:     '#F05A5A',
-  CANCELLED:   '#9CA3AF',
+const STATUS_META = {
+  TODO:        { color: '#4C8DFF', bg: '#EFF4FF', label: 'To Do' },
+  IN_PROGRESS: { color: '#F4A23A', bg: '#FFF4E6', label: 'In Progress' },
+  DONE:        { color: '#43B96D', bg: '#EDFAF2', label: 'Done' },
+  BLOCKED:     { color: '#F05A5A', bg: '#FEF0F0', label: 'Blocked' },
+  CANCELLED:   { color: '#9CA3AF', bg: '#F3F4F6', label: 'Cancelled' },
 };
 
-const PRIORITY_COLOR = {
-  LOW:    '#9CA3AF',
-  MEDIUM: '#6B7280',
-  HIGH:   '#F97316',
-  URGENT: '#EF4444',
+const PRIORITY_META = {
+  LOW:    { color: '#9CA3AF', bg: '#F9FAFB', label: 'Low' },
+  MEDIUM: { color: '#6366F1', bg: '#EEF2FF', label: 'Medium' },
+  HIGH:   { color: '#F97316', bg: '#FFF4ED', label: 'High' },
+  URGENT: { color: '#EF4444', bg: '#FEF2F2', label: 'Urgent' },
 };
 
-const SELECT_CLS =
-  'text-xs rounded-lg border px-2 py-1 bg-white focus:outline-none ' +
-  'focus:ring-2 focus:ring-[#F0654D]/20 focus:border-[#F0654D] ' +
-  'disabled:opacity-50 disabled:cursor-not-allowed';
+// ── Inline pill dropdown ────────────────────────────────────────────────────────
 
-function formatDate(iso) {
-  return new Date(iso).toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-  });
+function InlineDropdown({ value, options, disabled, onChange, metaMap }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const current = metaMap[value] ?? { color: '#9CA3AF', bg: '#F3F4F6', label: value };
+
+  return (
+    <div ref={ref} className="relative inline-block" onClick={e => e.stopPropagation()}>
+      <button
+        disabled={disabled}
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-95 active:scale-95"
+        style={{ color: current.color, backgroundColor: current.bg }}
+      >
+        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: current.color }} />
+        {current.label}
+        {!disabled && (
+          <svg
+            width="9" height="9" viewBox="0 0 9 9" fill="none"
+            className={`ml-0.5 opacity-50 transition-transform ${open ? 'rotate-180' : ''}`}
+          >
+            <path d="M2 3l2.5 2.5L7 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute z-50 top-full left-0 mt-1.5 bg-white rounded-xl shadow-lg border border-gray-100 py-1 min-w-[148px]">
+          {options.map(opt => {
+            const meta = metaMap[opt] ?? { color: '#9CA3AF', bg: '#F3F4F6', label: opt };
+            const isActive = opt === value;
+            return (
+              <button
+                key={opt}
+                onClick={() => { onChange(opt); setOpen(false); }}
+                disabled={isActive}
+                className="w-full flex items-center gap-2.5 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-gray-50 disabled:cursor-default"
+              >
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: meta.color }} />
+                <span style={{ color: meta.color }}>{meta.label}</span>
+                {isActive && (
+                  <svg className="ml-auto shrink-0" width="11" height="11" viewBox="0 0 11 11" fill="none">
+                    <path d="M2 5.5l2.5 2.5 4.5-4.5" stroke={meta.color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
+
+// ── Due date badge ──────────────────────────────────────────────────────────────
 
 function dueBadge(dueAt, status) {
   if (!dueAt) return null;
-
-  const isDone = status === 'DONE' || status === 'CANCELLED';
-  const due    = new Date(dueAt);
-  const now    = new Date();
+  const isDone     = status === 'DONE' || status === 'CANCELLED';
+  const due        = new Date(dueAt);
+  const now        = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const dueStart   = new Date(due.getFullYear(), due.getMonth(), due.getDate());
   const diffDays   = Math.round((dueStart - todayStart) / (1000 * 60 * 60 * 24));
+  const dateLabel  = due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-  const dateLabel = due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-  if (isDone) return { label: dateLabel, cls: 'text-gray-400' };
-  if (diffDays < 0)  return { label: `Overdue · ${dateLabel}`,   cls: 'text-red-500 font-semibold' };
-  if (diffDays === 0) return { label: `Due today · ${dateLabel}`, cls: 'text-orange-500 font-semibold' };
-  if (diffDays === 1) return { label: `Tomorrow · ${dateLabel}`,  cls: 'text-amber-500' };
+  if (isDone)         return { label: dateLabel,                          cls: 'text-gray-400' };
+  if (diffDays < 0)   return { label: `Overdue · ${dateLabel}`,          cls: 'text-red-500 font-semibold' };
+  if (diffDays === 0) return { label: `Due today · ${dateLabel}`,        cls: 'text-orange-500 font-semibold' };
+  if (diffDays === 1) return { label: `Tomorrow · ${dateLabel}`,         cls: 'text-amber-500' };
   if (diffDays <= 3)  return { label: `In ${diffDays} days · ${dateLabel}`, cls: 'text-amber-500' };
   return { label: dateLabel, cls: 'text-gray-400' };
 }
 
+// ── TaskTable ───────────────────────────────────────────────────────────────────
+
 export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePriority, onTaskClick, userMap = {} }) {
-  const [updatingId,       setUpdatingId]       = useState(null);
-  const [updatingPrioId,   setUpdatingPrioId]   = useState(null);
-  const [draftStatus,      setDraftStatus]      = useState({});
-  const [draftPriority,    setDraftPriority]    = useState({});
-  const [cancelTarget,     setCancelTarget]     = useState(null);
+  const [updatingId,     setUpdatingId]     = useState(null);
+  const [updatingPrioId, setUpdatingPrioId] = useState(null);
+  const [draftStatus,    setDraftStatus]    = useState({});
+  const [draftPriority,  setDraftPriority]  = useState({});
+  const [cancelTarget,   setCancelTarget]   = useState(null);
 
-  const clearDraft  = (taskId) =>
-    setDraftStatus(prev => { const next = { ...prev }; delete next[taskId]; return next; });
-  const revertDraft = (taskId, original) =>
-    setDraftStatus(prev => ({ ...prev, [taskId]: original }));
-
-  const handlePriorityChange = async (task, newPriority) => {
-    if (newPriority === task.priority) return;
-    setDraftPriority(prev => ({ ...prev, [task.id]: newPriority }));
-    setUpdatingPrioId(task.id);
-    try {
-      const ok = await onUpdatePriority(task.id, newPriority);
-      if (!ok) setDraftPriority(prev => ({ ...prev, [task.id]: task.priority }));
-      else setDraftPriority(prev => { const n = { ...prev }; delete n[task.id]; return n; });
-    } finally {
-      setUpdatingPrioId(null);
-    }
-  };
+  const clearDraft  = (id) => setDraftStatus(p => { const n = { ...p }; delete n[id]; return n; });
+  const revertDraft = (id, orig) => setDraftStatus(p => ({ ...p, [id]: orig }));
 
   const handleStatusChange = async (task, newStatus) => {
     if (newStatus === task.status) return;
-    setDraftStatus(prev => ({ ...prev, [task.id]: newStatus }));
-
-    if (newStatus === 'CANCELLED') {
-      setCancelTarget(task);
-      return;
-    } else {
-      setUpdatingId(task.id);
-      try {
-        const ok = await onUpdateStatus(task.id, newStatus);
-        if (!ok) revertDraft(task.id, task.status);
-        else clearDraft(task.id);
-      } finally {
-        setUpdatingId(null);
-      }
-    }
+    setDraftStatus(p => ({ ...p, [task.id]: newStatus }));
+    if (newStatus === 'CANCELLED') { setCancelTarget(task); return; }
+    setUpdatingId(task.id);
+    try {
+      const ok = await onUpdateStatus(task.id, newStatus);
+      if (!ok) revertDraft(task.id, task.status);
+      else clearDraft(task.id);
+    } finally { setUpdatingId(null); }
   };
 
+  const handlePriorityChange = async (task, newPriority) => {
+    if (newPriority === task.priority) return;
+    setDraftPriority(p => ({ ...p, [task.id]: newPriority }));
+    setUpdatingPrioId(task.id);
+    try {
+      const ok = await onUpdatePriority(task.id, newPriority);
+      if (!ok) setDraftPriority(p => ({ ...p, [task.id]: task.priority }));
+      else setDraftPriority(p => { const n = { ...p }; delete n[task.id]; return n; });
+    } finally { setUpdatingPrioId(null); }
+  };
 
   let body;
 
   if (loading) {
-    body = (
-      <tr>
-        <td colSpan={4} className="px-5 py-10 text-center text-sm text-gray-400">
-          Loading…
-        </td>
+    body = Array.from({ length: 5 }).map((_, i) => (
+      <tr key={i} className="border-b border-gray-50">
+        <td className="px-5 py-3.5"><div className="h-4 bg-gray-100 rounded animate-pulse w-48" /></td>
+        <td className="px-4 py-3.5"><div className="h-6 bg-gray-100 rounded-full animate-pulse w-20" /></td>
+        <td className="px-4 py-3.5"><div className="h-6 bg-gray-100 rounded-full animate-pulse w-16" /></td>
+        <td className="px-4 py-3.5"><div className="h-4 bg-gray-100 rounded animate-pulse w-24" /></td>
       </tr>
-    );
+    ));
   } else if (tasks.length === 0) {
     body = (
       <tr>
-        <td colSpan={4} className="px-5 py-10 text-center text-sm text-gray-400">
-          No tasks found.
+        <td colSpan={4}>
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" className="text-gray-200">
+              <rect x="6" y="8" width="28" height="26" rx="3" stroke="currentColor" strokeWidth="2" />
+              <path d="M13 20h14M13 26h8M13 14h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <p className="text-sm text-gray-400">No tasks found</p>
+          </div>
         </td>
       </tr>
     );
@@ -139,13 +175,13 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
       const busyPrio        = updatingPrioId === task.id;
       const displayStatus   = draftStatus[task.id]   ?? task.status;
       const displayPriority = draftPriority[task.id] ?? task.priority;
-      const statusColor     = STATUS_COLOR[displayStatus]     ?? '#9CA3AF';
-      const priorityColor   = PRIORITY_COLOR[displayPriority] ?? '#9CA3AF';
+      const statusOptions   = [displayStatus, ...(ALLOWED_TRANSITIONS[displayStatus] ?? [])];
+
       return (
         <tr
           key={task.id}
-          onClick={() => onTaskClick && onTaskClick(task)}
-          className={`border-b border-gray-50 hover:bg-orange-50/40 transition-colors cursor-pointer ${idx % 2 === 1 ? 'bg-gray-50/40' : ''}`}
+          onClick={() => onTaskClick?.(task)}
+          className={`border-b border-gray-50 hover:bg-orange-50/40 transition-colors cursor-pointer ${idx % 2 === 1 ? 'bg-gray-50/30' : ''}`}
         >
           <td className="px-5 py-3.5">
             <span className="text-sm font-medium text-gray-800">{task.title}</span>
@@ -157,38 +193,23 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
           </td>
 
           <td className="px-4 py-3.5">
-            <div onClick={e => e.stopPropagation()}>
-              <select
-                value={displayStatus}
-                disabled={busy}
-                onChange={e => handleStatusChange(task, e.target.value)}
-                style={{ color: statusColor, borderColor: `${statusColor}60` }}
-                className={SELECT_CLS}
-              >
-                {STATUSES.filter(s =>
-                  s.value === displayStatus ||
-                  (ALLOWED_TRANSITIONS[displayStatus] ?? []).includes(s.value)
-                ).map(({ value, label }) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
-            </div>
+            <InlineDropdown
+              value={displayStatus}
+              options={statusOptions}
+              disabled={busy}
+              onChange={v => handleStatusChange(task, v)}
+              metaMap={STATUS_META}
+            />
           </td>
 
           <td className="px-4 py-3.5">
-            <div onClick={e => e.stopPropagation()}>
-              <select
-                value={displayPriority}
-                disabled={busyPrio}
-                onChange={e => handlePriorityChange(task, e.target.value)}
-                style={{ color: priorityColor, borderColor: `${priorityColor}60` }}
-                className={SELECT_CLS}
-              >
-                {PRIORITIES.map(({ value, label }) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
-            </div>
+            <InlineDropdown
+              value={displayPriority}
+              options={Object.keys(PRIORITY_META)}
+              disabled={busyPrio}
+              onChange={v => handlePriorityChange(task, v)}
+              metaMap={PRIORITY_META}
+            />
           </td>
 
           <td className="px-4 py-3.5 whitespace-nowrap">
@@ -230,9 +251,7 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
             const ok = await onUpdateStatus(t.id, 'CANCELLED', reason);
             if (!ok) revertDraft(t.id, t.status);
             else clearDraft(t.id);
-          } finally {
-            setUpdatingId(null);
-          }
+          } finally { setUpdatingId(null); }
         }}
       />
     </>

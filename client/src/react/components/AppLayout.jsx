@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 
 function NavItem({ to, label, icon, active }) {
@@ -95,7 +95,6 @@ export default function AppLayout() {
 
   const initials = user ? user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '??';
 
-  const isDashboard = location.pathname === '/dashboard';
   const isMine      = location.pathname === '/tasks' && searchParams.get('scope') === 'mine';
   const isTasks     = location.pathname === '/tasks' && !isMine;
   const isDepts     = location.pathname === '/departments';
@@ -120,9 +119,9 @@ export default function AppLayout() {
       {/* ── Sidebar ────────────────────────────────────────────────────────── */}
       <aside className="bg-[#F5EDE6] flex flex-col p-5 gap-4 overflow-y-auto">
 
-        {/* Logo */}
-        <div className="flex items-center gap-2.5 mb-1">
-          <div className="w-8 h-8 bg-[#F0654D] rounded-lg flex items-center justify-center shrink-0">
+        {/* Logo — links to dashboard */}
+        <Link to="/dashboard" className="flex items-center gap-2.5 mb-1 group">
+          <div className="w-8 h-8 bg-[#F0654D] rounded-lg flex items-center justify-center shrink-0 group-hover:bg-[#E85B44] transition-colors">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <rect x="1" y="2.5"  width="14" height="2" rx="1" fill="white" />
               <rect x="1" y="7"    width="10" height="2" rx="1" fill="white" />
@@ -130,7 +129,7 @@ export default function AppLayout() {
             </svg>
           </div>
           <span className="text-lg font-bold text-gray-800 tracking-tight">Nectar</span>
-        </div>
+        </Link>
 
         {/* User card */}
         <div className="flex items-center gap-3 p-3 bg-white/60 rounded-2xl">
@@ -146,7 +145,6 @@ export default function AppLayout() {
         {/* Workspace nav */}
         <nav className="flex flex-col gap-0.5">
           <SectionLabel label="Workspace" />
-          <NavItem to="/dashboard"         label="Dashboard"   icon={icons.dashboard}   active={isDashboard} />
           <NavItem to="/tasks"             label="Tasks"       icon={icons.tasks}       active={isTasks} />
           <NavItem to="/tasks?scope=mine"  label="My Tasks"    icon={icons.myTasks}     active={isMine} />
           <NavItem to="/departments"       label="Departments" icon={icons.departments} active={isDepts} />
