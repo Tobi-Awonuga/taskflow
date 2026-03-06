@@ -176,6 +176,9 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
       const displayStatus   = draftStatus[task.id]   ?? task.status;
       const displayPriority = draftPriority[task.id] ?? task.priority;
       const statusOptions   = [displayStatus, ...(ALLOWED_TRANSITIONS[displayStatus] ?? [])];
+      const isOverdue       = task.dueAt &&
+        new Date(task.dueAt) < new Date() &&
+        displayStatus !== 'DONE' && displayStatus !== 'CANCELLED';
 
       return (
         <tr
@@ -216,7 +219,7 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
             {(() => {
               const badge = dueBadge(task.dueAt, task.status);
               if (!badge) return <span className="text-xs text-gray-300">—</span>;
-              return <span className={`text-xs ${badge.cls}`}>{badge.label}</span>;
+              return <span className={`text-xs ${badge.cls} ${isOverdue ? 'animate-pulse' : ''}`}>{badge.label}</span>;
             })()}
           </td>
         </tr>
@@ -226,8 +229,8 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-black/5 shadow-sm overflow-hidden">
-        <table className="w-full">
+      <div className="bg-white rounded-2xl border border-black/5 shadow-sm overflow-x-auto">
+        <table className="w-full min-w-[560px]">
           <thead>
             <tr className="border-b border-gray-100">
               <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5">Title</th>

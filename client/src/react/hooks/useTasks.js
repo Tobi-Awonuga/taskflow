@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useToast } from '../context/ToastContext.jsx';
 
 export const INITIAL_QUERY = {
   page:     1,
@@ -12,6 +13,7 @@ export const INITIAL_QUERY = {
 };
 
 export function useTasks() {
+  const { toast } = useToast();
   const [query,       setQueryRaw]  = useState(INITIAL_QUERY);
   const [refetchTick, setRefetchTick] = useState(0);  // incremented to force re-fetch
   const [tasks,       setTasks]     = useState([]);
@@ -90,15 +92,18 @@ export function useTasks() {
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? `Failed to update task (${res.status}).`);
+        toast('Failed to update status', 'error');
         return false;
       }
       setRefetchTick(t => t + 1);
+      toast('Status updated', 'success');
       return true;
     } catch {
       setError('Network error. Could not update task.');
+      toast('Failed to update status', 'error');
       return false;
     }
-  }, []);
+  }, [toast]);
 
   const createTask = useCallback(async (body) => {
     try {
@@ -110,14 +115,17 @@ export function useTasks() {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
+        toast('Failed to create task', 'error');
         return { ok: false, error: data.error ?? `Failed to create task (${res.status}).` };
       }
       setRefetchTick(t => t + 1);
+      toast('Task created', 'success');
       return { ok: true };
     } catch {
+      toast('Failed to create task', 'error');
       return { ok: false, error: 'Network error. Could not create task.' };
     }
-  }, []);
+  }, [toast]);
 
   const updateTaskPriority = useCallback(async (taskId, priority) => {
     try {
@@ -130,15 +138,18 @@ export function useTasks() {
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? `Failed to update task (${res.status}).`);
+        toast('Failed to update priority', 'error');
         return false;
       }
       setRefetchTick(t => t + 1);
+      toast('Priority updated', 'success');
       return true;
     } catch {
       setError('Network error. Could not update task.');
+      toast('Failed to update priority', 'error');
       return false;
     }
-  }, []);
+  }, [toast]);
 
   const updateTask = useCallback(async (taskId, fields) => {
     try {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import CancelReasonModal from './CancelReasonModal.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 const STATUSES = [
   { value: 'TODO',        label: 'To Do' },
@@ -168,6 +169,7 @@ function EditableDescription({ value, onSave }) {
 // ── TaskDetailDrawer ──────────────────────────────────────────────────────────
 
 export default function TaskDetailDrawer({ task, onClose, onUpdateStatus, onUpdatePriority, onUpdateTask, allUsers = [], userMap = {}, user = null }) {
+  const { toast } = useToast();
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [draftStatus,     setDraftStatus]     = useState(null);
   const [updatingStatus,  setUpdatingStatus]  = useState(false);
@@ -356,8 +358,13 @@ export default function TaskDetailDrawer({ task, onClose, onUpdateStatus, onUpda
         setComments(prev => [...prev, data.comment]);
         setCommentDraft('');
         setCommentRows(2);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast(data.error ?? 'Failed to post comment', 'error');
       }
-    } catch {}
+    } catch {
+      toast('Failed to post comment', 'error');
+    }
     setCommentSubmitting(false);
   }
 
@@ -479,38 +486,38 @@ export default function TaskDetailDrawer({ task, onClose, onUpdateStatus, onUpda
             />
           </div>
 
-          {/* Due Date */}
-          <div className="flex flex-col gap-1.5">
-            <span className={LABEL_CLS}>Due Date</span>
-            <input
-              type="date"
-              value={task.dueAt ? task.dueAt.slice(0, 10) : ''}
-              onChange={e => handleDueDateChange(e.target.value)}
-              className={FIELD_INPUT_CLS}
-            />
-          </div>
-
-          {/* Assignee */}
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="drawer-assignee" className={LABEL_CLS}>Assignee</label>
-            <select
-              id="drawer-assignee"
-              value={task.assignedToUserId ?? ''}
-              onChange={e => {
-                const val = e.target.value;
-                onUpdateTask(task.id, { assignedToUserId: val ? parseInt(val, 10) : null });
-              }}
-              className={SELECT_CLS}
-              disabled={task.status === 'DONE' || task.status === 'CANCELLED'}
-            >
-              <option value="">Unassigned</option>
-              {(user?.role === 'USER'
-                ? allUsers.filter(u => u.id === user.id)
-                : allUsers
-              ).map(u => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </select>
+          {/* Assignee + Due Date — 2-column grid */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="drawer-assignee" className={LABEL_CLS}>Assignee</label>
+              <select
+                id="drawer-assignee"
+                value={task.assignedToUserId ?? ''}
+                onChange={e => {
+                  const val = e.target.value;
+                  onUpdateTask(task.id, { assignedToUserId: val ? parseInt(val, 10) : null });
+                }}
+                className={FIELD_INPUT_CLS}
+                disabled={task.status === 'DONE' || task.status === 'CANCELLED'}
+              >
+                <option value="">Unassigned</option>
+                {(user?.role === 'USER'
+                  ? allUsers.filter(u => u.id === user.id)
+                  : allUsers
+                ).map(u => (
+                  <option key={u.id} value={u.id}>{u.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span className={LABEL_CLS}>Due Date</span>
+              <input
+                type="date"
+                value={task.dueAt ? task.dueAt.slice(0, 10) : ''}
+                onChange={e => handleDueDateChange(e.target.value)}
+                className={FIELD_INPUT_CLS}
+              />
+            </div>
           </div>
 
           {/* Collaborators */}
@@ -631,14 +638,8 @@ export default function TaskDetailDrawer({ task, onClose, onUpdateStatus, onUpda
             </div>
           )}
 
-          {/* Metadata */}
-          <div className="flex flex-col gap-1 pt-1 border-t border-gray-50">
-            <p className="text-xs text-gray-400">Created {formatDate(task.createdAt)}</p>
-            <p className="text-xs text-gray-400">Updated {formatDate(task.updatedAt)}</p>
-          </div>
-
           {/* ── Comments ─────────────────────────────────────────────────────── */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 pt-4 border-t border-gray-100">
             <span className={LABEL_CLS}>
               Comments{comments.length > 0 ? ` (${comments.length})` : ''}
             </span>
@@ -793,6 +794,13 @@ export default function TaskDetailDrawer({ task, onClose, onUpdateStatus, onUpda
                 </button>
               </div>
             </form>
+          </div>
+
+          {/* Metadata */}
+          <div className="flex items-center gap-4 pt-2">
+            <p className="text-xs text-gray-300">Created {formatDate(task.createdAt)}</p>
+            <span className="text-xs text-gray-200">·</span>
+            <p className="text-xs text-gray-300">Updated {formatDate(task.updatedAt)}</p>
           </div>
 
         </div>

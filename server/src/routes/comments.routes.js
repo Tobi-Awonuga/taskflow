@@ -65,9 +65,10 @@ router.post('/:taskId/comments', requireAuth, (req, res) => {
   const { content } = parsed.data;
   const now = new Date().toISOString();
 
-  const [inserted] = db.insert(taskComments)
+  const inserted = db.insert(taskComments)
     .values({ taskId, userId: req.user.id, content, createdAt: now, updatedAt: now })
-    .returning({ id: taskComments.id, createdAt: taskComments.createdAt });
+    .returning({ id: taskComments.id, createdAt: taskComments.createdAt })
+    .get();
 
   // Parse @mentions and resolve to userIds
   const mentionWords = [...content.matchAll(/\B@(\w+)/g)].map(m => m[1].toLowerCase());

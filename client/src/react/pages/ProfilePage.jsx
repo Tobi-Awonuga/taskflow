@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 
 function RoleBadge({ role }) {
   const cls = {
@@ -56,7 +57,14 @@ function EditableName({ value, onSave }) {
 
 export default function ProfilePage() {
   const { user, setUser } = useAuth();
+  const { toast } = useToast();
   const [deptName, setDeptName] = useState(null);
+
+  const [currentPw,  setCurrentPw]  = useState('');
+  const [newPw,      setNewPw]      = useState('');
+  const [confirmPw,  setConfirmPw]  = useState('');
+  const [pwError,    setPwError]    = useState('');
+  const [pwSaving,   setPwSaving]   = useState(false);
 
   useEffect(() => {
     if (!user?.departmentId) return;
@@ -81,6 +89,29 @@ export default function ProfilePage() {
       return true;
     }
     return false;
+  }
+
+  async function handleChangePassword(e) {
+    e.preventDefault();
+    setPwError('');
+    if (!currentPw || !newPw || !confirmPw) { setPwError('All fields are required.'); return; }
+    if (newPw !== confirmPw) { setPwError('New passwords do not match.'); return; }
+    setPwSaving(true);
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword: currentPw, newPassword: newPw }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { toast(data.error ?? 'Failed to update password', 'error'); }
+      else { toast('Password updated', 'success'); setCurrentPw(''); setNewPw(''); setConfirmPw(''); }
+    } catch {
+      toast('Network error. Could not update password.', 'error');
+    } finally {
+      setPwSaving(false);
+    }
   }
 
   const memberSince = new Date(user.createdAt).toLocaleDateString('en-US', {
@@ -122,6 +153,60 @@ export default function ProfilePage() {
         </div>
 
       </div>
+
+      {/* Change Password */}
+      <div className="bg-white rounded-2xl border border-black/5 shadow-sm p-8 flex flex-col gap-5 max-w-lg">
+        <h3 className="text-base font-bold text-gray-800">Change Password</h3>
+        <form onSubmit={handleChangePassword} className="flex flex-col gap-4">
+          <div>
+            <label htmlFor="current-pw" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+              Current Password
+            </label>
+            <input
+              id="current-pw"
+              type="password"
+              value={currentPw}
+              onChange={e => setCurrentPw(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30 focus:border-[#F0654D] transition-colors"
+            />
+          </div>
+          <div>
+            <label htmlFor="new-pw" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+              New Password
+            </label>
+            <input
+              id="new-pw"
+              type="password"
+              value={newPw}
+              onChange={e => setNewPw(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30 focus:border-[#F0654D] transition-colors"
+            />
+          </div>
+          <div>
+            <label htmlFor="confirm-pw" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+              Confirm New Password
+            </label>
+            <input
+              id="confirm-pw"
+              type="password"
+              value={confirmPw}
+              onChange={e => setConfirmPw(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30 focus:border-[#F0654D] transition-colors"
+            />
+          </div>
+          {pwError && <p className="text-red-500 text-xs">{pwError}</p>}
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={pwSaving}
+              className="px-5 py-2.5 text-sm font-semibold text-white bg-[#F0654D] hover:bg-[#E85B44] rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {pwSaving ? 'Saving…' : 'Update Password'}
+            </button>
+          </div>
+        </form>
+      </div>
+
     </main>
   );
 }

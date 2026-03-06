@@ -81,11 +81,11 @@ function TaskRow({ task, onClick, overdue = false }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-gray-50 transition-colors
-        ${overdue ? 'border-l-2 border-red-400' : ''}`}
+      className={`w-full flex items-center gap-3 px-5 py-3.5 text-left transition-colors
+        ${overdue ? 'bg-red-50/40 hover:bg-red-50/70' : 'hover:bg-gray-50'}`}
     >
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-800 truncate">{task.title}</p>
+        <p className={`text-sm font-medium truncate ${overdue ? 'text-red-600' : 'text-gray-800'}`}>{task.title}</p>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <DueBadge dueAt={task.dueAt} />

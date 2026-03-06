@@ -176,7 +176,17 @@ router.get('/stats', requireAuth, (req, res) => {
     return (db.select({ n: count() }).from(tasks).where(w).get()).n;
   }
 
-  const today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  const todayDate    = new Date();
+  const tomorrowDate = new Date(todayDate);
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const today    = todayDate.toISOString().slice(0, 10);    // 'YYYY-MM-DD'
+  const tomorrow = tomorrowDate.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+
+  const activeStatuses = or(
+    eq(tasks.status, 'TODO'),
+    eq(tasks.status, 'IN_PROGRESS'),
+    eq(tasks.status, 'BLOCKED'),
+  );
 
   return res.json({
     todo:       countWhere(eq(tasks.status, 'TODO')),
@@ -187,11 +197,13 @@ router.get('/stats', requireAuth, (req, res) => {
     overdue:    countWhere(and(
       sql`${tasks.dueAt} IS NOT NULL`,
       sql`${tasks.dueAt} < ${today}`,
-      or(
-        eq(tasks.status, 'TODO'),
-        eq(tasks.status, 'IN_PROGRESS'),
-        eq(tasks.status, 'BLOCKED'),
-      ),
+      activeStatuses,
+    )),
+    dueSoon:    countWhere(and(
+      sql`${tasks.dueAt} IS NOT NULL`,
+      sql`${tasks.dueAt} >= ${today}`,
+      sql`${tasks.dueAt} <= ${tomorrow}`,
+      activeStatuses,
     )),
   });
 });
