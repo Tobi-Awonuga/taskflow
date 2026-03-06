@@ -109,6 +109,17 @@ router.get('/', requireAuth, (req, res) => {
     conditions.push(sql`${tasks.title} LIKE ${'%' + escaped + '%'} ESCAPE '\\'`);
   }
 
+  if (q.overdue === 'true') {
+    const today = new Date().toISOString().slice(0, 10);
+    conditions.push(sql`${tasks.dueAt} IS NOT NULL`);
+    conditions.push(sql`${tasks.dueAt} < ${today}`);
+    conditions.push(or(
+      eq(tasks.status, 'TODO'),
+      eq(tasks.status, 'IN_PROGRESS'),
+      eq(tasks.status, 'BLOCKED'),
+    ));
+  }
+
   const where = conditions.length ? and(...conditions) : undefined;
 
   const total = (db.select({ n: count() }).from(tasks).where(where).get()).n;
@@ -199,6 +210,9 @@ router.post('/', requireAuth, (req, res) => {
     const assignee = db.select().from(users).where(eq(users.id, assignedToUserId)).get();
     if (!assignee) {
       return res.status(400).json({ error: `User ${assignedToUserId} not found` });
+    }
+    if (!assignee.isActive) {
+      return res.status(400).json({ error: `User ${assignedToUserId} is inactive and cannot be assigned tasks` });
     }
     if (!canAssign(actor, null, assignedToUserId)) {
       return res.status(403).json({ error: 'You can only assign tasks to yourself' });
@@ -292,6 +306,9 @@ router.patch('/:id', requireAuth, (req, res) => {
       assignee = db.select().from(users).where(eq(users.id, assignedToUserId)).get();
       if (!assignee) {
         return res.status(400).json({ error: `User ${assignedToUserId} not found` });
+      }
+      if (!assignee.isActive) {
+        return res.status(400).json({ error: `User ${assignedToUserId} is inactive and cannot be assigned tasks` });
       }
       if (!canAssign(actor, task, assignedToUserId)) {
         return res.status(403).json({ error: 'You can only assign tasks to yourself' });

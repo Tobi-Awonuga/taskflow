@@ -17,6 +17,14 @@ function NavItem({ to, label, icon, active }) {
 // ── SVG icons ──────────────────────────────────────────────────────────────────
 
 const icons = {
+  dashboard: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  ),
   tasks: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <rect x="1" y="2.5" width="14" height="2" rx="1" fill="currentColor" />
@@ -87,9 +95,10 @@ export default function AppLayout() {
 
   const initials = user ? user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '??';
 
-  const isMine    = location.pathname === '/tasks' && searchParams.get('scope') === 'mine';
-  const isTasks   = location.pathname === '/tasks' && !isMine;
-  const isDepts   = location.pathname === '/departments';
+  const isDashboard = location.pathname === '/dashboard';
+  const isMine      = location.pathname === '/tasks' && searchParams.get('scope') === 'mine';
+  const isTasks     = location.pathname === '/tasks' && !isMine;
+  const isDepts     = location.pathname === '/departments';
   const isUsers   = location.pathname === '/admin/users';
   const isAudit   = location.pathname === '/admin/audit';
   const isProfile = location.pathname === '/profile';
@@ -120,7 +129,7 @@ export default function AppLayout() {
               <rect x="1" y="11.5" width="12" height="2" rx="1" fill="white" />
             </svg>
           </div>
-          <span className="text-lg font-bold text-gray-800 tracking-tight">TaskFlow</span>
+          <span className="text-lg font-bold text-gray-800 tracking-tight">Nectar</span>
         </div>
 
         {/* User card */}
@@ -137,6 +146,7 @@ export default function AppLayout() {
         {/* Workspace nav */}
         <nav className="flex flex-col gap-0.5">
           <SectionLabel label="Workspace" />
+          <NavItem to="/dashboard"         label="Dashboard"   icon={icons.dashboard}   active={isDashboard} />
           <NavItem to="/tasks"             label="Tasks"       icon={icons.tasks}       active={isTasks} />
           <NavItem to="/tasks?scope=mine"  label="My Tasks"    icon={icons.myTasks}     active={isMine} />
           <NavItem to="/departments"       label="Departments" icon={icons.departments} active={isDepts} />

@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
 
         {/* Wordmark */}
         <div className="mb-8 text-center">
-          <span className="text-2xl font-bold text-[#F0654D] tracking-tight">TaskFlow</span>
+          <span className="text-2xl font-bold text-[#F0654D] tracking-tight">Nectar</span>
           <p className="text-sm text-gray-400 mt-1">Reset your password</p>
         </div>
 

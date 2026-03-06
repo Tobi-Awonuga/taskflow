@@ -8,12 +8,16 @@ import TaskTable               from '../components/TaskTable.jsx';
 import CreateTaskModal         from '../components/CreateTaskModal.jsx';
 import TaskDetailDrawer        from '../components/TaskDetailDrawer.jsx';
 
-function StatCard({ label, count, color }) {
+function StatCard({ label, count, color, onClick, active }) {
   return (
-    <div className="bg-white rounded-2xl p-5 border border-black/5 shadow-sm">
+    <button
+      onClick={onClick}
+      className={`bg-white rounded-2xl p-5 border shadow-sm text-left w-full transition-all
+        ${active ? 'border-[#F0654D] ring-2 ring-[#F0654D]/20 shadow-md' : 'border-black/5 hover:border-gray-200'}`}
+    >
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{label}</p>
       <p className="text-3xl font-bold" style={{ color }}>{count}</p>
-    </div>
+    </button>
   );
 }
 
@@ -23,6 +27,7 @@ export default function TasksPage() {
   const [selectedTask, setSelectedTask] = useState(null);
   const [allUsers,     setAllUsers]     = useState([]);
   const [stats,        setStats]        = useState({ todo: 0, inProgress: 0, blocked: 0, done: 0, overdue: 0 });
+  const [activeKpi,    setActiveKpi]    = useState('');
 
   // useTasks MUST come before any effect that reads `query`
   const {
@@ -42,7 +47,7 @@ export default function TasksPage() {
   // users fetch
   useEffect(() => {
     const ctrl = new AbortController();
-    fetch('/api/users?pageSize=100', { credentials: 'include', signal: ctrl.signal })
+    fetch('/api/users?pageSize=100&isActive=true', { credentials: 'include', signal: ctrl.signal })
       .then(r => r.ok ? r.json() : { users: [] })
       .then(d => setAllUsers(d.users ?? []))
       .catch(() => {});
@@ -59,21 +64,42 @@ export default function TasksPage() {
       .then(d => d && setStats(d))
       .catch(() => {});
     return () => ctrl.abort();
-  }, [query.assignedToUserId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [query.assignedToUserId, tasks]);
 
-  // scope=mine → server-side filter
+  // scope=mine → server-side filter; reset KPI filter on scope change
   useEffect(() => {
     const isMine = searchParams.get('scope') === 'mine';
     setQuery({
       scope:            isMine ? 'MINE' : 'ALL',
       assignedToUserId: isMine ? (user?.id ?? '') : '',
+      status:           '',
+      overdue:          '',
     });
+    setActiveKpi('');
   }, [searchParams, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keep drawer in sync with refetched task data
   const drawerTask = selectedTask
     ? (tasks.find(t => t.id === selectedTask.id) ?? selectedTask)
     : null;
+
+  // ── KPI card click — toggles a status/overdue filter ───────────────────────
+  function handleKpiClick(kpi) {
+    if (activeKpi === kpi) {
+      setQuery({ status: '', overdue: '' });
+      setActiveKpi('');
+    } else {
+      const filters = {
+        todo:       { status: 'TODO',        overdue: '' },
+        inProgress: { status: 'IN_PROGRESS', overdue: '' },
+        blocked:    { status: 'BLOCKED',     overdue: '' },
+        done:       { status: 'DONE',        overdue: '' },
+        overdue:    { status: '',            overdue: 'true' },
+      }[kpi];
+      setQuery(filters);
+      setActiveKpi(kpi);
+    }
+  }
 
   // ── Filter bar handler ──────────────────────────────────────────────────────
   const handleFilterChange = (key, value) => setQuery({ [key]: value });
@@ -100,11 +126,11 @@ export default function TasksPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        <StatCard label="Open"        count={stats.todo}       color="#4C8DFF" />
-        <StatCard label="In Progress" count={stats.inProgress} color="#F4A23A" />
-        <StatCard label="Blocked"     count={stats.blocked}    color="#F05A5A" />
-        <StatCard label="Overdue"     count={stats.overdue}    color="#EF4444" />
-        <StatCard label="Done"        count={stats.done}       color="#43B96D" />
+        <StatCard label="Open"        count={stats.todo}       color="#4C8DFF" onClick={() => handleKpiClick('todo')}       active={activeKpi === 'todo'} />
+        <StatCard label="In Progress" count={stats.inProgress} color="#F4A23A" onClick={() => handleKpiClick('inProgress')} active={activeKpi === 'inProgress'} />
+        <StatCard label="Blocked"     count={stats.blocked}    color="#F05A5A" onClick={() => handleKpiClick('blocked')}    active={activeKpi === 'blocked'} />
+        <StatCard label="Overdue"     count={stats.overdue}    color="#EF4444" onClick={() => handleKpiClick('overdue')}    active={activeKpi === 'overdue'} />
+        <StatCard label="Done"        count={stats.done}       color="#43B96D" onClick={() => handleKpiClick('done')}       active={activeKpi === 'done'} />
       </div>
 
       {/* Filters */}

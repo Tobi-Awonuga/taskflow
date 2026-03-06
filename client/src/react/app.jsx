@@ -10,6 +10,7 @@ import ProfilePage        from './pages/ProfilePage.jsx';
 import SettingsPage       from './pages/SettingsPage.jsx';
 import UsersPage          from './pages/admin/UsersPage.jsx';
 import AuditPage          from './pages/admin/AuditPage.jsx';
+import DashboardPage      from './pages/DashboardPage.jsx';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
+              <Route path="/dashboard"   element={<DashboardPage />} />
               <Route path="/tasks"       element={<TasksPage />} />
               <Route path="/departments" element={<DepartmentsPage />} />
               <Route path="/profile"     element={<ProfilePage />} />
@@ -31,7 +33,7 @@ export default function App() {
                 <Route path="/admin/audit" element={<AuditPage />} />
               </Route>
 
-              <Route path="/" element={<Navigate to="/tasks" replace />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
             </Route>
           </Route>
         </Routes>

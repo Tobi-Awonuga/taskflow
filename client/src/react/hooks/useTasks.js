@@ -8,6 +8,7 @@ export const INITIAL_QUERY = {
   q:        '',
   scope:            'ALL', // client-side only — not forwarded to backend
   assignedToUserId: '',
+  overdue:          '',
 };
 
 export function useTasks() {
@@ -42,6 +43,7 @@ export function useTasks() {
       if (query.priority) params.set('priority', query.priority);
       if (query.q)                params.set('q',               query.q);
       if (query.assignedToUserId) params.set('assignedToUserId', query.assignedToUserId);
+      if (query.overdue)          params.set('overdue', 'true');
       // query.scope is client-side; not sent to backend
 
       try {

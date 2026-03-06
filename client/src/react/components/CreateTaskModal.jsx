@@ -27,7 +27,7 @@ export default function CreateTaskModal({ open, onClose, onSubmit, user }) {
     if (!open) return;
     setDataLoading(true);
     const fetches = [
-      fetch('/api/users?pageSize=100', { credentials: 'include' })
+      fetch('/api/users?pageSize=100&isActive=true', { credentials: 'include' })
         .then(r => r.ok ? r.json() : { users: [] })
         .then(d => setAllUsers(d.users)),
     ];

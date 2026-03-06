@@ -34,7 +34,7 @@ export default function LoginPage() {
         return;
       }
       setUser(data);
-      navigate('/tasks');
+      navigate('/dashboard');
     } catch {
       setError('Network error — please try again');
     } finally {
@@ -48,8 +48,8 @@ export default function LoginPage() {
 
         {/* Wordmark */}
         <div className="mb-8 text-center">
-          <span className="text-2xl font-bold text-[#F0654D] tracking-tight">TaskFlow</span>
-          <p className="text-sm text-gray-400 mt-1">Sign in to your account</p>
+          <span className="text-2xl font-bold text-[#F0654D] tracking-tight">Nectar</span>
+          <p className="text-sm text-gray-400 mt-1">Make work fun:)</p>
         </div>
 
         <form onSubmit={handleSubmit} aria-label="Sign in form" className="flex flex-col gap-5">
