@@ -131,6 +131,25 @@ router.post('/', requireAuth, requireRole('ADMIN'), (req, res) => {
   return res.status(201).json(safeUser(doCreate()));
 });
 
+// ── GET /api/users/all ────────────────────────────────────────────────────────
+// Returns all active users — no pagination. Used by assignee/collaborator dropdowns.
+
+router.get('/all', requireAuth, (req, res) => {
+  const rows = db.select({
+    id:           users.id,
+    name:         users.name,
+    email:        users.email,
+    role:         users.role,
+    departmentId: users.departmentId,
+    isActive:     users.isActive,
+  }).from(users)
+    .where(eq(users.isActive, true))
+    .orderBy(users.name)
+    .all();
+
+  return res.json({ users: rows });
+});
+
 // ── GET /api/users/:id ────────────────────────────────────────────────────────
 
 router.get('/:id', requireAuth, (req, res) => {

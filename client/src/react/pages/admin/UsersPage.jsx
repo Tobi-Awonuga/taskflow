@@ -1,77 +1,111 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
 
-function RoleBadge({ role }) {
-  const cls = {
-    ADMIN: 'bg-red-100 text-red-700',
-    SUPER: 'bg-amber-100 text-amber-700',
-    USER:  'bg-blue-100 text-blue-600',
-  }[role] ?? 'bg-gray-100 text-gray-600';
-  return <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${cls}`}>{role}</span>;
-}
+// ── Constants ─────────────────────────────────────────────────────────────────
 
-function StatusBadge({ active }) {
-  return active
-    ? <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-700">Active</span>
-    : <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">Inactive</span>;
-}
+const ROLE_PILL = {
+  ADMIN: 'bg-red-50 text-[#F0654D]',
+  SUPER: 'bg-blue-50 text-[#4C8DFF]',
+  USER:  'bg-gray-100 text-gray-600',
+};
 
-function initials(name) {
-  return (name ?? '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-}
+const FILTER_CLS =
+  'appearance-none border border-gray-200 rounded-xl px-3 py-2 pr-8 text-sm text-gray-700 bg-white ' +
+  'focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30 focus:border-[#F0654D] cursor-pointer';
 
-const INPUT_CLS =
+const MODAL_INPUT =
   'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-white ' +
   'focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30 focus:border-[#F0654D] transition-colors';
 
-const SELECT_CLS =
-  'border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 bg-white ' +
-  'focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30 focus:border-[#F0654D]';
+const MODAL_LABEL = 'text-xs font-semibold text-gray-500 uppercase tracking-wider';
 
-// ── UserModal ─────────────────────────────────────────────────────────────────
+const EYE_ON = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+  </svg>
+);
+const EYE_OFF = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+    <line x1="1" y1="1" x2="23" y2="23" />
+  </svg>
+);
 
-function UserModal({ mode, user: editUser, departments, onClose, onSaved }) {
-  const [name, setName]       = useState(editUser?.name     ?? '');
-  const [email, setEmail]     = useState(editUser?.email    ?? '');
+// ── Small components ──────────────────────────────────────────────────────────
+
+function ChevronDown() {
+  return (
+    <svg className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400" width="12" height="12" viewBox="0 0 12 12" fill="none">
+      <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function SkeletonRow() {
+  return (
+    <tr className="border-b border-gray-50">
+      <td className="px-5 py-3.5">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse shrink-0" />
+          <div className="flex flex-col gap-1.5">
+            <div className="h-3 w-28 bg-gray-200 animate-pulse rounded" />
+            <div className="h-2.5 w-36 bg-gray-100 animate-pulse rounded" />
+          </div>
+        </div>
+      </td>
+      <td className="px-4 py-3.5 hidden sm:table-cell"><div className="h-3 w-40 bg-gray-100 animate-pulse rounded" /></td>
+      <td className="px-4 py-3.5"><div className="h-5 w-14 bg-gray-200 animate-pulse rounded-full" /></td>
+      <td className="px-4 py-3.5 hidden md:table-cell"><div className="h-3 w-24 bg-gray-100 animate-pulse rounded" /></td>
+      <td className="px-4 py-3.5"><div className="h-5 w-14 bg-gray-200 animate-pulse rounded-full" /></td>
+      <td className="px-4 py-3.5"><div className="h-6 w-20 bg-gray-100 animate-pulse rounded-lg ml-auto" /></td>
+    </tr>
+  );
+}
+
+// ── AddUserModal ──────────────────────────────────────────────────────────────
+
+function AddUserModal({ departments, onClose, onCreated }) {
+  const [name,     setName]   = useState('');
+  const [email,    setEmail]  = useState('');
   const [password, setPass]   = useState('');
-  const [role, setRole]       = useState(editUser?.role     ?? 'USER');
-  const [deptId, setDeptId]   = useState(editUser?.departmentId ?? '');
-  const [active, setActive]   = useState(editUser?.isActive ?? true);
-  const [error, setError]     = useState('');
-  const [saving, setSaving]   = useState(false);
+  const [showPw,   setShowPw] = useState(false);
+  const [role,     setRole]   = useState('USER');
+  const [deptId,   setDeptId] = useState('');
+  const [error,    setError]  = useState('');
+  const [saving,   setSaving] = useState(false);
 
-  const deptRequired = role === 'SUPER' || role === 'USER';
+  const deptRequired = role !== 'ADMIN';
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
-    if (!name.trim()) { setError('Name is required.'); return; }
-    if (mode === 'create') {
-      if (!email.trim()) { setError('Email is required.'); return; }
-      if (!password)     { setError('Password is required.'); return; }
-    }
+    if (!name.trim())        { setError('Full name is required.'); return; }
+    if (!email.trim())       { setError('Email is required.'); return; }
+    if (!password)           { setError('Password is required.'); return; }
+    if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
     if (deptRequired && !deptId) { setError('Department is required for this role.'); return; }
-
-    const body = mode === 'create'
-      ? { name: name.trim(), email: email.trim().toLowerCase(), password, role, departmentId: deptId ? Number(deptId) : null }
-      : { name: name.trim(), role, departmentId: deptId ? Number(deptId) : null, isActive: active };
 
     setSaving(true);
     try {
-      const res = await fetch(
-        mode === 'create' ? '/api/users' : `/api/users/${editUser.id}`,
-        {
-          method: mode === 'create' ? 'POST' : 'PATCH',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        },
-      );
+      const res = await fetch('/api/users', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name:         name.trim(),
+          email:        email.trim(),
+          password,
+          role,
+          departmentId: deptId ? parseInt(deptId, 10) : null,
+        }),
+      });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? 'Something went wrong.'); return; }
-      onSaved();
+      if (!res.ok) {
+        setError(res.status === 409 ? 'This email is already in use.' : (data.error ?? 'Something went wrong.'));
+        return;
+      }
+      onCreated(data);
     } catch {
-      setError('Network error.');
+      setError('Network error — please try again.');
     } finally {
       setSaving(false);
     }
@@ -79,77 +113,151 @@ function UserModal({ mode, user: editUser, departments, onClose, onSaved }) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/30 z-30" onClick={onClose} />
-      <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 flex flex-col gap-4">
-          <h3 className="text-base font-bold text-gray-800">
-            {mode === 'create' ? 'Add User' : 'Edit User'}
-          </h3>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div
+          className="w-full max-w-md bg-white rounded-2xl shadow-xl flex flex-col max-h-[90vh]"
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
+            <h2 className="text-lg font-bold text-gray-800">Add User</h2>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-gray-500">Name</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} className={INPUT_CLS} />
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 px-6 py-5 overflow-y-auto">
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="add-user-name" className={MODAL_LABEL}>Full Name <span className="text-[#F0654D]">*</span></label>
+              <input
+                id="add-user-name"
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                autoFocus
+                placeholder="Jane Smith"
+                className={MODAL_INPUT}
+              />
             </div>
 
-            {mode === 'create' && (
-              <>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-500">Email</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} className={INPUT_CLS} />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-semibold text-gray-500">Password</label>
-                  <input type="password" value={password} onChange={e => setPass(e.target.value)} className={INPUT_CLS} autoComplete="new-password" />
-                </div>
-              </>
-            )}
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="add-user-email" className={MODAL_LABEL}>Email <span className="text-[#F0654D]">*</span></label>
+              <input
+                id="add-user-email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="jane@example.com"
+                className={MODAL_INPUT}
+              />
+            </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-gray-500">Role</label>
-              <select value={role} onChange={e => setRole(e.target.value)} className={SELECT_CLS}>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="add-user-password" className={MODAL_LABEL}>Password <span className="text-[#F0654D]">*</span></label>
+              <div className="relative">
+                <input
+                  id="add-user-password"
+                  type={showPw ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPass(e.target.value)}
+                  autoComplete="new-password"
+                  placeholder="At least 8 characters"
+                  className={`${MODAL_INPUT} pr-10`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(v => !v)}
+                  aria-label={showPw ? 'Hide password' : 'Show password'}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600"
+                >
+                  {showPw ? EYE_OFF : EYE_ON}
+                </button>
+              </div>
+              <p className="text-xs text-gray-400">User can change this after first login.</p>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="add-user-role" className={MODAL_LABEL}>Role</label>
+              <select
+                id="add-user-role"
+                value={role}
+                onChange={e => { setRole(e.target.value); setDeptId(''); }}
+                className={MODAL_INPUT}
+              >
                 <option value="USER">USER</option>
                 <option value="SUPER">SUPER</option>
                 <option value="ADMIN">ADMIN</option>
               </select>
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-gray-500">
-                Department{deptRequired ? ' *' : ''}
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="add-user-dept" className={MODAL_LABEL}>
+                Department{deptRequired && <span className="text-[#F0654D]"> *</span>}
               </label>
-              <select value={deptId} onChange={e => setDeptId(e.target.value)} className={SELECT_CLS}>
-                {!deptRequired && <option value="">No department (org-wide)</option>}
-                {deptRequired  && <option value="">Select a department…</option>}
+              <select
+                id="add-user-dept"
+                value={deptId}
+                onChange={e => setDeptId(e.target.value)}
+                className={MODAL_INPUT}
+              >
+                {deptRequired
+                  ? <option value="">Select a department…</option>
+                  : <option value="">No department / Org-wide</option>
+                }
                 {departments.map(d => (
                   <option key={d.id} value={d.id}>{d.name}</option>
                 ))}
               </select>
             </div>
 
-            {mode === 'edit' && (
-              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={active}
-                  onChange={e => setActive(e.target.checked)}
-                  className="rounded"
-                />
-                Active
-              </label>
+            {error && (
+              <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
             )}
 
-            {error && <p className="text-sm text-red-500">{error}</p>}
-
-            <div className="flex gap-2 justify-end pt-1">
-              <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 rounded-lg">
-                Cancel
-              </button>
-              <button type="submit" disabled={saving} className="px-4 py-2 text-sm font-semibold bg-[#F0654D] hover:bg-[#E85B44] text-white rounded-xl disabled:opacity-60">
-                {saving ? 'Saving…' : mode === 'create' ? 'Add User' : 'Save'}
-              </button>
-            </div>
           </form>
+
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 text-sm font-semibold text-gray-500 hover:text-gray-700 border border-gray-200 hover:border-gray-300 rounded-xl transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={saving}
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-[#F0654D] hover:bg-[#E85B44] rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {saving ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+                  </svg>
+                  Creating…
+                </>
+              ) : (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                    <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                  Add User
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </>
@@ -161,110 +269,177 @@ function UserModal({ mode, user: editUser, departments, onClose, onSaved }) {
 export default function UsersPage() {
   const { user: authUser } = useAuth();
 
-  const [users, setUsers]           = useState([]);
-  const [departments, setDepts]     = useState([]);
-  const [total, setTotal]           = useState(0);
-  const [page, setPage]             = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading]       = useState(true);
-  const [refetchTick, setRefetch]   = useState(0);
-  const [roleFilter, setRoleFilter] = useState('');
-  const [activeFilter, setActive]   = useState('');
-  const [searchQ, setSearchQ]       = useState('');
-  const [modal, setModal]           = useState(null);
-  const [saving, setSaving]         = useState(false); // eslint-disable-line no-unused-vars
-  const [error, setError]           = useState('');    // eslint-disable-line no-unused-vars
+  const [users,         setUsers]        = useState([]);
+  const [departments,   setDepts]        = useState([]);
+  const [total,         setTotal]        = useState(0);
+  const [page,          setPage]         = useState(1);
+  const [totalPages,    setTotalPages]   = useState(1);
+  const [loading,       setLoading]      = useState(true);
+  const [roleFilter,    setRoleFilter]   = useState('');
+  const [statusFilter,  setStatus]       = useState('');
+  const [refetchTick,   setRefetch]      = useState(0);
+  const [showCreate,    setShowCreate]   = useState(false);
 
-  const fetchUsers = useCallback(() => {
+  // Inline editing state
+  const [editingRoleId, setEditingRoleId] = useState(null);
+  const [editingNameId, setEditingNameId] = useState(null);
+  const [nameDraft,     setNameDraft]     = useState('');
+  const [editingDeptId, setEditingDeptId] = useState(null);
+
+  // Fetch users
+  useEffect(() => {
+    const ctrl = new AbortController();
     setLoading(true);
-    let url = `/api/users?page=${page}&pageSize=20`;
-    if (roleFilter)   url += `&role=${roleFilter}`;
-    if (activeFilter) url += `&isActive=${activeFilter}`;
-    fetch(url, { credentials: 'include' })
+    const params = new URLSearchParams({ page, pageSize: 20 });
+    if (roleFilter)   params.set('role', roleFilter);
+    if (statusFilter) params.set('isActive', statusFilter);
+    fetch(`/api/users?${params}`, { credentials: 'include', signal: ctrl.signal })
       .then(r => r.ok ? r.json() : { users: [], total: 0, totalPages: 1 })
       .then(d => {
         setUsers(d.users ?? []);
         setTotal(d.total ?? 0);
         setTotalPages(d.totalPages ?? 1);
       })
+      .catch(() => {})
       .finally(() => setLoading(false));
-  }, [page, roleFilter, activeFilter, refetchTick]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => ctrl.abort();
+  }, [page, roleFilter, statusFilter, refetchTick]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
-
+  // Fetch departments once on mount
   useEffect(() => {
-    fetch('/api/departments', { credentials: 'include' })
+    const ctrl = new AbortController();
+    fetch('/api/departments', { credentials: 'include', signal: ctrl.signal })
       .then(r => r.ok ? r.json() : { departments: [] })
-      .then(d => setDepts(d.departments ?? []));
+      .then(d => setDepts(d.departments ?? []))
+      .catch(() => {});
+    return () => ctrl.abort();
   }, []);
 
-  async function handleDeactivate(u) {
-    if (!window.confirm(`Deactivate ${u.name}?`)) return;
-    await fetch(`/api/users/${u.id}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    });
-    setRefetch(n => n + 1);
-  }
+  // ── Mutation handlers ────────────────────────────────────────────────────────
 
-  async function handleReactivate(u) {
-    await fetch(`/api/users/${u.id}`, {
-      method: 'PATCH',
-      credentials: 'include',
+  async function handleRoleChange(userId, newRole) {
+    setEditingRoleId(null);
+    const prev = users.find(u => u.id === userId);
+    setUsers(list => list.map(u => u.id === userId ? { ...u, role: newRole } : u));
+    const res = await fetch(`/api/users/${userId}`, {
+      method: 'PATCH', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isActive: true }),
+      body: JSON.stringify({ role: newRole }),
     });
+    if (!res.ok) {
+      setUsers(list => list.map(u => u.id === userId ? { ...u, role: prev.role } : u));
+    }
+  }
+
+  async function handleToggleActive(userId) {
+    const prev = users.find(u => u.id === userId);
+    const newActive = !prev.isActive;
+    setUsers(list => list.map(u => u.id === userId ? { ...u, isActive: newActive } : u));
+    const res = await fetch(`/api/users/${userId}`, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isActive: newActive }),
+    });
+    if (!res.ok) {
+      setUsers(list => list.map(u => u.id === userId ? { ...u, isActive: prev.isActive } : u));
+    }
+  }
+
+  async function handleNameSave(userId) {
+    const trimmed = nameDraft.trim();
+    setEditingNameId(null);
+    if (!trimmed) return;
+    const prev = users.find(u => u.id === userId);
+    if (trimmed === prev.name) return;
+    setUsers(list => list.map(u => u.id === userId ? { ...u, name: trimmed } : u));
+    const res = await fetch(`/api/users/${userId}`, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: trimmed }),
+    });
+    if (!res.ok) {
+      setUsers(list => list.map(u => u.id === userId ? { ...u, name: prev.name } : u));
+    }
+  }
+
+  async function handleDeptChange(userId, newDeptId) {
+    setEditingDeptId(null);
+    const prev = users.find(u => u.id === userId);
+    const deptId = newDeptId ? parseInt(newDeptId, 10) : null;
+    setUsers(list => list.map(u => u.id === userId ? { ...u, departmentId: deptId } : u));
+    const res = await fetch(`/api/users/${userId}`, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ departmentId: deptId }),
+    });
+    if (!res.ok) {
+      setUsers(list => list.map(u => u.id === userId ? { ...u, departmentId: prev.departmentId } : u));
+    }
+  }
+
+  function handleCreated() {
+    setShowCreate(false);
+    setPage(1);
     setRefetch(n => n + 1);
   }
 
-  const displayUsers = users.filter(u =>
-    !searchQ ||
-    u.name.toLowerCase().includes(searchQ.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchQ.toLowerCase())
-  );
+  // ── Derived ──────────────────────────────────────────────────────────────────
 
+  const from = total === 0 ? 0 : (page - 1) * 20 + 1;
+  const to   = Math.min(page * 20, total);
   const prevEnabled = page > 1 && !loading;
   const nextEnabled = page < totalPages && !loading;
+
+  function deptName(departmentId) {
+    return departments.find(d => d.id === departmentId)?.name ?? (departmentId ? `Dept #${departmentId}` : 'Org-wide');
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
     <main className="p-8 flex flex-col gap-6 min-w-0 overflow-y-auto">
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Users <span className="text-lg font-normal text-gray-400">({total})</span></h1>
+        <h1 className="text-2xl font-bold text-gray-800">Users</h1>
         <button
-          onClick={() => setModal({ mode: 'create' })}
+          onClick={() => setShowCreate(true)}
           className="flex items-center gap-2 bg-[#F0654D] hover:bg-[#E85B44] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
         >
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
             <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
-          Add User
+          New User
         </button>
       </div>
 
-      {/* Filter bar */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <input
-          type="text"
-          placeholder="Search name or email…"
-          value={searchQ}
-          onChange={e => setSearchQ(e.target.value)}
-          className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30 focus:border-[#F0654D] w-56"
-        />
-        <select value={roleFilter} onChange={e => { setRoleFilter(e.target.value); setPage(1); }}
-          className="border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30">
-          <option value="">All Roles</option>
-          <option value="ADMIN">ADMIN</option>
-          <option value="SUPER">SUPER</option>
-          <option value="USER">USER</option>
-        </select>
-        <select value={activeFilter} onChange={e => { setActive(e.target.value); setPage(1); }}
-          className="border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30">
-          <option value="">All Status</option>
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
-        </select>
+      {/* Filters */}
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <select
+            value={roleFilter}
+            onChange={e => { setRoleFilter(e.target.value); setPage(1); }}
+            className={FILTER_CLS}
+          >
+            <option value="">All Roles</option>
+            <option value="USER">USER</option>
+            <option value="SUPER">SUPER</option>
+            <option value="ADMIN">ADMIN</option>
+          </select>
+          <ChevronDown />
+        </div>
+        <div className="relative">
+          <select
+            value={statusFilter}
+            onChange={e => { setStatus(e.target.value); setPage(1); }}
+            className={FILTER_CLS}
+          >
+            <option value="">All</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+          <ChevronDown />
+        </div>
       </div>
 
       {/* Table */}
@@ -272,65 +447,157 @@ export default function UsersPage() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-100">
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5">User</th>
+              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5">Name</th>
+              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5 hidden sm:table-cell">Email</th>
               <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Role</th>
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Department</th>
+              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5 hidden md:table-cell">Department</th>
               <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Status</th>
               <th className="px-4 py-3.5" />
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="px-5 py-10 text-center text-sm text-gray-400">Loading…</td></tr>
-            ) : displayUsers.length === 0 ? (
-              <tr><td colSpan={5} className="px-5 py-10 text-center text-sm text-gray-400">No users found.</td></tr>
-            ) : displayUsers.map((u, idx) => {
-              const dept = departments.find(d => d.id === u.departmentId);
+              Array.from({ length: 5 }, (_, i) => <SkeletonRow key={i} />)
+            ) : users.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-5 py-16 text-center">
+                  <svg className="mx-auto mb-3 text-gray-300" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M3 20c0-3.866 2.686-7 6-7" />
+                    <path d="M16 15h6M19 12v6" />
+                  </svg>
+                  <p className="text-sm text-gray-400">No users found</p>
+                </td>
+              </tr>
+            ) : users.map(u => {
+              const isSelf        = u.id === authUser?.id;
+              const isEditingRole = editingRoleId === u.id;
+              const isEditingName = editingNameId === u.id;
+              const isEditingDept = editingDeptId === u.id;
+
               return (
-                <tr key={u.id} className={`border-b border-gray-50 ${idx % 2 === 1 ? 'bg-gray-50/40' : ''}`}>
+                <tr key={u.id} className="border-b border-gray-50 hover:bg-gray-50/40 transition-colors">
+
+                  {/* Name — click to edit */}
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-[#F0654D] flex items-center justify-center text-white text-xs font-bold shrink-0">
-                        {initials(u.name)}
+                        {(u.name ?? '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate">{u.name}</p>
-                        <p className="text-xs text-gray-400 truncate">{u.email}</p>
+                      <div className="min-w-0 flex-1">
+                        {isEditingName ? (
+                          <input
+                            autoFocus
+                            value={nameDraft}
+                            onChange={e => setNameDraft(e.target.value)}
+                            onBlur={() => handleNameSave(u.id)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter')  { e.preventDefault(); handleNameSave(u.id); }
+                              if (e.key === 'Escape') { setEditingNameId(null); }
+                            }}
+                            className="text-sm font-semibold text-gray-800 w-full border-b border-[#F0654D] focus:outline-none bg-transparent"
+                          />
+                        ) : (
+                          <p
+                            onClick={() => { setEditingNameId(u.id); setNameDraft(u.name); }}
+                            title="Click to edit name"
+                            className="text-sm font-semibold text-gray-800 truncate cursor-text hover:text-[#F0654D] transition-colors"
+                          >
+                            {u.name}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-400 truncate sm:hidden">{u.email}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3.5"><RoleBadge role={u.role} /></td>
-                  <td className="px-4 py-3.5 text-sm text-gray-600">{dept?.name ?? '—'}</td>
-                  <td className="px-4 py-3.5"><StatusBadge active={u.isActive} /></td>
+
+                  {/* Email */}
+                  <td className="px-4 py-3.5 text-sm text-gray-500 hidden sm:table-cell">{u.email}</td>
+
+                  {/* Role — clickable pill */}
                   <td className="px-4 py-3.5">
-                    <div className="flex items-center gap-2 justify-end">
-                      <button
-                        onClick={() => setModal({ mode: 'edit', user: u })}
-                        className="text-xs text-gray-500 hover:text-gray-800 px-2 py-1 rounded hover:bg-gray-100"
+                    {isEditingRole ? (
+                      <select
+                        autoFocus
+                        defaultValue={u.role}
+                        onBlur={() => setEditingRoleId(null)}
+                        onChange={e => handleRoleChange(u.id, e.target.value)}
+                        className="text-xs border border-gray-300 rounded-lg px-2 py-1 bg-white focus:outline-none focus:border-[#F0654D]"
                       >
-                        Edit
+                        <option value="USER">USER</option>
+                        <option value="SUPER">SUPER</option>
+                        <option value="ADMIN">ADMIN</option>
+                      </select>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={isSelf}
+                        onClick={() => !isSelf && setEditingRoleId(u.id)}
+                        title={isSelf ? 'Cannot change your own role' : 'Click to change role'}
+                        className={`text-xs font-semibold px-2.5 py-1 rounded-full ${ROLE_PILL[u.role] ?? 'bg-gray-100 text-gray-600'} ${!isSelf ? 'hover:opacity-75 cursor-pointer' : 'cursor-default'}`}
+                      >
+                        {u.role}
                       </button>
-                      {u.id !== authUser?.id && (
-                        u.isActive
-                          ? (
-                            <button
-                              onClick={() => handleDeactivate(u)}
-                              className="text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded hover:bg-red-50"
-                            >
-                              Deactivate
-                            </button>
-                          )
-                          : (
-                            <button
-                              onClick={() => handleReactivate(u)}
-                              className="text-xs text-green-500 hover:text-green-700 px-2 py-1 rounded hover:bg-green-50"
-                            >
-                              Reactivate
-                            </button>
-                          )
-                      )}
-                    </div>
+                    )}
                   </td>
+
+                  {/* Department — clickable, inline select */}
+                  <td className="px-4 py-3.5 hidden md:table-cell">
+                    {isEditingDept && !isSelf ? (
+                      <select
+                        autoFocus
+                        defaultValue={u.departmentId ?? ''}
+                        onBlur={() => setEditingDeptId(null)}
+                        onChange={e => handleDeptChange(u.id, e.target.value)}
+                        className="text-xs border border-gray-300 rounded-lg px-2 py-1 bg-white focus:outline-none focus:border-[#F0654D]"
+                      >
+                        <option value="">Org-wide (none)</option>
+                        {departments.map(d => (
+                          <option key={d.id} value={d.id}>{d.name}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={isSelf}
+                        onClick={() => !isSelf && setEditingDeptId(u.id)}
+                        title={isSelf ? undefined : 'Click to change department'}
+                        className={`text-sm text-left ${isSelf ? 'text-gray-500 cursor-default' : 'text-gray-500 hover:text-gray-800 cursor-pointer'}`}
+                      >
+                        {deptName(u.departmentId)}
+                      </button>
+                    )}
+                  </td>
+
+                  {/* Status */}
+                  <td className="px-4 py-3.5">
+                    {u.isActive
+                      ? <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-700">Active</span>
+                      : <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">Inactive</span>
+                    }
+                  </td>
+
+                  {/* Actions */}
+                  <td className="px-4 py-3.5 text-right">
+                    {isSelf ? (
+                      <span className="text-xs text-gray-300">—</span>
+                    ) : u.isActive ? (
+                      <button
+                        onClick={() => handleToggleActive(u.id)}
+                        className="text-xs text-gray-500 hover:text-red-500 hover:bg-red-50 px-3 py-1 rounded-lg transition-colors"
+                      >
+                        Deactivate
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleToggleActive(u.id)}
+                        className="text-xs text-green-600 hover:text-green-800 hover:bg-green-50 px-3 py-1 rounded-lg transition-colors"
+                      >
+                        Activate
+                      </button>
+                    )}
+                  </td>
+
                 </tr>
               );
             })}
@@ -339,33 +606,34 @@ export default function UsersPage() {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-end gap-1 text-sm">
-        <button
-          disabled={!prevEnabled}
-          onClick={() => setPage(p => p - 1)}
-          className={`px-3 py-1.5 rounded-lg border border-gray-200 ${prevEnabled ? 'hover:bg-gray-50 text-gray-600 cursor-pointer' : 'text-gray-300 cursor-not-allowed'}`}
-        >
-          Previous
-        </button>
-        <button className="px-3 py-1.5 rounded-lg bg-[#F0654D] text-white font-semibold">
-          {page} / {totalPages}
-        </button>
-        <button
-          disabled={!nextEnabled}
-          onClick={() => setPage(p => p + 1)}
-          className={`px-3 py-1.5 rounded-lg border border-gray-200 ${nextEnabled ? 'hover:bg-gray-50 text-gray-600 cursor-pointer' : 'text-gray-300 cursor-not-allowed'}`}
-        >
-          Next
-        </button>
+      <div className="flex items-center justify-between text-sm text-gray-400">
+        <span>Showing {from}–{to} of {total} users</span>
+        <div className="flex items-center gap-1">
+          <button
+            disabled={!prevEnabled}
+            onClick={() => setPage(p => p - 1)}
+            className={`px-3 py-1.5 rounded-lg border border-gray-200 ${prevEnabled ? 'hover:bg-gray-50 text-gray-600 cursor-pointer' : 'text-gray-300 cursor-not-allowed'}`}
+          >
+            Previous
+          </button>
+          <button className="px-3 py-1.5 rounded-lg bg-[#F0654D] text-white font-semibold">
+            {page} / {totalPages}
+          </button>
+          <button
+            disabled={!nextEnabled}
+            onClick={() => setPage(p => p + 1)}
+            className={`px-3 py-1.5 rounded-lg border border-gray-200 ${nextEnabled ? 'hover:bg-gray-50 text-gray-600 cursor-pointer' : 'text-gray-300 cursor-not-allowed'}`}
+          >
+            Next
+          </button>
+        </div>
       </div>
 
-      {modal && (
-        <UserModal
-          mode={modal.mode}
-          user={modal.user ?? null}
+      {showCreate && (
+        <AddUserModal
           departments={departments}
-          onClose={() => setModal(null)}
-          onSaved={() => { setModal(null); setRefetch(n => n + 1); }}
+          onClose={() => setShowCreate(false)}
+          onCreated={handleCreated}
         />
       )}
 

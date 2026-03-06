@@ -47,7 +47,7 @@ export default function TasksPage() {
   // users fetch
   useEffect(() => {
     const ctrl = new AbortController();
-    fetch('/api/users?pageSize=100&isActive=true', { credentials: 'include', signal: ctrl.signal })
+    fetch('/api/users/all', { credentials: 'include', signal: ctrl.signal })
       .then(r => r.ok ? r.json() : { users: [] })
       .then(d => setAllUsers(d.users ?? []))
       .catch(() => {});
