@@ -1,15 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 
-function NavItem({ to, label, icon, active }) {
+function NavItem({ to, label, icon, active, badge }) {
   const base = 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors';
   const activeClass = `${base} font-semibold bg-[#F0654D] text-white`;
   const inactiveClass = `${base} font-medium text-gray-600 hover:bg-white/60 hover:text-gray-800`;
   return (
     <Link to={to} className={active ? activeClass : inactiveClass}>
       {icon}
-      <span>{label}</span>
+      <span className="flex-1">{label}</span>
+      {badge > 0 && (
+        <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${active ? 'bg-white text-[#F0654D]' : 'bg-gray-300 text-gray-600'}`}>
+          {badge}
+        </span>
+      )}
     </Link>
   );
 }
@@ -92,6 +97,20 @@ export default function AppLayout() {
   const location           = useLocation();
   const [searchParams]     = useSearchParams();
   const [signingOut, setSigningOut] = useState(false);
+  const [myOpenCount, setMyOpenCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    function fetchCount() {
+      fetch(`/api/tasks/stats?assignedToUserId=${user.id}`, { credentials: 'include' })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => d && setMyOpenCount(d.todo ?? 0))
+        .catch(() => {});
+    }
+    fetchCount();
+    const interval = setInterval(fetchCount, 60_000);
+    return () => clearInterval(interval);
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const initials = user ? user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '??';
 
@@ -145,8 +164,8 @@ export default function AppLayout() {
         {/* Workspace nav */}
         <nav className="flex flex-col gap-0.5">
           <SectionLabel label="Workspace" />
-          <NavItem to="/tasks"             label="Tasks"       icon={icons.tasks}       active={isTasks} />
-          <NavItem to="/tasks?scope=mine"  label="My Tasks"    icon={icons.myTasks}     active={isMine} />
+          <NavItem to="/tasks"             label="All Tasks"   icon={icons.tasks}       active={isTasks} />
+          <NavItem to="/tasks?scope=mine"  label="My Tasks"    icon={icons.myTasks}     active={isMine} badge={myOpenCount} />
           <NavItem to="/departments"       label="Departments" icon={icons.departments} active={isDepts} />
         </nav>
 

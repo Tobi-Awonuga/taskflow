@@ -1,15 +1,17 @@
 'use strict';
+const crypto       = require('crypto');
 const { Router }   = require('express');
 const { z }        = require('zod');
 const { eq }       = require('drizzle-orm');
 const { db, sqlite } = require('../db/client');
-const { users }    = require('../db/schema');
+const { users, sessions, passwordResetTokens } = require('../db/schema');
 const rateLimit    = require('express-rate-limit');
 const { verifyPassword, hashPassword } = require('../lib/password');
 const { createSession, revokeSession,
         setSessionCookie, clearSessionCookie } = require('../lib/sessions');
 const { writeAuditLog, AUDIT_ACTIONS } = require('../lib/audit');
 const requireAuth                     = require('../middleware/requireAuth');
+const { sendMail }                    = require('../lib/mailer');
 
 const DUMMY_HASH = '$2b$12$invalidhashpaddingtoensureconstanttimexxxxxxxxxxxxxxxxxxx';
 
@@ -19,6 +21,14 @@ const loginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders:   false,
   message:         { error: 'Too many login attempts. Try again in 15 minutes.' },
+});
+
+const resetLimiter = rateLimit({
+  windowMs:        15 * 60 * 1000,
+  max:             5,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message:         { error: 'Too many password reset requests. Try again in 15 minutes.' },
 });
 
 const router = Router();
@@ -118,6 +128,95 @@ router.post('/change-password', requireAuth, (req, res) => {
       entityType:  'USER',
       entityId:    req.user.id,
       after:       { passwordChanged: true },
+    });
+  })();
+
+  return res.json({ ok: true });
+});
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address' }),
+});
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', resetLimiter, async (req, res) => {
+  const parsed = forgotPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0].message });
+  }
+
+  const { email } = parsed.data;
+  const user = db.select().from(users).where(eq(users.email, email.toLowerCase())).get();
+
+  // Always 200 to prevent email enumeration
+  if (!user || !user.isActive) {
+    return res.json({ ok: true });
+  }
+
+  const token     = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+
+  db.insert(passwordResetTokens).values({ userId: user.id, token, expiresAt }).run();
+
+  const resetUrl = `${req.protocol}://${req.get('host')}/reset-password?token=${token}`;
+  await sendMail({
+    to:      user.email,
+    subject: 'Reset your Nectar password',
+    html:    `<p>Hi ${user.name},</p>
+              <p>Click the link below to reset your password. This link expires in 1 hour.</p>
+              <p><a href="${resetUrl}">${resetUrl}</a></p>
+              <p>If you did not request a password reset, you can safely ignore this email.</p>`,
+  });
+
+  return res.json({ ok: true });
+});
+
+const resetPasswordSchema = z.object({
+  token:       z.string().min(1, '"token" is required'),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', resetLimiter, (req, res) => {
+  const parsed = resetPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error.issues[0].message });
+  }
+
+  const { token, newPassword } = parsed.data;
+  const now = new Date().toISOString();
+
+  const record = db.select().from(passwordResetTokens)
+    .where(eq(passwordResetTokens.token, token))
+    .get();
+
+  if (!record || record.usedAt || record.expiresAt < now) {
+    return res.status(400).json({ error: 'Invalid or expired reset link' });
+  }
+
+  sqlite.transaction(() => {
+    db.update(users)
+      .set({ passwordHash: hashPassword(newPassword), updatedAt: now })
+      .where(eq(users.id, record.userId))
+      .run();
+
+    db.update(passwordResetTokens)
+      .set({ usedAt: now })
+      .where(eq(passwordResetTokens.id, record.id))
+      .run();
+
+    // Revoke all active sessions for this user
+    db.update(sessions)
+      .set({ revokedAt: now })
+      .where(eq(sessions.userId, record.userId))
+      .run();
+
+    writeAuditLog({
+      actorUserId: record.userId,
+      action:      AUDIT_ACTIONS.USER_UPDATED,
+      entityType:  'USER',
+      entityId:    record.userId,
+      after:       { passwordReset: true },
     });
   })();
 

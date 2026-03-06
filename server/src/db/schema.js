@@ -130,4 +130,19 @@ const auditLogs = sqliteTable('audit_logs', {
   timeIdx:   index('audit_time_idx').on(t.createdAt),
 }));
 
-module.exports = { departments, users, tasks, sessions, auditLogs };
+// ── password_reset_tokens ──────────────────────────────────────────────────────
+
+const passwordResetTokens = sqliteTable('password_reset_tokens', {
+  id:        integer('id').primaryKey({ autoIncrement: true }),
+  userId:    integer('user_id').notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  token:     text('token').notNull().unique(),
+  expiresAt: text('expires_at').notNull(),
+  usedAt:    text('used_at'),
+  createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
+}, (t) => ({
+  tokenIdx:  uniqueIndex('prt_token_idx').on(t.token),
+  userIdx:   index('prt_user_idx').on(t.userId),
+}));
+
+module.exports = { departments, users, tasks, sessions, auditLogs, passwordResetTokens };

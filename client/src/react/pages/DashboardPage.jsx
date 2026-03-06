@@ -7,7 +7,7 @@ import TaskDetailDrawer   from '../components/TaskDetailDrawer.jsx';
 function greeting(name) {
   const h = new Date().getHours();
   const g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-  return `${g}, ${name?.split(' ')[0] ?? 'there'}`;
+  return `${g}, ${name?.split(' ')[0] ?? 'there'}!`;
 }
 
 function relativeTime(iso) {
