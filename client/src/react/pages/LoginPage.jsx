@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import AuthShell from '../components/AuthShell.jsx';
 
 // ── Typewriter ──────────────────────────────────────────────────────────────────
 
@@ -94,7 +93,7 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthShell footer={`© ${new Date().getFullYear()} Nectar — Internal use only`}>
+    <>
 
       {/* Wordmark */}
       <div className="mb-8 text-center">
@@ -181,6 +180,6 @@ export default function LoginPage() {
         </button>
 
       </form>
-    </AuthShell>
+    </>
   );
 }

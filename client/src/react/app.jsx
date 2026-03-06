@@ -3,6 +3,7 @@ import { AuthProvider }   from './context/AuthContext.jsx';
 import { ToastProvider }  from './context/ToastContext.jsx';
 import ProtectedRoute     from './components/ProtectedRoute.jsx';
 import AppLayout          from './components/AppLayout.jsx';
+import AuthLayout         from './components/AuthLayout.jsx';
 import LoginPage           from './pages/LoginPage.jsx';
 import ForgotPasswordPage  from './pages/ForgotPasswordPage.jsx';
 import ResetPasswordPage   from './pages/ResetPasswordPage.jsx';
@@ -20,9 +21,11 @@ export default function App() {
       <ToastProvider>
       <AuthProvider>
         <Routes>
-          <Route path="/login"            element={<LoginPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password"  element={<ResetPasswordPage />} />
+          <Route element={<AuthLayout />}>
+            <Route path="/login"            element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password"  element={<ResetPasswordPage />} />
+          </Route>
 
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import AuthShell from '../components/AuthShell.jsx';
 
 const INPUT_CLS =
   'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-gray-50/60 ' +
@@ -66,38 +65,34 @@ export default function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <AuthShell>
-        <div className="text-center">
-          <div className="mb-6">
-            <span className="text-2xl font-bold text-[#F0654D] tracking-tight">Nectar</span>
-          </div>
-          <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-6">
-            Invalid reset link. The link may have expired or already been used.
-          </p>
-          <Link to="/forgot-password" className="text-sm text-[#F0654D] hover:underline">
-            Request a new password reset
-          </Link>
+      <div className="text-center">
+        <div className="mb-6">
+          <span className="text-2xl font-bold text-[#F0654D] tracking-tight">Nectar</span>
         </div>
-      </AuthShell>
+        <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-6">
+          Invalid reset link. The link may have expired or already been used.
+        </p>
+        <Link to="/forgot-password" className="text-sm text-[#F0654D] hover:underline">
+          Request a new password reset
+        </Link>
+      </div>
     );
   }
 
   if (success) {
     return (
-      <AuthShell>
-        <div className="text-center">
-          <div className="mb-6">
-            <span className="text-2xl font-bold text-[#F0654D] tracking-tight">Nectar</span>
-          </div>
-          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#43B96D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          </div>
-          <h2 className="text-lg font-bold text-gray-800 mb-2">Password updated</h2>
-          <p className="text-sm text-gray-400">Redirecting you to sign in…</p>
+      <div className="text-center">
+        <div className="mb-6">
+          <span className="text-2xl font-bold text-[#F0654D] tracking-tight">Nectar</span>
         </div>
-      </AuthShell>
+        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#43B96D" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <h2 className="text-lg font-bold text-gray-800 mb-2">Password updated</h2>
+        <p className="text-sm text-gray-400">Redirecting you to sign in…</p>
+      </div>
     );
   }
 
@@ -124,7 +119,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <AuthShell>
+    <>
 
       <div className="mb-8 text-center">
         <span className="text-2xl font-bold text-[#F0654D] tracking-tight">Nectar</span>
@@ -184,6 +179,6 @@ export default function ResetPasswordPage() {
         </p>
 
       </form>
-    </AuthShell>
+    </>
   );
 }

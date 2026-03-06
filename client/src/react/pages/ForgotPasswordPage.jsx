@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import AuthShell from '../components/AuthShell.jsx';
 
 const INPUT_CLS =
   'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-gray-50/60 ' +
@@ -36,7 +35,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <AuthShell>
+    <>
 
       {/* Wordmark */}
       <div className="mb-8 text-center">
@@ -112,6 +111,6 @@ export default function ForgotPasswordPage() {
         </form>
       )}
 
-    </AuthShell>
+    </>
   );
 }

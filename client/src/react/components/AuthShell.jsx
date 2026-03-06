@@ -1,17 +1,17 @@
 import { useState } from 'react';
 
 /**
- * Shared shell for all auth pages (login, forgot-password, reset-password).
- * Renders the full-screen video background with orange color grade.
- * Place a looping office video at client/public/nectar-bg.mp4 to activate.
+ * Persistent backdrop for all auth pages.
+ * Mounted once via AuthLayout — never re-renders on auth route transitions.
+ * The card content slot (children) fades in independently on each navigation.
  */
-export default function AuthShell({ children, footer }) {
+export default function AuthShell({ children }) {
   const [videoReady, setVideoReady] = useState(false);
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
 
-      {/* Fallback gradient — always visible as the base layer */}
+      {/* Fallback gradient — always the base layer */}
       <div
         className="absolute inset-0"
         style={{
@@ -19,7 +19,7 @@ export default function AuthShell({ children, footer }) {
         }}
       />
 
-      {/* Video — fades in only once it's ready, over the gradient */}
+      {/* Video — fades in once ready, over the gradient */}
       <video
         autoPlay loop muted playsInline
         onCanPlay={() => setVideoReady(true)}
@@ -48,7 +48,7 @@ export default function AuthShell({ children, footer }) {
         style={{ background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.35) 100%)' }}
       />
 
-      {/* Card */}
+      {/* Card slot — content injected by AuthLayout */}
       <div className="relative z-10 w-full max-w-sm px-4">
         <div
           className="bg-white rounded-3xl px-8 py-10"
@@ -56,10 +56,9 @@ export default function AuthShell({ children, footer }) {
         >
           {children}
         </div>
-
-        {footer && (
-          <p className="text-center text-white/50 text-xs mt-6">{footer}</p>
-        )}
+        <p className="text-center text-white/50 text-xs mt-6">
+          © {new Date().getFullYear()} Nectar — Internal use only
+        </p>
       </div>
 
     </div>
