@@ -1,11 +1,13 @@
 'use strict';
 const { Router } = require('express');
 const { z }      = require('zod');
-const { eq, and } = require('drizzle-orm');
+const { eq, and, count } = require('drizzle-orm');
 const { db }     = require('../db/client');
-const { tasks, taskComments, users } = require('../db/schema');
+const { tasks, taskComments, users, taskCollaborators } = require('../db/schema');
 const requireAuth = require('../middleware/requireAuth');
 const { canView } = require('../lib/rbac');
+const asyncHandler = require('../utils/asyncHandler');
+const { mysqlNow } = require('../utils/datetime');
 
 const router = Router();
 
@@ -15,15 +17,21 @@ const commentSchema = z.object({
 
 // ── GET /api/tasks/:taskId/comments ──────────────────────────────────────────
 
-router.get('/:taskId/comments', requireAuth, (req, res) => {
+router.get('/:taskId/comments', requireAuth, asyncHandler(async (req, res) => {
   const taskId = parseInt(req.params.taskId, 10);
   if (isNaN(taskId)) return res.status(400).json({ error: 'Invalid task ID' });
 
-  const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get();
+  const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
   if (!task) return res.status(404).json({ error: 'Task not found' });
-  if (!canView(req.user, task)) return res.status(403).json({ error: 'Forbidden' });
+  let isCollab = false;
+  if (!canView(req.user, task)) {
+    const [{ n }] = await db.select({ n: count() }).from(taskCollaborators)
+      .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, req.user.id)));
+    isCollab = Number(n) > 0;
+    if (!isCollab) return res.status(403).json({ error: 'Forbidden' });
+  }
 
-  const rows = db
+  const rows = await db
     .select({
       id:        taskComments.id,
       content:   taskComments.content,
@@ -35,8 +43,7 @@ router.get('/:taskId/comments', requireAuth, (req, res) => {
     .from(taskComments)
     .leftJoin(users, eq(taskComments.userId, users.id))
     .where(eq(taskComments.taskId, taskId))
-    .orderBy(taskComments.createdAt)
-    .all();
+    .orderBy(taskComments.createdAt);
 
   const comments = rows.map(r => ({
     id:        r.id,
@@ -47,54 +54,59 @@ router.get('/:taskId/comments', requireAuth, (req, res) => {
   }));
 
   return res.json({ comments });
-});
+}));
 
 // ── POST /api/tasks/:taskId/comments ─────────────────────────────────────────
 
-router.post('/:taskId/comments', requireAuth, (req, res) => {
+router.post('/:taskId/comments', requireAuth, asyncHandler(async (req, res) => {
   const taskId = parseInt(req.params.taskId, 10);
   if (isNaN(taskId)) return res.status(400).json({ error: 'Invalid task ID' });
 
   const parsed = commentSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
 
-  const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get();
+  const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
   if (!task) return res.status(404).json({ error: 'Task not found' });
-  if (!canView(req.user, task)) return res.status(403).json({ error: 'Forbidden' });
+  let isCollab = false;
+  if (!canView(req.user, task)) {
+    const [{ n }] = await db.select({ n: count() }).from(taskCollaborators)
+      .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, req.user.id)));
+    isCollab = Number(n) > 0;
+    if (!isCollab) return res.status(403).json({ error: 'Forbidden' });
+  }
 
   const { content } = parsed.data;
-  const now = new Date().toISOString();
+  const now = mysqlNow();
 
-  const inserted = db.insert(taskComments)
-    .values({ taskId, userId: req.user.id, content, createdAt: now, updatedAt: now })
-    .returning({ id: taskComments.id, createdAt: taskComments.createdAt })
-    .get();
+  const insertResult = await db.insert(taskComments)
+    .values({ taskId, userId: req.user.id, content, createdAt: now, updatedAt: now });
+  const commentId = insertResult.insertId;
 
   // Parse @mentions and resolve to userIds
   const mentionWords = [...content.matchAll(/\B@(\w+)/g)].map(m => m[1].toLowerCase());
   let mentionedUserIds = [];
   if (mentionWords.length > 0) {
-    const activeUsers = db.select({ id: users.id, name: users.name }).from(users)
-      .where(eq(users.isActive, true)).all();
+    const activeUsers = await db.select({ id: users.id, name: users.name }).from(users)
+      .where(eq(users.isActive, true));
     mentionedUserIds = activeUsers
       .filter(u => mentionWords.some(w => u.name.toLowerCase().startsWith(w)))
       .map(u => u.id);
   }
 
   const comment = {
-    id:        inserted.id,
+    id:        commentId,
     content,
     editedAt:  null,
-    createdAt: inserted.createdAt ?? now,
+    createdAt: now,
     user:      { id: req.user.id, name: req.user.name },
   };
 
   return res.status(201).json({ comment, mentionedUserIds });
-});
+}));
 
 // ── PATCH /api/tasks/:taskId/comments/:id ────────────────────────────────────
 
-router.patch('/:taskId/comments/:id', requireAuth, (req, res) => {
+router.patch('/:taskId/comments/:id', requireAuth, asyncHandler(async (req, res) => {
   const taskId    = parseInt(req.params.taskId, 10);
   const commentId = parseInt(req.params.id, 10);
   if (isNaN(taskId) || isNaN(commentId)) return res.status(400).json({ error: 'Invalid ID' });
@@ -102,20 +114,19 @@ router.patch('/:taskId/comments/:id', requireAuth, (req, res) => {
   const parsed = commentSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
 
-  const comment = db.select().from(taskComments)
+  const [comment] = await db.select().from(taskComments)
     .where(and(eq(taskComments.id, commentId), eq(taskComments.taskId, taskId)))
-    .get();
+    .limit(1);
   if (!comment) return res.status(404).json({ error: 'Comment not found' });
 
   if (req.user.role !== 'ADMIN' && comment.userId !== req.user.id) {
     return res.status(403).json({ error: 'Forbidden' });
   }
 
-  const now = new Date().toISOString();
-  db.update(taskComments)
+  const now = mysqlNow();
+  await db.update(taskComments)
     .set({ content: parsed.data.content, editedAt: now, updatedAt: now })
-    .where(eq(taskComments.id, commentId))
-    .run();
+    .where(eq(taskComments.id, commentId));
 
   return res.json({
     comment: {
@@ -126,26 +137,26 @@ router.patch('/:taskId/comments/:id', requireAuth, (req, res) => {
       user:      { id: req.user.id, name: req.user.name },
     },
   });
-});
+}));
 
 // ── DELETE /api/tasks/:taskId/comments/:id ───────────────────────────────────
 
-router.delete('/:taskId/comments/:id', requireAuth, (req, res) => {
+router.delete('/:taskId/comments/:id', requireAuth, asyncHandler(async (req, res) => {
   const taskId    = parseInt(req.params.taskId, 10);
   const commentId = parseInt(req.params.id, 10);
   if (isNaN(taskId) || isNaN(commentId)) return res.status(400).json({ error: 'Invalid ID' });
 
-  const comment = db.select().from(taskComments)
+  const [comment] = await db.select().from(taskComments)
     .where(and(eq(taskComments.id, commentId), eq(taskComments.taskId, taskId)))
-    .get();
+    .limit(1);
   if (!comment) return res.status(404).json({ error: 'Comment not found' });
 
   if (req.user.role !== 'ADMIN' && comment.userId !== req.user.id) {
     return res.status(403).json({ error: 'Forbidden' });
   }
 
-  db.delete(taskComments).where(eq(taskComments.id, commentId)).run();
+  await db.delete(taskComments).where(eq(taskComments.id, commentId));
   return res.json({ ok: true });
-});
+}));
 
 module.exports = router;

@@ -1,45 +1,43 @@
 'use strict';
-const path     = require('path');
-const Database = require('better-sqlite3');
-const { drizzle } = require('drizzle-orm/better-sqlite3');
-const schema   = require('./schema');
+const path  = require('path');
+const mysql = require('mysql2/promise');
+const { drizzle } = require('drizzle-orm/mysql2');
+const schema = require('./schema');
 
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-const dbPath = path.resolve(__dirname, '../../', process.env.DATABASE_URL || './db/dev.sqlite');
+function resolveConfig() {
+  if (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('://')) {
+    const url = new URL(process.env.DATABASE_URL);
+    return {
+      host:     url.hostname,
+      port:     Number(url.port || '3306'),
+      user:     decodeURIComponent(url.username || ''),
+      password: decodeURIComponent(url.password || ''),
+      database: url.pathname.replace(/^\//, ''),
+    };
+  }
+  return {
+    host:     process.env.MYSQL_HOST     || '127.0.0.1',
+    port:     Number(process.env.MYSQL_PORT || '3306'),
+    user:     process.env.MYSQL_USER     || 'root',
+    password: process.env.MYSQL_PASSWORD || '',
+    database: process.env.MYSQL_DATABASE || 'nectar',
+  };
+}
 
-const sqlite = new Database(dbPath);
+const baseConfig = resolveConfig();
+const pool = mysql.createPool({
+  ...baseConfig,
+  waitForConnections: true,
+  connectionLimit: Number(process.env.MYSQL_POOL_SIZE || '10'),
+  maxIdle: Math.max(1, Math.floor(Number(process.env.MYSQL_POOL_SIZE || '10') / 2)),
+  idleTimeout: 60000,
+});
 
-// Recommended SQLite pragmas for reliability and performance
-sqlite.pragma('journal_mode = WAL');
-sqlite.pragma('foreign_keys = ON');
-sqlite.pragma('busy_timeout = 5000');
+const db = drizzle(pool, {
+  schema,
+  mode: 'default',
+});
 
-sqlite.exec(`
-  CREATE TABLE IF NOT EXISTS password_reset_tokens (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    token      TEXT    NOT NULL UNIQUE,
-    expires_at TEXT    NOT NULL,
-    used_at    TEXT,
-    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
-  )
-`);
-
-sqlite.exec(`
-  CREATE TABLE IF NOT EXISTS task_comments (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    task_id    INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
-    user_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    content    TEXT    NOT NULL,
-    edited_at  TEXT,
-    created_at TEXT    NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT    NOT NULL DEFAULT (datetime('now'))
-  );
-  CREATE INDEX IF NOT EXISTS comments_task_idx ON task_comments(task_id);
-  CREATE INDEX IF NOT EXISTS comments_user_idx ON task_comments(user_id);
-`);
-
-const db = drizzle(sqlite, { schema });
-
-module.exports = { db, sqlite };
+module.exports = { db, pool };

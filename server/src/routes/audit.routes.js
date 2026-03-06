@@ -5,10 +5,11 @@ const { db } = require('../db/client');
 const { auditLogs, users } = require('../db/schema');
 const requireAuth = require('../middleware/requireAuth');
 const requireRole = require('../middleware/requireRole');
+const asyncHandler = require('../utils/asyncHandler');
 
 const router = Router();
 
-router.get('/', requireAuth, requireRole('ADMIN'), (req, res) => {
+router.get('/', requireAuth, requireRole('ADMIN'), asyncHandler(async (req, res) => {
   const q        = req.query;
   const page     = parseInt(q.page     ?? '1',  10);
   const pageSize = parseInt(q.pageSize ?? '50', 10);
@@ -28,9 +29,10 @@ router.get('/', requireAuth, requireRole('ADMIN'), (req, res) => {
   }
 
   const where = conditions.length ? and(...conditions) : undefined;
-  const total = (db.select({ n: count() }).from(auditLogs).where(where).get()).n;
+  const [{ n: total }] = await db.select({ n: count() }).from(auditLogs).where(where);
+  const totalNum = Number(total);
 
-  const rows = db
+  const rows = await db
     .select({
       id:           auditLogs.id,
       action:       auditLogs.action,
@@ -50,8 +52,7 @@ router.get('/', requireAuth, requireRole('ADMIN'), (req, res) => {
     .where(where)
     .orderBy(desc(auditLogs.createdAt))
     .limit(pageSize)
-    .offset((page - 1) * pageSize)
-    .all();
+    .offset((page - 1) * pageSize);
 
   const logs = rows.map(r => ({
     id:           r.id,
@@ -66,7 +67,7 @@ router.get('/', requireAuth, requireRole('ADMIN'), (req, res) => {
     actor: r.actorId ? { id: r.actorId, name: r.actorName, email: r.actorEmail } : null,
   }));
 
-  return res.json({ logs, total, page, pageSize, totalPages: Math.ceil(total / pageSize) || 1 });
-});
+  return res.json({ logs, total: totalNum, page, pageSize, totalPages: Math.ceil(totalNum / pageSize) || 1 });
+}));
 
 module.exports = router;

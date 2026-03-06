@@ -2,12 +2,14 @@
 const { Router } = require('express');
 const { z }      = require('zod');
 const { eq, and, count } = require('drizzle-orm');
-const { db, sqlite } = require('../db/client');
+const { db } = require('../db/client');
 const { users }  = require('../db/schema');
 const requireAuth = require('../middleware/requireAuth');
 const requireRole = require('../middleware/requireRole');
 const { hashPassword } = require('../lib/password');
 const { writeAuditLog, AUDIT_ACTIONS } = require('../lib/audit');
+const asyncHandler = require('../utils/asyncHandler');
+const { mysqlNow } = require('../utils/datetime');
 
 const router = Router();
 
@@ -18,11 +20,11 @@ function safeUser(u) {
   return rest;
 }
 
-function now() { return new Date().toISOString(); }
+function now() { return mysqlNow(); }
 
 // ── GET /api/users ────────────────────────────────────────────────────────────
 
-router.get('/', requireAuth, (req, res) => {
+router.get('/', requireAuth, asyncHandler(async (req, res) => {
   const actor    = req.user;
   const q        = req.query;
   const page     = parseInt(q.page     ?? '1',  10);
@@ -65,20 +67,20 @@ router.get('/', requireAuth, (req, res) => {
   }
 
   const where = conditions.length ? and(...conditions) : undefined;
-  const total = (db.select({ n: count() }).from(users).where(where).get()).n;
-  const rows  = db.select().from(users).where(where)
+  const [{ n: total }] = await db.select({ n: count() }).from(users).where(where);
+  const rows  = await db.select().from(users).where(where)
     .limit(pageSize)
-    .offset((page - 1) * pageSize)
-    .all();
+    .offset((page - 1) * pageSize);
+  const totalNum = Number(total);
 
   return res.json({
     users:      rows.map(safeUser),
-    total,
+    total:      totalNum,
     page,
     pageSize,
-    totalPages: Math.ceil(total / pageSize) || 1,
+    totalPages: Math.ceil(totalNum / pageSize) || 1,
   });
-});
+}));
 
 // ── POST /api/users ───────────────────────────────────────────────────────────
 
@@ -90,7 +92,7 @@ const createSchema = z.object({
   departmentId: z.number().int().positive().optional(),
 });
 
-router.post('/', requireAuth, requireRole('ADMIN'), (req, res) => {
+router.post('/', requireAuth, requireRole('ADMIN'), asyncHandler(async (req, res) => {
   const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.issues[0].message });
@@ -102,40 +104,41 @@ router.post('/', requireAuth, requireRole('ADMIN'), (req, res) => {
     return res.status(400).json({ error: '"departmentId" is required for SUPER and USER roles' });
   }
 
-  const existing = db.select().from(users).where(eq(users.email, email.toLowerCase())).get();
+  const [existing] = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1);
   if (existing) {
     return res.status(409).json({ error: `Email "${email}" is already in use` });
   }
 
-  const doCreate = sqlite.transaction(() => {
-    const user = db.insert(users).values({
+  const created = await db.transaction(async (tx) => {
+    const insertResult = await tx.insert(users).values({
       email:        email.toLowerCase(),
       name,
       role,
       passwordHash: hashPassword(password),
       departmentId: departmentId ?? null,
       isActive:     true,
-    }).returning().get();
+    });
+    const [user] = await tx.select().from(users).where(eq(users.id, insertResult.insertId));
 
-    writeAuditLog({
+    await writeAuditLog({
       actorUserId: req.user.id,
       action:      AUDIT_ACTIONS.USER_CREATED,
       entityType:  'USER',
       entityId:    user.id,
       after:       { email: user.email, name, role, departmentId: departmentId ?? null },
-    });
+    }, tx);
 
     return user;
   });
 
-  return res.status(201).json(safeUser(doCreate()));
-});
+  return res.status(201).json(safeUser(created));
+}));
 
 // ── GET /api/users/all ────────────────────────────────────────────────────────
 // Returns all active users — no pagination. Used by assignee/collaborator dropdowns.
 
-router.get('/all', requireAuth, (req, res) => {
-  const rows = db.select({
+router.get('/all', requireAuth, asyncHandler(async (_req, res) => {
+  const rows = await db.select({
     id:           users.id,
     name:         users.name,
     email:        users.email,
@@ -144,15 +147,14 @@ router.get('/all', requireAuth, (req, res) => {
     isActive:     users.isActive,
   }).from(users)
     .where(eq(users.isActive, true))
-    .orderBy(users.name)
-    .all();
+    .orderBy(users.name);
 
   return res.json({ users: rows });
-});
+}));
 
 // ── GET /api/users/:id ────────────────────────────────────────────────────────
 
-router.get('/:id', requireAuth, (req, res) => {
+router.get('/:id', requireAuth, asyncHandler(async (req, res) => {
   const actor  = req.user;
   const userId = parseInt(req.params.id, 10);
   if (isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
@@ -161,11 +163,11 @@ router.get('/:id', requireAuth, (req, res) => {
     return res.status(403).json({ error: 'Forbidden' });
   }
 
-  const user = db.select().from(users).where(eq(users.id, userId)).get();
+  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   if (!user) return res.status(404).json({ error: 'User not found' });
 
   return res.json(safeUser(user));
-});
+}));
 
 // ── PATCH /api/users/:id ──────────────────────────────────────────────────────
 
@@ -183,12 +185,12 @@ const selfPatchSchema = z.object({
   name: z.string().min(1),
 });
 
-router.patch('/:id', requireAuth, (req, res) => {
+router.patch('/:id', requireAuth, asyncHandler(async (req, res) => {
   const actor  = req.user;
   const userId = parseInt(req.params.id, 10);
   if (isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
 
-  const user = db.select().from(users).where(eq(users.id, userId)).get();
+  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   if (!user) return res.status(404).json({ error: 'User not found' });
 
   if (actor.role !== 'ADMIN' && actor.id !== userId) {
@@ -226,29 +228,30 @@ router.patch('/:id', requireAuth, (req, res) => {
     before.name = user.name;
   }
 
-  const doUpdate = sqlite.transaction(() => {
-    const updated = db.update(users).set(updates).where(eq(users.id, userId)).returning().get();
-    const after   = {};
+  const updated = await db.transaction(async (tx) => {
+    await tx.update(users).set(updates).where(eq(users.id, userId));
+    const [row] = await tx.select().from(users).where(eq(users.id, userId));
+    const after = {};
     for (const key of Object.keys(before)) {
-      after[key] = updated[key];
+      after[key] = row[key];
     }
-    writeAuditLog({
+    await writeAuditLog({
       actorUserId: actor.id,
       action:      AUDIT_ACTIONS.USER_UPDATED,
       entityType:  'USER',
       entityId:    userId,
       before,
       after,
-    });
-    return updated;
+    }, tx);
+    return row;
   });
 
-  return res.json(safeUser(doUpdate()));
-});
+  return res.json(safeUser(updated));
+}));
 
 // ── DELETE /api/users/:id — soft delete ───────────────────────────────────────
 
-router.delete('/:id', requireAuth, requireRole('ADMIN'), (req, res) => {
+router.delete('/:id', requireAuth, requireRole('ADMIN'), asyncHandler(async (req, res) => {
   const actor  = req.user;
   const userId = parseInt(req.params.id, 10);
   if (isNaN(userId)) return res.status(400).json({ error: 'Invalid user id' });
@@ -257,22 +260,22 @@ router.delete('/:id', requireAuth, requireRole('ADMIN'), (req, res) => {
     return res.status(403).json({ error: 'ADMIN cannot deactivate themselves' });
   }
 
-  const user = db.select().from(users).where(eq(users.id, userId)).get();
+  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  sqlite.transaction(() => {
-    db.update(users).set({ isActive: false, updatedAt: now() }).where(eq(users.id, userId)).run();
-    writeAuditLog({
+  await db.transaction(async (tx) => {
+    await tx.update(users).set({ isActive: false, updatedAt: now() }).where(eq(users.id, userId));
+    await writeAuditLog({
       actorUserId: actor.id,
       action:      AUDIT_ACTIONS.USER_DEACTIVATED,
       entityType:  'USER',
       entityId:    userId,
       before:      { isActive: true },
       after:       { isActive: false },
-    });
-  })();
+    }, tx);
+  });
 
   return res.json({ ok: true });
-});
+}));
 
 module.exports = router;

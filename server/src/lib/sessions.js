@@ -7,26 +7,28 @@ const { sessions, users } = require('../db/schema');
 const TTL_DAYS = parseInt(process.env.SESSION_TTL_DAYS || '7', 10);
 const COOKIE_NAME = 'taskflow_session';
 
-/** ISO string for now + N days */
+const { toMysqlDatetime, mysqlNow } = require('../utils/datetime');
+
+/** MySQL datetime string for now + N days */
 function expiresAt() {
   const d = new Date();
   d.setDate(d.getDate() + TTL_DAYS);
-  return d.toISOString();
+  return toMysqlDatetime(d);
 }
 
 /**
  * Create a new session for a user.
  * Returns the session id (set as cookie value).
  */
-function createSession(userId, { ip = null, userAgent = null } = {}) {
+async function createSession(userId, { ip = null, userAgent = null } = {}, client = db) {
   const id = randomUUID();
-  db.insert(sessions).values({
+  await client.insert(sessions).values({
     id,
     userId,
     expiresAt: expiresAt(),
     ip,
     userAgent,
-  }).run();
+  });
   return id;
 }
 
@@ -34,12 +36,12 @@ function createSession(userId, { ip = null, userAgent = null } = {}) {
  * Validate a session cookie value.
  * Returns { session, user } or null if invalid/expired/revoked.
  */
-function validateSession(sessionId) {
+async function validateSession(sessionId) {
   if (!sessionId) return null;
 
-  const now = new Date().toISOString();
+  const now = mysqlNow();
 
-  const session = db
+  const [session] = await db
     .select()
     .from(sessions)
     .where(
@@ -48,16 +50,14 @@ function validateSession(sessionId) {
         gt(sessions.expiresAt, now),
         isNull(sessions.revokedAt),
       ),
-    )
-    .get();
+    );
 
   if (!session) return null;
 
-  const user = db
+  const [user] = await db
     .select()
     .from(users)
-    .where(and(eq(users.id, session.userId), eq(users.isActive, true)))
-    .get();
+    .where(and(eq(users.id, session.userId), eq(users.isActive, true)));
 
   if (!user) return null;
 
@@ -67,11 +67,10 @@ function validateSession(sessionId) {
 /**
  * Revoke a session (logout).
  */
-function revokeSession(sessionId) {
-  db.update(sessions)
-    .set({ revokedAt: new Date().toISOString() })
-    .where(eq(sessions.id, sessionId))
-    .run();
+async function revokeSession(sessionId) {
+  await db.update(sessions)
+    .set({ revokedAt: mysqlNow() })
+    .where(eq(sessions.id, sessionId));
 }
 
 /**

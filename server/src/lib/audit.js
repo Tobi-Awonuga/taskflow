@@ -35,7 +35,7 @@ const { auditLogs } = require('../db/schema');
  * @param {object|null}  opts.after         serialised to JSON
  * @param {string|null}  opts.reason
  */
-function writeAuditLog({
+async function writeAuditLog({
   actorUserId = null,
   action,
   entityType,
@@ -44,8 +44,8 @@ function writeAuditLog({
   before      = null,
   after       = null,
   reason      = null,
-}) {
-  db.insert(auditLogs).values({
+}, client = db) {
+  await client.insert(auditLogs).values({
     actorUserId,
     action,
     entityType,
@@ -54,7 +54,7 @@ function writeAuditLog({
     beforeJson: before ? JSON.stringify(before) : null,
     afterJson:  after  ? JSON.stringify(after)  : null,
     reason,
-  }).run();
+  });
 }
 
 module.exports = { writeAuditLog, AUDIT_ACTIONS };

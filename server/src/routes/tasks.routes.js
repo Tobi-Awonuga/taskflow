@@ -2,18 +2,20 @@
 const { Router }  = require('express');
 const { z }       = require('zod');
 const { and, eq, count, desc, sql, or, isNull } = require('drizzle-orm');
-const { db, sqlite } = require('../db/client');
+const { db } = require('../db/client');
 const { tasks, users, taskCollaborators } = require('../db/schema');
 const requireAuth = require('../middleware/requireAuth');
 const { canAssign, canView, canChangePriority } = require('../lib/rbac');
 const { validateStatusTransition, VALID_STATUSES, VALID_PRIORITIES } = require('../lib/taskValidation');
 const { writeAuditLog, AUDIT_ACTIONS } = require('../lib/audit');
+const asyncHandler = require('../utils/asyncHandler');
+const { mysqlNow } = require('../utils/datetime');
 
 const router = Router();
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function now() { return new Date().toISOString(); }
+function now() { return mysqlNow(); }
 
 // ── Zod schemas ───────────────────────────────────────────────────────────────
 
@@ -47,7 +49,7 @@ const patchSchema = z.object({
 
 // ── GET /api/tasks ─────────────────────────────────────────────────────────────
 
-router.get('/', requireAuth, (req, res) => {
+router.get('/', requireAuth, asyncHandler(async (req, res) => {
   const q    = req.query;
   const actor = req.user;
 
@@ -127,27 +129,27 @@ router.get('/', requireAuth, (req, res) => {
 
   const where = conditions.length ? and(...conditions) : undefined;
 
-  const total = (db.select({ n: count() }).from(tasks).where(where).get()).n;
-  const rows  = db.select().from(tasks).where(where)
+  const [{ n: total }] = await db.select({ n: count() }).from(tasks).where(where);
+  const totalNum = Number(total);
+  const rows  = await db.select().from(tasks).where(where)
     .orderBy(desc(tasks.createdAt))
     .limit(pageSize)
-    .offset((page - 1) * pageSize)
-    .all();
+    .offset((page - 1) * pageSize);
 
   return res.json({
     tasks:      rows,
-    total,
+    total:      totalNum,
     page,
     pageSize,
-    totalPages: Math.ceil(total / pageSize) || 1,
+    totalPages: Math.ceil(totalNum / pageSize) || 1,
   });
-});
+}));
 
 // ── GET /api/tasks/stats ────────────────────────────────────────────────────
 // Returns aggregate counts for visible tasks. Respects same visibility rules.
 // Supports ?assignedToUserId=X for scope=mine.
 
-router.get('/stats', requireAuth, (req, res) => {
+router.get('/stats', requireAuth, asyncHandler(async (req, res) => {
   const actor = req.user;
   const q     = req.query;
 
@@ -171,9 +173,10 @@ router.get('/stats', requireAuth, (req, res) => {
 
   const base = conditions.length ? and(...conditions) : undefined;
 
-  function countWhere(extra) {
+  async function countWhere(extra) {
     const w = base ? and(base, extra) : extra;
-    return (db.select({ n: count() }).from(tasks).where(w).get()).n;
+    const [{ n }] = await db.select({ n: count() }).from(tasks).where(w);
+    return Number(n);
   }
 
   const todayDate    = new Date();
@@ -188,29 +191,47 @@ router.get('/stats', requireAuth, (req, res) => {
     eq(tasks.status, 'BLOCKED'),
   );
 
-  return res.json({
-    todo:       countWhere(eq(tasks.status, 'TODO')),
-    inProgress: countWhere(eq(tasks.status, 'IN_PROGRESS')),
-    blocked:    countWhere(eq(tasks.status, 'BLOCKED')),
-    done:       countWhere(eq(tasks.status, 'DONE')),
-    cancelled:  countWhere(eq(tasks.status, 'CANCELLED')),
-    overdue:    countWhere(and(
+  const [
+    todo,
+    inProgress,
+    blocked,
+    done,
+    cancelled,
+    overdue,
+    dueSoon,
+  ] = await Promise.all([
+    countWhere(eq(tasks.status, 'TODO')),
+    countWhere(eq(tasks.status, 'IN_PROGRESS')),
+    countWhere(eq(tasks.status, 'BLOCKED')),
+    countWhere(eq(tasks.status, 'DONE')),
+    countWhere(eq(tasks.status, 'CANCELLED')),
+    countWhere(and(
       sql`${tasks.dueAt} IS NOT NULL`,
       sql`${tasks.dueAt} < ${today}`,
       activeStatuses,
     )),
-    dueSoon:    countWhere(and(
+    countWhere(and(
       sql`${tasks.dueAt} IS NOT NULL`,
       sql`${tasks.dueAt} >= ${today}`,
       sql`${tasks.dueAt} <= ${tomorrow}`,
       activeStatuses,
     )),
+  ]);
+
+  return res.json({
+    todo,
+    inProgress,
+    blocked,
+    done,
+    cancelled,
+    overdue,
+    dueSoon,
   });
-});
+}));
 
 // ── POST /api/tasks ────────────────────────────────────────────────────────────
 
-router.post('/', requireAuth, (req, res) => {
+router.post('/', requireAuth, asyncHandler(async (req, res) => {
   const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.issues[0].message });
@@ -228,7 +249,7 @@ router.post('/', requireAuth, (req, res) => {
 
   // Validate assignment
   if (assignedToUserId != null) {
-    const assignee = db.select().from(users).where(eq(users.id, assignedToUserId)).get();
+    const [assignee] = await db.select().from(users).where(eq(users.id, assignedToUserId)).limit(1);
     if (!assignee) {
       return res.status(400).json({ error: `User ${assignedToUserId} not found` });
     }
@@ -243,8 +264,8 @@ router.post('/', requireAuth, (req, res) => {
     }
   }
 
-  const insertWithAudit = sqlite.transaction(() => {
-    const result = db.insert(tasks).values({
+  const result = await db.transaction(async (tx) => {
+    const insertResult = await tx.insert(tasks).values({
       title,
       description,
       priority,
@@ -253,59 +274,60 @@ router.post('/', requireAuth, (req, res) => {
       createdByUserId:  actor.id,
       assignedToUserId: assignedToUserId ?? null,
       dueAt:            dueAt ?? null,
-    }).returning().get();
+    });
+    const [row] = await tx.select().from(tasks).where(eq(tasks.id, insertResult.insertId));
 
-    writeAuditLog({
+    await writeAuditLog({
       actorUserId:  actor.id,
       action:       AUDIT_ACTIONS.TASK_CREATED,
       entityType:   'TASK',
-      entityId:     result.id,
+      entityId:     row.id,
       departmentId: taskDeptId,
       after:        { title, priority, status: 'TODO', assignedToUserId: assignedToUserId ?? null },
-    });
+    }, tx);
 
     if (assignedToUserId != null) {
-      writeAuditLog({
+      await writeAuditLog({
         actorUserId:  actor.id,
         action:       AUDIT_ACTIONS.TASK_ASSIGNED,
         entityType:   'TASK',
-        entityId:     result.id,
+        entityId:     row.id,
         departmentId: taskDeptId,
         before:       { assignedToUserId: null },
         after:        { assignedToUserId },
-      });
+      }, tx);
     }
 
-    return result;
+    return row;
   });
 
-  const result = insertWithAudit();
   return res.status(201).json(result);
-});
+}));
 
 // ── GET /api/tasks/:id ─────────────────────────────────────────────────────────
 
-router.get('/:id', requireAuth, (req, res) => {
+router.get('/:id', requireAuth, asyncHandler(async (req, res) => {
   const taskId = parseInt(req.params.id, 10);
   if (isNaN(taskId)) return res.status(400).json({ error: 'Invalid task id' });
 
-  const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get();
-  const isCollaborator = task
-    ? db.select({ n: count() }).from(taskCollaborators)
-        .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, req.user.id)))
-        .get().n > 0
-    : false;
+  const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
+  let isCollaborator = false;
+  if (task) {
+    const [{ n }] = await db.select({ n: count() }).from(taskCollaborators)
+      .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, req.user.id)));
+    isCollaborator = Number(n) > 0;
+  }
   if (!task || (!canView(req.user, task) && !isCollaborator)) {
     return res.status(404).json({ error: 'Task not found' });
   }
 
   return res.json(task);
-});
+}));
 
 // ── PATCH /api/tasks/:id ───────────────────────────────────────────────────────
 // Supports: status transitions (with cancelReason), assignment changes.
 
-router.patch('/:id', requireAuth, (req, res) => {
+router.patch('/:id', requireAuth, asyncHandler(async (req, res) => {
   const taskId = parseInt(req.params.id, 10);
   if (isNaN(taskId)) return res.status(400).json({ error: 'Invalid task id' });
 
@@ -317,12 +339,13 @@ router.patch('/:id', requireAuth, (req, res) => {
   let { status, assignedToUserId, cancelReason, priority, title, description, dueAt } = parsed.data;
   const actor = req.user;
 
-  const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get();
-  const isCollabPatch = task
-    ? db.select({ n: count() }).from(taskCollaborators)
-        .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, actor.id)))
-        .get().n > 0
-    : false;
+  const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
+  let isCollabPatch = false;
+  if (task) {
+    const [{ n }] = await db.select({ n: count() }).from(taskCollaborators)
+      .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, actor.id)));
+    isCollabPatch = Number(n) > 0;
+  }
   if (!task || (!canView(actor, task) && !isCollabPatch)) {
     return res.status(404).json({ error: 'Task not found' });
   }
@@ -334,7 +357,7 @@ router.patch('/:id', requireAuth, (req, res) => {
   if (assignedToUserId !== undefined) {
     let assignee = null;
     if (assignedToUserId !== null) {
-      assignee = db.select().from(users).where(eq(users.id, assignedToUserId)).get();
+      assignee = (await db.select().from(users).where(eq(users.id, assignedToUserId)).limit(1))[0];
       if (!assignee) {
         return res.status(400).json({ error: `User ${assignedToUserId} not found` });
       }
@@ -439,41 +462,43 @@ router.patch('/:id', requireAuth, (req, res) => {
     });
   }
 
-  const updateWithAudit = sqlite.transaction(() => {
-    const updated = db.update(tasks).set(updates).where(eq(tasks.id, taskId)).returning().get();
-    for (const row of auditRows) {
-      writeAuditLog({
+  const updated = await db.transaction(async (tx) => {
+    await tx.update(tasks).set(updates).where(eq(tasks.id, taskId));
+    const [row] = await tx.select().from(tasks).where(eq(tasks.id, taskId));
+    for (const entry of auditRows) {
+      await writeAuditLog({
         actorUserId:  actor.id,
         entityType:   'TASK',
         entityId:     taskId,
         departmentId: task.departmentId,
-        ...row,
-      });
+        ...entry,
+      }, tx);
     }
-    return updated;
+    return row;
   });
 
-  return res.json(updateWithAudit());
-});
+  return res.json(updated);
+}));
 
 // ── GET /api/tasks/:id/collaborators ───────────────────────────────────────────
 // Returns all collaborators on a task with basic user info.
 
-router.get('/:id/collaborators', requireAuth, (req, res) => {
+router.get('/:id/collaborators', requireAuth, asyncHandler(async (req, res) => {
   const taskId = parseInt(req.params.id, 10);
   if (isNaN(taskId)) return res.status(400).json({ error: 'Invalid task id' });
 
-  const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get();
-  const isCollab = task
-    ? db.select({ n: count() }).from(taskCollaborators)
-        .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, req.user.id)))
-        .get().n > 0
-    : false;
+  const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
+  let isCollab = false;
+  if (task) {
+    const [{ n }] = await db.select({ n: count() }).from(taskCollaborators)
+      .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, req.user.id)));
+    isCollab = Number(n) > 0;
+  }
   if (!task || (!canView(req.user, task) && !isCollab)) {
     return res.status(404).json({ error: 'Task not found' });
   }
 
-  const rows = db.select({
+  const rows = await db.select({
     id:            taskCollaborators.id,
     userId:        taskCollaborators.userId,
     addedByUserId: taskCollaborators.addedByUserId,
@@ -485,16 +510,15 @@ router.get('/:id/collaborators', requireAuth, (req, res) => {
   })
     .from(taskCollaborators)
     .leftJoin(users, eq(taskCollaborators.userId, users.id))
-    .where(eq(taskCollaborators.taskId, taskId))
-    .all();
+    .where(eq(taskCollaborators.taskId, taskId));
 
   return res.json({ collaborators: rows });
-});
+}));
 
 // ── POST /api/tasks/:id/collaborators ──────────────────────────────────────────
 // Invite a user to collaborate. Only task creator, ADMIN, or SUPER may invite.
 
-router.post('/:id/collaborators', requireAuth, (req, res) => {
+router.post('/:id/collaborators', requireAuth, asyncHandler(async (req, res) => {
   const taskId = parseInt(req.params.id, 10);
   if (isNaN(taskId)) return res.status(400).json({ error: 'Invalid task id' });
 
@@ -504,7 +528,7 @@ router.post('/:id/collaborators', requireAuth, (req, res) => {
   const { userId } = parsed.data;
   const actor = req.user;
 
-  const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get();
+  const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
   if (!task || !canView(actor, task)) {
     return res.status(404).json({ error: 'Task not found' });
   }
@@ -516,7 +540,7 @@ router.post('/:id/collaborators', requireAuth, (req, res) => {
   }
 
   // Target user must exist and be active
-  const target = db.select().from(users).where(eq(users.id, userId)).get();
+  const [target] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   if (!target) return res.status(400).json({ error: `User ${userId} not found` });
   if (!target.isActive) return res.status(400).json({ error: `User ${userId} is inactive` });
 
@@ -524,46 +548,46 @@ router.post('/:id/collaborators', requireAuth, (req, res) => {
   // — we allow it silently rather than erroring, to keep UX simple
 
   // Upsert-safe: check for existing record
-  const existing = db.select({ n: count() }).from(taskCollaborators)
-    .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, userId)))
-    .get().n;
-  if (existing > 0) {
+  const [{ n: existing }] = await db.select({ n: count() }).from(taskCollaborators)
+    .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, userId)));
+  if (Number(existing) > 0) {
     return res.status(409).json({ error: 'User is already a collaborator on this task' });
   }
 
-  const addWithAudit = sqlite.transaction(() => {
-    const row = db.insert(taskCollaborators).values({
+  const collaborator = await db.transaction(async (tx) => {
+    const insertResult = await tx.insert(taskCollaborators).values({
       taskId,
       userId,
       addedByUserId: actor.id,
-    }).returning().get();
+    });
+    const [row] = await tx.select().from(taskCollaborators).where(eq(taskCollaborators.id, insertResult.insertId));
 
-    writeAuditLog({
+    await writeAuditLog({
       actorUserId:  actor.id,
       action:       AUDIT_ACTIONS.TASK_COLLABORATOR_ADDED,
       entityType:   'TASK',
       entityId:     taskId,
       departmentId: task.departmentId,
       after:        { collaboratorUserId: userId, collaboratorName: target.name },
-    });
+    }, tx);
 
     return row;
   });
 
-  return res.status(201).json({ collaborator: addWithAudit() });
-});
+  return res.status(201).json({ collaborator });
+}));
 
 // ── DELETE /api/tasks/:id/collaborators/:userId ────────────────────────────────
 // Remove a collaborator. Creator, ADMIN, SUPER, or the collaborator themselves.
 
-router.delete('/:id/collaborators/:userId', requireAuth, (req, res) => {
+router.delete('/:id/collaborators/:userId', requireAuth, asyncHandler(async (req, res) => {
   const taskId = parseInt(req.params.id, 10);
   const userId = parseInt(req.params.userId, 10);
   if (isNaN(taskId) || isNaN(userId)) return res.status(400).json({ error: 'Invalid id' });
 
   const actor = req.user;
 
-  const task = db.select().from(tasks).where(eq(tasks.id, taskId)).get();
+  const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
   if (!task || !canView(actor, task)) {
     return res.status(404).json({ error: 'Task not found' });
   }
@@ -578,31 +602,28 @@ router.delete('/:id/collaborators/:userId', requireAuth, (req, res) => {
     return res.status(403).json({ error: 'You cannot remove this collaborator' });
   }
 
-  const existing = db.select({ n: count() }).from(taskCollaborators)
-    .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, userId)))
-    .get().n;
-  if (existing === 0) {
+  const [{ n: existing }] = await db.select({ n: count() }).from(taskCollaborators)
+    .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, userId)));
+  if (Number(existing) === 0) {
     return res.status(404).json({ error: 'Collaborator not found on this task' });
   }
 
-  const removeWithAudit = sqlite.transaction(() => {
-    db.delete(taskCollaborators)
-      .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, userId)))
-      .run();
+  await db.transaction(async (tx) => {
+    await tx.delete(taskCollaborators)
+      .where(and(eq(taskCollaborators.taskId, taskId), eq(taskCollaborators.userId, userId)));
 
-    writeAuditLog({
+    await writeAuditLog({
       actorUserId:  actor.id,
       action:       AUDIT_ACTIONS.TASK_COLLABORATOR_REMOVED,
       entityType:   'TASK',
       entityId:     taskId,
       departmentId: task.departmentId,
       before:       { collaboratorUserId: userId },
-    });
+    }, tx);
   });
 
-  removeWithAudit();
   return res.status(204).end();
-});
+}));
 
 // DELETE task — not yet implemented
 router.delete('/:id', requireAuth, (_req, res) => {

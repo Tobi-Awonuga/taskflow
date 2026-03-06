@@ -1,5 +1,6 @@
 'use strict';
 const { canCancel, canReopen } = require('./rbac');
+const { mysqlNow } = require('../utils/datetime');
 
 const VALID_STATUSES   = new Set(['TODO', 'IN_PROGRESS', 'DONE', 'BLOCKED', 'CANCELLED']);
 const VALID_PRIORITIES = new Set(['LOW', 'MEDIUM', 'HIGH', 'URGENT']);
@@ -39,7 +40,7 @@ function validateStatusTransition(fromStatus, toStatus, actor, task, cancelReaso
     return { ok: false, status: 400, error: `Cannot transition from ${fromStatus} to ${toStatus}` };
   }
 
-  const now = new Date().toISOString();
+  const now = mysqlNow();
 
   // ── CANCEL ──────────────────────────────────────────────────────────────────
   if (toStatus === 'CANCELLED') {
