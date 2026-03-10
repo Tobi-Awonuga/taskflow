@@ -55,7 +55,7 @@ router.post('/login', loginLimiter, asyncHandler(async (req, res) => {
   const { email, password } = parsed.data;
   const [user] = await db.select().from(users).where(eq(users.email, email.toLowerCase())).limit(1);
 
-  const hashToCheck = (user && user.isActive) ? user.passwordHash : DUMMY_HASH;
+  const hashToCheck = (user && user.isActive && user.passwordHash) ? user.passwordHash : DUMMY_HASH;
   const passwordOk  = verifyPassword(password, hashToCheck);
   if (!user || !user.isActive || !passwordOk) {
     return res.status(401).json({ error: 'Invalid email or password' });
@@ -117,6 +117,10 @@ router.post('/change-password', requireAuth, asyncHandler(async (req, res) => {
     return res.status(404).json({ error: 'User not found' });
   }
 
+  if (!user.passwordHash) {
+    return res.status(400).json({ error: 'Password sign-in is not enabled for this account' });
+  }
+
   if (!verifyPassword(currentPassword, user.passwordHash)) {
     return res.status(400).json({ error: 'Current password is incorrect' });
   }
@@ -153,6 +157,10 @@ router.post('/forgot-password', resetLimiter, asyncHandler(async (req, res) => {
 
   // Always 200 to prevent email enumeration
   if (!user || !user.isActive) {
+    return res.json({ ok: true });
+  }
+
+  if (!user.passwordHash) {
     return res.json({ ok: true });
   }
 

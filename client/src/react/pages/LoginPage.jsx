@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-
-// ── Typewriter ──────────────────────────────────────────────────────────────────
 
 function TypewriterText({ text, charDelay = 55 }) {
   const [displayed, setDisplayed] = useState('');
   const [cursorOpacity, setCursorOpacity] = useState(1);
-  const [cursorAnim, setCursorAnim]       = useState('cursor-blink 0.75s step-end infinite');
+  const [cursorAnim, setCursorAnim] = useState('cursor-blink 0.75s step-end infinite');
 
   useEffect(() => {
     let i = 0;
@@ -35,84 +33,102 @@ function TypewriterText({ text, charDelay = 55 }) {
       {displayed}
       <span
         style={{
-          display:       'inline-block',
-          width:         '1.5px',
-          height:        '0.85em',
-          background:    'currentColor',
-          marginLeft:    '1px',
+          display: 'inline-block',
+          width: '1.5px',
+          height: '0.85em',
+          background: 'currentColor',
+          marginLeft: '1px',
           verticalAlign: 'middle',
-          borderRadius:  '1px',
-          opacity:       cursorOpacity,
-          transition:    cursorOpacity === 0 ? 'opacity 1s ease' : 'none',
-          animation:     cursorAnim,
+          borderRadius: '1px',
+          opacity: cursorOpacity,
+          transition: cursorOpacity === 0 ? 'opacity 1s ease' : 'none',
+          animation: cursorAnim,
         }}
       />
     </span>
   );
 }
 
-// ── Shared field styles ─────────────────────────────────────────────────────────
-
 const INPUT_CLS =
-  'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-gray-50/60 ' +
-  'focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30 focus:border-[#F0654D] transition-colors';
+  'w-full rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2.5 text-sm text-gray-800 ' +
+  'transition-colors focus:border-[#F0654D] focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30';
 
-const LABEL_CLS = 'block text-xs font-semibold text-gray-500 mb-1.5';
+const LABEL_CLS = 'mb-1.5 block text-xs font-semibold text-gray-500';
 
-// ── LoginPage ───────────────────────────────────────────────────────────────────
+const SSO_ERROR_MESSAGES = {
+  sso_invalid_state: 'Microsoft sign-in could not be verified. Please try again.',
+  sso_claims_missing: 'Microsoft did not return all required account details.',
+  sso_not_configured: 'Microsoft sign-in is not configured yet.',
+  sso_user_create_failed: 'We could not finish creating your Nectar account.',
+  sso_user_not_provisioned: 'Your Nectar access is not ready yet.',
+  sso_user_inactive: 'Your Nectar account is inactive.',
+};
 
 export default function LoginPage() {
-  const { setUser }         = useAuth();
-  const navigate            = useNavigate();
-  const [email, setEmail]   = useState('');
+  const { setUser } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [email, setEmail] = useState('');
   const [password, setPass] = useState('');
   const [showPw, setShowPw] = useState(false);
-  const [error, setError]   = useState('');
+  const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const ssoError = searchParams.get('error');
+    setError(ssoError ? (SSO_ERROR_MESSAGES[ssoError] || 'Microsoft sign-in failed') : '');
+  }, [searchParams]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setSaving(true);
+
     try {
-      const res  = await fetch('/api/auth/login', {
-        method:      'POST',
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
         credentials: 'include',
-        headers:     { 'Content-Type': 'application/json' },
-        body:        JSON.stringify({ email, password }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error || 'Login failed'); return; }
+      if (!res.ok) {
+        setError(data.error || 'Login failed');
+        return;
+      }
       setUser(data);
       navigate('/dashboard');
     } catch {
-      setError('Network error — please try again');
+      setError('Network error, please try again');
     } finally {
       setSaving(false);
     }
   }
 
+  function handleMicrosoftSignIn() {
+    window.location.href = '/api/auth/microsoft/start';
+  }
+
   return (
     <>
-
-      {/* Wordmark */}
       <div className="mb-8 text-center">
-        <span className="text-2xl font-bold text-[#F0654D] tracking-tight">Nectar</span>
-        <p className="text-sm text-gray-400 mt-1 h-5">
+        <span className="text-2xl font-bold tracking-tight text-[#F0654D]">Nectar</span>
+        <p className="mt-1 h-5 text-sm text-gray-400">
           <TypewriterText text="welcome to the hive :)" />
         </p>
       </div>
 
       <form onSubmit={handleSubmit} aria-label="Sign in form" className="flex flex-col gap-5">
-
         <div>
           <label htmlFor="login-email" className={LABEL_CLS}>Email</label>
           <input
             id="login-email"
             type="email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
-            required autoFocus autoComplete="email"
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoFocus
+            autoComplete="email"
             placeholder="you@example.com"
             className={INPUT_CLS}
           />
@@ -125,14 +141,15 @@ export default function LoginPage() {
               id="login-password"
               type={showPw ? 'text' : 'password'}
               value={password}
-              onChange={e => setPass(e.target.value)}
-              required autoComplete="current-password"
-              placeholder="••••••••"
+              onChange={(e) => setPass(e.target.value)}
+              required
+              autoComplete="current-password"
+              placeholder="........"
               className={`${INPUT_CLS} pr-10`}
             />
             <button
               type="button"
-              onClick={() => setShowPw(v => !v)}
+              onClick={() => setShowPw((value) => !value)}
               aria-label={showPw ? 'Hide password' : 'Show password'}
               className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600"
             >
@@ -149,7 +166,7 @@ export default function LoginPage() {
               )}
             </button>
           </div>
-          <div className="flex justify-end mt-1.5">
+          <div className="mt-1.5 flex justify-end">
             <Link to="/forgot-password" className="text-xs text-[#F0654D] hover:underline">
               Forgot password?
             </Link>
@@ -157,7 +174,7 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
+          <p className="rounded-xl border border-red-100 bg-red-50 px-4 py-2.5 text-sm text-red-500">
             {error}
           </p>
         )}
@@ -165,20 +182,31 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={saving}
-          className="w-full flex items-center justify-center gap-2 bg-[#F0654D] hover:bg-[#E85B44] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+          className="w-full rounded-xl bg-[#F0654D] py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#E85B44] disabled:cursor-not-allowed disabled:opacity-60"
           style={{ boxShadow: '0 4px 16px rgba(240,101,77,0.4)' }}
         >
-          {saving ? (
-            <>
-              <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
-              </svg>
-              Signing in…
-            </>
-          ) : 'Sign in'}
+          {saving ? 'Signing in...' : 'Sign in'}
         </button>
 
+        <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.24em] text-gray-300">
+          <span className="h-px flex-1 bg-gray-200" />
+          <span>or</span>
+          <span className="h-px flex-1 bg-gray-200" />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleMicrosoftSignIn}
+          className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="2" y="2" width="9" height="9" fill="#F25022" />
+            <rect x="13" y="2" width="9" height="9" fill="#7FBA00" />
+            <rect x="2" y="13" width="9" height="9" fill="#00A4EF" />
+            <rect x="13" y="13" width="9" height="9" fill="#FFB900" />
+          </svg>
+          Continue with Microsoft
+        </button>
       </form>
     </>
   );

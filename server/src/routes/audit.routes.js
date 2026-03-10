@@ -1,8 +1,8 @@
 'use strict';
 const { Router } = require('express');
-const { and, eq, count, desc } = require('drizzle-orm');
+const { and, eq, count, desc, inArray, sql } = require('drizzle-orm');
 const { db } = require('../db/client');
-const { auditLogs, users } = require('../db/schema');
+const { auditLogs, users, tasks } = require('../db/schema');
 const requireAuth = require('../middleware/requireAuth');
 const requireRole = require('../middleware/requireRole');
 const asyncHandler = require('../utils/asyncHandler');
@@ -67,7 +67,77 @@ router.get('/', requireAuth, requireRole('ADMIN'), asyncHandler(async (req, res)
     actor: r.actorId ? { id: r.actorId, name: r.actorName, email: r.actorEmail } : null,
   }));
 
-  return res.json({ logs, total: totalNum, page, pageSize, totalPages: Math.ceil(totalNum / pageSize) || 1 });
+  // ── Enrich: entity names ─────────────────────────────────────────────────────
+
+  const taskEntityIds = [...new Set(
+    logs.filter(l => l.entityType === 'TASK' && l.entityId).map(l => l.entityId),
+  )];
+  const userEntityIds = [...new Set(
+    logs.filter(l => l.entityType === 'USER' && l.entityId).map(l => l.entityId),
+  )];
+
+  const taskNameMap = {};
+  if (taskEntityIds.length > 0) {
+    const taskRows = await db
+      .select({ id: tasks.id, title: tasks.title })
+      .from(tasks)
+      .where(inArray(tasks.id, taskEntityIds));
+    taskRows.forEach(t => { taskNameMap[t.id] = t.title; });
+  }
+
+  const userNameMap = {};
+  if (userEntityIds.length > 0) {
+    const userRows = await db
+      .select({ id: users.id, name: users.name })
+      .from(users)
+      .where(inArray(users.id, userEntityIds));
+    userRows.forEach(u => { userNameMap[u.id] = u.name; });
+  }
+
+  // ── Enrich: cycle time (IN_PROGRESS → DONE) ──────────────────────────────────
+
+  const doneTransitions = logs.filter(l =>
+    l.action === 'TASK_STATUS_CHANGED' && l.after?.status === 'DONE' && l.entityId,
+  );
+
+  const cycleTimeMap = {};
+  await Promise.all(doneTransitions.map(async (log) => {
+    const [ipRow] = await db
+      .select({ createdAt: auditLogs.createdAt })
+      .from(auditLogs)
+      .where(and(
+        eq(auditLogs.entityType, 'TASK'),
+        eq(auditLogs.entityId,   log.entityId),
+        eq(auditLogs.action,     'TASK_STATUS_CHANGED'),
+        sql`JSON_EXTRACT(${auditLogs.afterJson}, '$.status') = 'IN_PROGRESS'`,
+        sql`${auditLogs.createdAt} < ${log.createdAt}`,
+      ))
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(1);
+
+    if (ipRow) {
+      const ms = new Date(log.createdAt) - new Date(ipRow.createdAt);
+      if (ms > 0) cycleTimeMap[log.id] = ms;
+    }
+  }));
+
+  // ── Final response ────────────────────────────────────────────────────────────
+
+  const enrichedLogs = logs.map(l => ({
+    ...l,
+    entityName: l.entityType === 'TASK' ? (taskNameMap[l.entityId] ?? null)
+              : l.entityType === 'USER' ? (userNameMap[l.entityId] ?? null)
+              : null,
+    cycleTime: cycleTimeMap[l.id] ?? null,
+  }));
+
+  return res.json({
+    logs:       enrichedLogs,
+    total:      totalNum,
+    page,
+    pageSize,
+    totalPages: Math.ceil(totalNum / pageSize) || 1,
+  });
 }));
 
 module.exports = router;

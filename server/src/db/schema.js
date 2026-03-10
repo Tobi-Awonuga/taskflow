@@ -28,21 +28,35 @@ const departments = mysqlTable('departments', {
 // ── users ──────────────────────────────────────────────────────────────────────
 
 const roleEnum = mysqlEnum('role', ['ADMIN', 'SUPER', 'USER']);
+const authProviderEnum = mysqlEnum('auth_provider', ['LOCAL', 'MICROSOFT']);
+const approvalStatusEnum = mysqlEnum('approval_status', ['PENDING', 'APPROVED', 'REJECTED']);
 
 const users = mysqlTable('users', {
   id:           serial('id').primaryKey(),
   email:        varchar('email', { length: 191 }).notNull(),
   name:         varchar('name', { length: 191 }).notNull(),
   role:         roleEnum.notNull().default('USER'),
-  passwordHash: varchar('password_hash', { length: 255 }).notNull(),
+  authProvider: authProviderEnum.notNull().default('LOCAL'),
+  providerSubject: varchar('provider_subject', { length: 191 }),
+  tenantId:     varchar('tenant_id', { length: 191 }),
+  passwordHash: varchar('password_hash', { length: 255 }),
+  approvalStatus: approvalStatusEnum.notNull().default('APPROVED'),
+  requestedDepartmentId: bigint('requested_department_id', { mode: 'number', unsigned: true })
+    .references(() => departments.id, { onDelete: 'set null' }),
   departmentId: bigint('department_id', { mode: 'number', unsigned: true }).references(() => departments.id, { onDelete: 'set null' }),
+  approvedByUserId: bigint('approved_by_user_id', { mode: 'number', unsigned: true })
+    .references(() => users.id, { onDelete: 'set null' }),
+  approvedAt:   datetime('approved_at', { mode: 'string', fsp: 3 }),
   isActive:     tinyint('is_active', { mode: 'boolean' }).notNull().default(true),
   createdAt:    timestamp('created_at', { mode: 'string' }).notNull().defaultNow(),
   updatedAt:    timestamp('updated_at', { mode: 'string' }).notNull().defaultNow().onUpdateNow(),
 }, (t) => ({
   emailIdx: uniqueIndex('users_email_idx').on(t.email),
+  providerUniq: uniqueIndex('users_provider_subject_idx').on(t.authProvider, t.providerSubject),
   deptIdx:  index('users_dept_idx').on(t.departmentId),
+  requestedDeptIdx: index('users_requested_dept_idx').on(t.requestedDepartmentId),
   roleIdx:  index('users_role_idx').on(t.role),
+  approvalIdx: index('users_approval_status_idx').on(t.approvalStatus),
 }));
 
 // ── tasks ──────────────────────────────────────────────────────────────────────

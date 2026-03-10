@@ -452,6 +452,7 @@ export default function UsersPage() {
 
       {/* Table */}
       <div className="bg-white rounded-2xl border border-black/[0.04] shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50/80 border-b border-gray-100">
@@ -616,6 +617,7 @@ export default function UsersPage() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Pagination */}

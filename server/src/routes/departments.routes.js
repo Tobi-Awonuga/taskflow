@@ -63,6 +63,33 @@ router.post('/', requireAuth, requireRole('ADMIN'), asyncHandler(async (req, res
   return res.status(201).json(await deptWithCounts(dept));
 }));
 
+// ── PATCH /api/departments/:id ────────────────────────────────────────────────
+
+const updateSchema = z.object({
+  name: z.string().min(1).max(100),
+});
+
+router.patch('/:id', requireAuth, requireRole('ADMIN'), asyncHandler(async (req, res) => {
+  const deptId = parseInt(req.params.id, 10);
+  if (isNaN(deptId)) return res.status(400).json({ error: 'Invalid department id' });
+
+  const parsed = updateSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
+
+  const { name } = parsed.data;
+  const [conflict] = await db.select().from(departments)
+    .where(eq(departments.name, name)).limit(1);
+  if (conflict && conflict.id !== deptId) {
+    return res.status(409).json({ error: `Department "${name}" already exists` });
+  }
+
+  await db.update(departments).set({ name }).where(eq(departments.id, deptId));
+  const [dept] = await db.select().from(departments).where(eq(departments.id, deptId)).limit(1);
+  if (!dept) return res.status(404).json({ error: 'Department not found' });
+
+  return res.json(await deptWithCounts(dept));
+}));
+
 // ── GET /api/departments/:id ──────────────────────────────────────────────────
 
 router.get('/:id', requireAuth, asyncHandler(async (req, res) => {

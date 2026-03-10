@@ -4,9 +4,9 @@ import { useToast } from '../context/ToastContext.jsx';
 
 function RoleBadge({ role }) {
   const cls = {
-    ADMIN: 'bg-red-100 text-red-700',
-    SUPER: 'bg-amber-100 text-amber-700',
-    USER:  'bg-blue-100 text-blue-600',
+    ADMIN: 'bg-purple-100 text-purple-700',
+    SUPER: 'bg-blue-100 text-blue-700',
+    USER:  'bg-gray-100 text-gray-500',
   }[role] ?? 'bg-gray-100 text-gray-600';
   return <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${cls}`}>{role}</span>;
 }
@@ -39,21 +39,26 @@ function EditableName({ value, onSave }) {
         onChange={e => setDraft(e.target.value)}
         onBlur={commit}
         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } if (e.key === 'Escape') { setEditing(false); setDraft(value); } }}
-        className="text-xl font-bold text-gray-800 text-center border-b border-[#F0654D] focus:outline-none bg-transparent pb-0.5 w-full"
+        className="text-base font-bold text-gray-800 border-b border-[#F0654D] focus:outline-none bg-transparent pb-0.5 w-full"
       />
     );
   }
 
   return (
-    <h2
+    <p
       onClick={() => { setEditing(true); setDraft(value); }}
-      title="Click to edit"
-      className={`text-xl font-bold cursor-text select-none ${failed ? 'text-red-400' : 'text-gray-800'} ${saving ? 'opacity-50' : ''}`}
+      title="Click to edit name"
+      className={`text-base font-bold cursor-text select-none leading-tight ${failed ? 'text-red-400' : 'text-gray-800'} ${saving ? 'opacity-50' : ''}`}
     >
       {saving ? 'Saving…' : value}
-    </h2>
+    </p>
   );
 }
+
+const FIELD_CLS = 'flex items-center justify-between py-3 border-b border-gray-50';
+const LABEL_CLS = 'text-xs font-semibold text-gray-400 uppercase tracking-wider';
+const INPUT_CLS = 'w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30 focus:border-[#F0654D] transition-colors';
+const SECTION_LABEL = 'block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5';
 
 export default function ProfilePage() {
   const { user, setUser } = useAuth();
@@ -119,101 +124,109 @@ export default function ProfilePage() {
   });
 
   return (
-    <main className="p-8 flex flex-col gap-6 min-w-0 overflow-y-auto max-w-2xl">
+    <main className="p-8 flex flex-col gap-6 min-w-0 overflow-y-auto animate-page-enter">
 
       {/* Header */}
-      <div className="pb-5 border-b border-gray-100">
+      <div className="pb-5 border-b border-gray-200">
         <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
-        <p className="text-sm text-gray-400 mt-0.5">Manage your personal information and security.</p>
+        <p className="text-sm text-gray-500 mt-1">Manage your personal information and security settings.</p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-black/[0.04] shadow-sm p-8 flex flex-col items-center gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
-        {/* Avatar */}
-        <div className="w-20 h-20 rounded-full bg-[#F0654D] flex items-center justify-center text-white text-2xl font-bold select-none">
-          {initials(user.name)}
+        {/* ── Profile info card ─────────────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl border border-black/[0.04] shadow-sm p-6 flex flex-col gap-5">
+
+          {/* Avatar + editable name */}
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-[#F0654D] flex items-center justify-center text-white text-xl font-bold shrink-0 select-none">
+              {initials(user.name)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <EditableName value={user.name} onSave={handleNameSave} />
+              <p className="text-xs text-gray-400 mt-0.5 truncate">{user.email}</p>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-100" />
+
+          {/* Fields */}
+          <div className="flex flex-col">
+            <div className={FIELD_CLS}>
+              <span className={LABEL_CLS}>Role</span>
+              <RoleBadge role={user.role} />
+            </div>
+            <div className={FIELD_CLS}>
+              <span className={LABEL_CLS}>Department</span>
+              <span className="text-sm text-gray-700">
+                {user.departmentId ? (deptName ?? 'Loading…') : 'No department'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between py-3">
+              <span className={LABEL_CLS}>Member since</span>
+              <span className="text-sm text-gray-500">{memberSince}</span>
+            </div>
+          </div>
         </div>
 
-        {/* Editable name */}
-        <EditableName value={user.name} onSave={handleNameSave} />
+        {/* ── Change password card ──────────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl border border-black/[0.04] shadow-sm p-6 flex flex-col gap-5">
+          <div>
+            <h3 className="text-base font-bold text-gray-800">Change Password</h3>
+            <p className="text-xs text-gray-400 mt-0.5">Choose a strong password you don't use elsewhere.</p>
+          </div>
 
-        {/* Fields */}
-        <div className="w-full flex flex-col gap-4">
-          <div className="flex items-center justify-between py-3 border-b border-gray-50">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</span>
-            <span className="text-sm text-gray-500">{user.email}</span>
-          </div>
-          <div className="flex items-center justify-between py-3 border-b border-gray-50">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Role</span>
-            <RoleBadge role={user.role} />
-          </div>
-          <div className="flex items-center justify-between py-3 border-b border-gray-50">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Department</span>
-            <span className="text-sm text-gray-700">
-              {user.departmentId ? (deptName ?? 'Loading…') : 'No department'}
-            </span>
-          </div>
-          <div className="flex items-center justify-between py-3">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Member since</span>
-            <span className="text-sm text-gray-500">{memberSince}</span>
-          </div>
+          <form onSubmit={handleChangePassword} className="flex flex-col gap-4">
+            <div>
+              <label htmlFor="current-pw" className={SECTION_LABEL}>Current Password</label>
+              <input
+                id="current-pw"
+                type="password"
+                value={currentPw}
+                onChange={e => setCurrentPw(e.target.value)}
+                className={INPUT_CLS}
+              />
+            </div>
+            <div>
+              <label htmlFor="new-pw" className={SECTION_LABEL}>New Password</label>
+              <input
+                id="new-pw"
+                type="password"
+                value={newPw}
+                onChange={e => setNewPw(e.target.value)}
+                className={INPUT_CLS}
+              />
+            </div>
+            <div>
+              <label htmlFor="confirm-pw" className={SECTION_LABEL}>Confirm New Password</label>
+              <input
+                id="confirm-pw"
+                type="password"
+                value={confirmPw}
+                onChange={e => setConfirmPw(e.target.value)}
+                className={INPUT_CLS}
+              />
+            </div>
+
+            {pwError && (
+              <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                <p className="text-sm text-red-600">{pwError}</p>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-1">
+              <button
+                type="submit"
+                disabled={pwSaving}
+                className="px-5 py-2.5 text-sm font-semibold text-white bg-[#F0654D] hover:bg-[#E85B44] rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {pwSaving ? 'Saving…' : 'Update Password'}
+              </button>
+            </div>
+          </form>
         </div>
 
       </div>
-
-      {/* Change Password */}
-      <div className="bg-white rounded-2xl border border-black/[0.04] shadow-sm p-8 flex flex-col gap-5">
-        <h3 className="text-base font-bold text-gray-800">Change Password</h3>
-        <form onSubmit={handleChangePassword} className="flex flex-col gap-4">
-          <div>
-            <label htmlFor="current-pw" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-              Current Password
-            </label>
-            <input
-              id="current-pw"
-              type="password"
-              value={currentPw}
-              onChange={e => setCurrentPw(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30 focus:border-[#F0654D] transition-colors"
-            />
-          </div>
-          <div>
-            <label htmlFor="new-pw" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-              New Password
-            </label>
-            <input
-              id="new-pw"
-              type="password"
-              value={newPw}
-              onChange={e => setNewPw(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30 focus:border-[#F0654D] transition-colors"
-            />
-          </div>
-          <div>
-            <label htmlFor="confirm-pw" className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-              Confirm New Password
-            </label>
-            <input
-              id="confirm-pw"
-              type="password"
-              value={confirmPw}
-              onChange={e => setConfirmPw(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#F0654D]/30 focus:border-[#F0654D] transition-colors"
-            />
-          </div>
-          {pwError && <p className="text-red-500 text-xs">{pwError}</p>}
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={pwSaving}
-              className="px-5 py-2.5 text-sm font-semibold text-white bg-[#F0654D] hover:bg-[#E85B44] rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {pwSaving ? 'Saving…' : 'Update Password'}
-            </button>
-          </div>
-        </form>
-      </div>
-
     </main>
   );
 }

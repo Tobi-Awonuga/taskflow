@@ -112,8 +112,8 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
   }
 
   if (q.q) {
-    const escaped = q.q.replace(/%/g, '\\%').replace(/_/g, '\\_');
-    conditions.push(sql`${tasks.title} LIKE ${'%' + escaped + '%'} ESCAPE '\\'`);
+    const escaped = q.q.replace(/\//g, '//').replace(/%/g, '/%').replace(/_/g, '/_');
+    conditions.push(sql`${tasks.title} LIKE ${'%' + escaped + '%'} ESCAPE '/'`);
   }
 
   if (q.overdue === 'true') {

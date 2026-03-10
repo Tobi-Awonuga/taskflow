@@ -5,28 +5,71 @@ function initials(name) {
 }
 
 const ACTION_META = {
-  TASK_CREATED:          { label: 'Created task',        bg: 'bg-green-100',  text: 'text-green-700'  },
-  TASK_STATUS_CHANGED:   { label: 'Status changed',      bg: 'bg-blue-100',   text: 'text-blue-700'   },
-  TASK_CANCELLED:        { label: 'Cancelled task',      bg: 'bg-red-100',    text: 'text-red-600'    },
-  TASK_REOPENED:         { label: 'Reopened task',       bg: 'bg-amber-100',  text: 'text-amber-700'  },
-  TASK_ASSIGNED:         { label: 'Assigned task',       bg: 'bg-amber-100',  text: 'text-amber-700'  },
-  TASK_UNASSIGNED:       { label: 'Unassigned task',     bg: 'bg-amber-100',  text: 'text-amber-700'  },
-  TASK_PRIORITY_CHANGED: { label: 'Priority changed',    bg: 'bg-blue-100',   text: 'text-blue-700'   },
-  TASK_UPDATED:          { label: 'Updated task',        bg: 'bg-blue-100',   text: 'text-blue-700'   },
-  USER_CREATED:          { label: 'Created user',        bg: 'bg-green-100',  text: 'text-green-700'  },
-  USER_UPDATED:          { label: 'Updated user',        bg: 'bg-blue-100',   text: 'text-blue-700'   },
-  USER_DEACTIVATED:      { label: 'Deactivated user',    bg: 'bg-red-100',    text: 'text-red-600'    },
-  DEPT_CREATED:          { label: 'Created department',  bg: 'bg-green-100',  text: 'text-green-700'  },
-  LOGIN_SUCCESS:         { label: 'Signed in',           bg: 'bg-gray-100',   text: 'text-gray-500'   },
-  LOGOUT:                { label: 'Signed out',          bg: 'bg-gray-100',   text: 'text-gray-500'   },
+  TASK_CREATED:               { label: 'Created task',         bg: 'bg-green-100',  text: 'text-green-700'  },
+  TASK_STATUS_CHANGED:        { label: 'Status changed',       bg: 'bg-blue-100',   text: 'text-blue-700'   },
+  TASK_CANCELLED:             { label: 'Cancelled task',       bg: 'bg-red-100',    text: 'text-red-600'    },
+  TASK_REOPENED:              { label: 'Reopened task',        bg: 'bg-amber-100',  text: 'text-amber-700'  },
+  TASK_ASSIGNED:              { label: 'Assigned task',        bg: 'bg-amber-100',  text: 'text-amber-700'  },
+  TASK_UNASSIGNED:            { label: 'Unassigned task',      bg: 'bg-amber-100',  text: 'text-amber-700'  },
+  TASK_PRIORITY_CHANGED:      { label: 'Priority changed',     bg: 'bg-blue-100',   text: 'text-blue-700'   },
+  TASK_UPDATED:               { label: 'Updated task',         bg: 'bg-blue-100',   text: 'text-blue-700'   },
+  TASK_COLLABORATOR_ADDED:    { label: 'Added collaborator',   bg: 'bg-green-100',  text: 'text-green-700'  },
+  TASK_COLLABORATOR_REMOVED:  { label: 'Removed collaborator', bg: 'bg-gray-100',   text: 'text-gray-500'   },
+  USER_CREATED:               { label: 'Created user',         bg: 'bg-green-100',  text: 'text-green-700'  },
+  USER_UPDATED:               { label: 'Updated user',         bg: 'bg-blue-100',   text: 'text-blue-700'   },
+  USER_DEACTIVATED:           { label: 'Deactivated user',     bg: 'bg-red-100',    text: 'text-red-600'    },
+  DEPT_CREATED:               { label: 'Created department',   bg: 'bg-green-100',  text: 'text-green-700'  },
+  LOGIN_SUCCESS:              { label: 'Signed in',            bg: 'bg-gray-100',   text: 'text-gray-500'   },
+  LOGOUT:                     { label: 'Signed out',           bg: 'bg-gray-100',   text: 'text-gray-500'   },
 };
 
+const STATUS_LABELS  = { TODO: 'Open', IN_PROGRESS: 'In Progress', DONE: 'Done', BLOCKED: 'Blocked', CANCELLED: 'Cancelled' };
+const PRIORITY_LABELS = { LOW: 'Low', MEDIUM: 'Medium', HIGH: 'High', URGENT: 'Urgent' };
+
+function fmtStatus(s)   { return STATUS_LABELS[s]   ?? s; }
+function fmtPriority(p) { return PRIORITY_LABELS[p] ?? p; }
+
+function formatDuration(ms) {
+  if (!ms || ms <= 0) return null;
+  const totalMins = Math.floor(ms / 60000);
+  const hours     = Math.floor(totalMins / 60);
+  const days      = Math.floor(hours / 24);
+  if (days >= 1)   return `${days}d ${hours % 24}h`;
+  if (hours >= 1)  return `${hours}h ${totalMins % 60}m`;
+  return totalMins < 1 ? '<1m' : `${totalMins}m`;
+}
+
 function logDetail(log) {
-  if (log.after?.status)          return `→ ${log.after.status}`;
-  if (log.after?.priority)        return `→ ${log.after.priority}`;
-  if (log.reason)                 return `"${log.reason}"`;
-  if (log.after?.passwordChanged) return 'Password updated';
-  if (log.after?.title)           return log.after.title;
+  const { before, after, action, reason } = log;
+
+  if (action === 'TASK_STATUS_CHANGED' || action === 'TASK_CANCELLED' || action === 'TASK_REOPENED') {
+    const from = before?.status ? fmtStatus(before.status) : null;
+    const to   = after?.status  ? fmtStatus(after.status)  : null;
+    if (from && to) return `${from} → ${to}`;
+    if (to)         return `→ ${to}`;
+  }
+
+  if (action === 'TASK_PRIORITY_CHANGED') {
+    const from = before?.priority ? fmtPriority(before.priority) : null;
+    const to   = after?.priority  ? fmtPriority(after.priority)  : null;
+    if (from && to) return `${from} → ${to}`;
+    if (to)         return `→ ${to}`;
+  }
+
+  if (action === 'TASK_ASSIGNED' || action === 'TASK_UNASSIGNED') {
+    if (after?.assignedToUserId == null) return 'Unassigned';
+    return `Assigned to user #${after.assignedToUserId}`;
+  }
+
+  if (action === 'TASK_COLLABORATOR_ADDED' || action === 'TASK_COLLABORATOR_REMOVED') {
+    const name = after?.collaboratorName ?? before?.collaboratorName;
+    return name ? `${action === 'TASK_COLLABORATOR_ADDED' ? '+' : '−'} ${name}` : '—';
+  }
+
+  if (after?.title)           return `"${after.title}"`;
+  if (reason)                 return `"${reason}"`;
+  if (after?.passwordChanged) return 'Password updated';
+
   return '—';
 }
 
@@ -98,6 +141,7 @@ export default function AuditPage() {
 
       {/* Table */}
       <div className="bg-white rounded-2xl border border-black/5 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="bg-gray-50/80 border-b border-gray-100">
@@ -122,12 +166,17 @@ export default function AuditPage() {
                 </td>
               </tr>
             ) : logs.map(log => {
-              const meta = ACTION_META[log.action];
+              const meta   = ACTION_META[log.action];
+              const detail = logDetail(log);
               return (
                 <tr key={log.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50/80 transition-colors duration-100">
+
+                  {/* Time */}
                   <td className="px-5 py-3.5 text-xs text-gray-400 whitespace-nowrap">
                     {new Date(log.createdAt).toLocaleString()}
                   </td>
+
+                  {/* Actor */}
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-full bg-[#F0654D] flex items-center justify-center text-white text-[10px] font-bold shrink-0">
@@ -136,25 +185,46 @@ export default function AuditPage() {
                       <span className="text-sm font-medium text-gray-700">{log.actor?.name ?? 'System'}</span>
                     </div>
                   </td>
+
+                  {/* Action pill */}
                   <td className="px-4 py-3.5">
                     <span className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full ${meta ? `${meta.bg} ${meta.text}` : 'bg-gray-100 text-gray-500'}`}>
                       {meta?.label ?? log.action}
                     </span>
                   </td>
-                  <td className="px-4 py-3.5 text-sm text-gray-500">
-                    {log.entityType === 'SESSION'
-                      ? <span className="text-xs font-medium bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Login Event</span>
-                      : <span>{log.entityType} <span className="text-gray-400">#{log.entityId ?? '—'}</span></span>
-                    }
+
+                  {/* Entity — show resolved name */}
+                  <td className="px-4 py-3.5">
+                    {log.entityType === 'SESSION' ? (
+                      <span className="text-xs font-medium bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Login Event</span>
+                    ) : (
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{log.entityType}</span>
+                        {log.entityName ? (
+                          <span className="text-sm text-gray-700 truncate max-w-[160px]" title={log.entityName}>{log.entityName}</span>
+                        ) : (
+                          <span className="text-sm text-gray-400">#{log.entityId ?? '—'}</span>
+                        )}
+                      </div>
+                    )}
                   </td>
-                  <td className="px-4 py-3.5 text-sm text-gray-500 max-w-xs truncate">
-                    {logDetail(log)}
+
+                  {/* Detail + cycle time */}
+                  <td className="px-4 py-3.5 max-w-[200px]">
+                    <p className="text-sm text-gray-600 truncate" title={detail}>{detail}</p>
+                    {log.cycleTime && (
+                      <p className="text-xs text-[#4C8DFF] mt-0.5 font-medium">
+                        Completed in {formatDuration(log.cycleTime)}
+                      </p>
+                    )}
                   </td>
+
                 </tr>
               );
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Pagination */}

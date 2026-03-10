@@ -71,6 +71,11 @@ const icons = {
       <path d="M6 5h4M6 8h4M6 11h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   ),
+  reports: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M2 12V8M6 12V4M10 12V6M14 12V2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  ),
   profile: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.5" />
@@ -156,8 +161,8 @@ export default function AppLayout() {
   const isDepts     = location.pathname === '/departments';
   const isUsers     = location.pathname === '/admin/users';
   const isAudit     = location.pathname === '/admin/audit';
+  const isReports   = location.pathname === '/admin/reports';
   const isProfile   = location.pathname === '/profile';
-  const isSettings  = location.pathname === '/settings';
 
   async function handleLogout() {
     setSigningOut(true);
@@ -203,8 +208,9 @@ export default function AppLayout() {
           {user?.role === 'ADMIN' && (
             <>
               <SectionLabel label="Admin" />
-              <NavItem to="/admin/users" label="Users"      icon={icons.users} active={isUsers} />
-              <NavItem to="/admin/audit" label="Audit Logs" icon={icons.audit} active={isAudit} />
+              <NavItem to="/admin/users"    label="Users"      icon={icons.users}    active={isUsers} />
+              <NavItem to="/admin/audit"   label="Audit Logs" icon={icons.audit}    active={isAudit} />
+              <NavItem to="/admin/reports" label="Reports"    icon={icons.reports}  active={isReports} />
             </>
           )}
 
@@ -213,7 +219,6 @@ export default function AppLayout() {
           {/* Account nav */}
           <SectionLabel label="Account" />
           <NavItem to="/profile"  label="Profile"  icon={icons.profile}  active={isProfile} />
-          <NavItem to="/settings" label="Settings" icon={icons.settings} active={isSettings} />
 
           {/* Log out */}
           <button

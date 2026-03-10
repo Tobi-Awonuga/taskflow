@@ -29,21 +29,46 @@ const PRIORITY_CLS = {
 };
 
 const ACTION_META = {
-  TASK_CREATED:          { label: 'Created task',        color: 'text-green-600',  dot: '#43B96D' },
-  TASK_STATUS_CHANGED:   { label: 'Status changed',      color: 'text-blue-600',   dot: '#4C8DFF' },
-  TASK_CANCELLED:        { label: 'Cancelled task',      color: 'text-red-600',    dot: '#F05A5A' },
-  TASK_REOPENED:         { label: 'Reopened task',       color: 'text-amber-600',  dot: '#F4A23A' },
-  TASK_ASSIGNED:         { label: 'Assigned task',       color: 'text-amber-600',  dot: '#F4A23A' },
-  TASK_UNASSIGNED:       { label: 'Unassigned task',     color: 'text-amber-600',  dot: '#F4A23A' },
-  TASK_PRIORITY_CHANGED: { label: 'Priority changed',    color: 'text-blue-600',   dot: '#4C8DFF' },
-  TASK_UPDATED:          { label: 'Updated task',        color: 'text-blue-600',   dot: '#4C8DFF' },
-  USER_CREATED:          { label: 'Created user',        color: 'text-green-600',  dot: '#43B96D' },
-  USER_UPDATED:          { label: 'Updated user',        color: 'text-blue-600',   dot: '#4C8DFF' },
-  USER_DEACTIVATED:      { label: 'Deactivated user',    color: 'text-red-600',    dot: '#F05A5A' },
-  DEPT_CREATED:          { label: 'Created department',  color: 'text-green-600',  dot: '#43B96D' },
-  LOGIN_SUCCESS:         { label: 'Signed in',           color: 'text-gray-400',   dot: '#9CA3AF' },
-  LOGOUT:                { label: 'Signed out',          color: 'text-gray-400',   dot: '#9CA3AF' },
+  TASK_CREATED:               { label: 'Created task',         color: 'text-green-600',  dot: '#43B96D' },
+  TASK_STATUS_CHANGED:        { label: 'Status changed',       color: 'text-blue-600',   dot: '#4C8DFF' },
+  TASK_CANCELLED:             { label: 'Cancelled task',       color: 'text-red-600',    dot: '#F05A5A' },
+  TASK_REOPENED:              { label: 'Reopened task',        color: 'text-amber-600',  dot: '#F4A23A' },
+  TASK_ASSIGNED:              { label: 'Assigned task',        color: 'text-amber-600',  dot: '#F4A23A' },
+  TASK_UNASSIGNED:            { label: 'Unassigned task',      color: 'text-amber-600',  dot: '#F4A23A' },
+  TASK_PRIORITY_CHANGED:      { label: 'Priority changed',     color: 'text-blue-600',   dot: '#4C8DFF' },
+  TASK_UPDATED:               { label: 'Updated task',         color: 'text-blue-600',   dot: '#4C8DFF' },
+  TASK_COLLABORATOR_ADDED:    { label: 'Added collaborator',   color: 'text-green-600',  dot: '#43B96D' },
+  TASK_COLLABORATOR_REMOVED:  { label: 'Removed collaborator', color: 'text-gray-500',   dot: '#9CA3AF' },
+  USER_CREATED:               { label: 'Created user',         color: 'text-green-600',  dot: '#43B96D' },
+  USER_UPDATED:               { label: 'Updated user',         color: 'text-blue-600',   dot: '#4C8DFF' },
+  USER_DEACTIVATED:           { label: 'Deactivated user',     color: 'text-red-600',    dot: '#F05A5A' },
+  DEPT_CREATED:               { label: 'Created department',   color: 'text-green-600',  dot: '#43B96D' },
+  LOGIN_SUCCESS:              { label: 'Signed in',            color: 'text-gray-400',   dot: '#9CA3AF' },
+  LOGOUT:                     { label: 'Signed out',           color: 'text-gray-400',   dot: '#9CA3AF' },
 };
+
+const STATUS_LABELS   = { TODO: 'To Do', IN_PROGRESS: 'In Progress', DONE: 'Done', BLOCKED: 'Blocked', CANCELLED: 'Cancelled' };
+const PRIORITY_LABELS = { LOW: 'Low', MEDIUM: 'Medium', HIGH: 'High', URGENT: 'Urgent' };
+
+function activityDetail(log) {
+  const { action, before, after } = log;
+  if (action === 'TASK_STATUS_CHANGED' || action === 'TASK_CANCELLED' || action === 'TASK_REOPENED') {
+    const from = before?.status ? (STATUS_LABELS[before.status] ?? before.status) : null;
+    const to   = after?.status  ? (STATUS_LABELS[after.status]  ?? after.status)  : null;
+    if (from && to) return `${from} → ${to}`;
+    if (to)         return `→ ${to}`;
+  }
+  if (action === 'TASK_PRIORITY_CHANGED') {
+    const from = before?.priority ? (PRIORITY_LABELS[before.priority] ?? before.priority) : null;
+    const to   = after?.priority  ? (PRIORITY_LABELS[after.priority]  ?? after.priority)  : null;
+    if (from && to) return `${from} → ${to}`;
+  }
+  if (action === 'TASK_COLLABORATOR_ADDED' || action === 'TASK_COLLABORATOR_REMOVED') {
+    const name = after?.collaboratorName ?? before?.collaboratorName;
+    return name ? `${action === 'TASK_COLLABORATOR_ADDED' ? '+' : '−'} ${name}` : null;
+  }
+  return null;
+}
 
 function initials(name) {
   return (name ?? '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
