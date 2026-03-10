@@ -21,6 +21,15 @@ async function deptWithCounts(dept) {
   return { ...dept, taskCount: Number(taskCount), memberCount: Number(memberCount) };
 }
 
+router.get('/options', requireAuth, asyncHandler(async (_req, res) => {
+  const rows = await db.select({
+    id: departments.id,
+    name: departments.name,
+  }).from(departments).orderBy(asc(departments.name));
+
+  return res.json({ departments: rows });
+}));
+
 // ── GET /api/departments ──────────────────────────────────────────────────────
 
 router.get('/', requireAuth, requireRole('ADMIN'), asyncHandler(async (_req, res) => {

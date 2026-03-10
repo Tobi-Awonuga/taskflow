@@ -57,7 +57,7 @@ async function validateSession(sessionId) {
   const [user] = await db
     .select()
     .from(users)
-    .where(and(eq(users.id, session.userId), eq(users.isActive, true)));
+    .where(eq(users.id, session.userId));
 
   if (!user) return null;
 

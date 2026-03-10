@@ -160,7 +160,7 @@ router.get('/microsoft/callback', asyncHandler(async (req, res) => {
         tenantId,
         role: 'USER',
         approvalStatus: 'PENDING',
-        isActive: false,
+        isActive: true,
       });
 
       [user] = await db
@@ -173,10 +173,6 @@ router.get('/microsoft/callback', asyncHandler(async (req, res) => {
 
   if (!user) {
     return res.redirect(frontendRedirect('/login', { error: 'sso_user_create_failed' }));
-  }
-
-  if (!user.isActive || user.approvalStatus !== 'APPROVED') {
-    return res.redirect(frontendRedirect('/pending-approval', { sso: '1' }));
   }
 
   const ip = req.ip;
@@ -199,6 +195,10 @@ router.get('/microsoft/callback', asyncHandler(async (req, res) => {
   });
 
   setSessionCookie(res, sessionId);
+  if (!user.isActive || user.approvalStatus !== 'APPROVED') {
+    return res.redirect(frontendRedirect('/pending-approval', { sso: '1' }));
+  }
+
   return res.redirect(frontendRedirect('/dashboard', { sso: '1' }));
 }));
 

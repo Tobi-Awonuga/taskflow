@@ -8,6 +8,7 @@ import LoginPage           from './pages/LoginPage.jsx';
 import ForgotPasswordPage  from './pages/ForgotPasswordPage.jsx';
 import ResetPasswordPage   from './pages/ResetPasswordPage.jsx';
 import PendingApprovalPage from './pages/PendingApprovalPage.jsx';
+import AccessRequestsPage  from './pages/AccessRequestsPage.jsx';
 import TasksPage          from './pages/TasksPage.jsx';
 import DepartmentsPage    from './pages/DepartmentsPage.jsx';
 import ProfilePage        from './pages/ProfilePage.jsx';
@@ -36,6 +37,9 @@ export default function App() {
               <Route path="/departments" element={<DepartmentsPage />} />
               <Route path="/profile"     element={<ProfilePage />} />
               <Route path="/settings"    element={<Navigate to="/profile" replace />} />
+              <Route element={<ProtectedRoute roles={['ADMIN', 'SUPER']} />}>
+                <Route path="/requests" element={<AccessRequestsPage />} />
+              </Route>
 
               <Route element={<ProtectedRoute role="ADMIN" />}>
                 <Route path="/admin/users"    element={<UsersPage />} />

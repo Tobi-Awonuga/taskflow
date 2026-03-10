@@ -76,6 +76,11 @@ const icons = {
       <path d="M2 12V8M6 12V4M10 12V6M14 12V2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
   ),
+  requests: (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M3 3h10v7H8l-3 3v-3H3z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
   profile: (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.5" />
@@ -162,6 +167,7 @@ export default function AppLayout() {
   const isUsers     = location.pathname === '/admin/users';
   const isAudit     = location.pathname === '/admin/audit';
   const isReports   = location.pathname === '/admin/reports';
+  const isRequests  = location.pathname === '/requests';
   const isProfile   = location.pathname === '/profile';
 
   async function handleLogout() {
@@ -203,6 +209,10 @@ export default function AppLayout() {
           <NavItem to="/tasks"             label="All Tasks"   icon={icons.tasks}       active={isTasks} />
           <NavItem to="/tasks?scope=mine"  label="My Tasks"    icon={icons.myTasks}     active={isMine} dots={myTaskDots} />
           <NavItem to="/departments"       label="Departments" icon={icons.departments} active={isDepts} />
+
+          {(user?.role === 'ADMIN' || user?.role === 'SUPER') && (
+            <NavItem to="/requests" label="Access Requests" icon={icons.requests} active={isRequests} />
+          )}
 
           {/* Admin nav — ADMIN only */}
           {user?.role === 'ADMIN' && (
