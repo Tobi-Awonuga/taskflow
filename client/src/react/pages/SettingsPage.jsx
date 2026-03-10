@@ -48,8 +48,15 @@ export default function SettingsPage() {
   }
 
   return (
-    <main className="p-8 flex flex-col gap-6 min-w-0 overflow-y-auto">
-      <div className="bg-white rounded-2xl border border-black/5 shadow-sm p-8 max-w-lg flex flex-col gap-5">
+    <main className="p-8 flex flex-col gap-6 min-w-0 overflow-y-auto max-w-2xl">
+
+      {/* Header */}
+      <div className="pb-5 border-b border-gray-100">
+        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+        <p className="text-sm text-gray-400 mt-0.5">Manage your account preferences and security.</p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-black/[0.04] shadow-sm p-8 flex flex-col gap-5">
 
         <div>
           <h2 className="text-lg font-bold text-gray-800">Security</h2>

@@ -148,11 +148,14 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
 
   if (loading) {
     body = Array.from({ length: 5 }).map((_, i) => (
-      <tr key={i} className="border-b border-gray-50">
-        <td className="px-5 py-3.5"><div className="h-4 bg-gray-100 rounded animate-pulse w-48" /></td>
-        <td className="px-4 py-3.5"><div className="h-6 bg-gray-100 rounded-full animate-pulse w-20" /></td>
-        <td className="px-4 py-3.5"><div className="h-6 bg-gray-100 rounded-full animate-pulse w-16" /></td>
-        <td className="px-4 py-3.5"><div className="h-4 bg-gray-100 rounded animate-pulse w-24" /></td>
+      <tr key={i} className="border-b border-gray-100 last:border-0">
+        <td className="px-5 py-4">
+          <div className="h-4 bg-gray-100 rounded animate-pulse w-48 mb-1.5" />
+          <div className="h-3 bg-gray-50 rounded animate-pulse w-24" />
+        </td>
+        <td className="px-4 py-4"><div className="h-6 bg-gray-100 rounded-full animate-pulse w-20" /></td>
+        <td className="px-4 py-4"><div className="h-6 bg-gray-100 rounded-full animate-pulse w-16" /></td>
+        <td className="px-4 py-4"><div className="h-5 bg-gray-100 rounded-full animate-pulse w-24" /></td>
       </tr>
     ));
   } else if (tasks.length === 0) {
@@ -164,13 +167,14 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
               <rect x="6" y="8" width="28" height="26" rx="3" stroke="currentColor" strokeWidth="2" />
               <path d="M13 20h14M13 26h8M13 14h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            <p className="text-sm text-gray-400">No tasks found</p>
+            <p className="text-sm font-medium text-gray-500">No tasks found</p>
+            <p className="text-xs text-gray-400">Try adjusting your filters or search term</p>
           </div>
         </td>
       </tr>
     );
   } else {
-    body = tasks.map((task, idx) => {
+    body = tasks.map((task) => {
       const busy            = updatingId === task.id;
       const busyPrio        = updatingPrioId === task.id;
       const displayStatus   = draftStatus[task.id]   ?? task.status;
@@ -184,7 +188,7 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
         <tr
           key={task.id}
           onClick={() => onTaskClick?.(task)}
-          className={`border-b border-gray-50 hover:bg-orange-50/40 transition-colors cursor-pointer ${idx % 2 === 1 ? 'bg-gray-50/30' : ''}`}
+          className="border-b border-gray-100 last:border-0 hover:bg-[#F0654D]/[0.02] transition-colors duration-100 cursor-pointer"
         >
           <td className="px-5 py-3.5">
             <span className="text-sm font-medium text-gray-800">{task.title}</span>
@@ -219,7 +223,12 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
             {(() => {
               const badge = dueBadge(task.dueAt, task.status);
               if (!badge) return <span className="text-xs text-gray-300">—</span>;
-              return <span className={`text-xs ${badge.cls} ${isOverdue ? 'animate-pulse' : ''}`}>{badge.label}</span>;
+              const pillBg = isOverdue ? 'bg-red-50' : badge.cls.includes('orange') ? 'bg-orange-50' : badge.cls.includes('amber') ? 'bg-amber-50' : 'bg-gray-50';
+              return (
+                <span className={`inline-flex items-center text-xs px-2 py-0.5 rounded-full ${pillBg} ${badge.cls} ${isOverdue ? 'animate-pulse' : ''}`}>
+                  {badge.label}
+                </span>
+              );
             })()}
           </td>
         </tr>
@@ -232,11 +241,11 @@ export default function TaskTable({ tasks, loading, onUpdateStatus, onUpdatePrio
       <div className="bg-white rounded-2xl border border-black/5 shadow-sm overflow-x-auto">
         <table className="w-full min-w-[560px]">
           <thead>
-            <tr className="border-b border-gray-100">
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5">Title</th>
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Status</th>
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Priority</th>
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Due</th>
+            <tr className="bg-gray-50/80 border-b border-gray-100">
+              <th className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-5 py-3">Title</th>
+              <th className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-4 py-3">Status</th>
+              <th className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-4 py-3">Priority</th>
+              <th className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-4 py-3">Due</th>
             </tr>
           </thead>
           <tbody>{body}</tbody>

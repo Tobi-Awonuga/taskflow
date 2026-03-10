@@ -8,15 +8,19 @@ import TaskTable               from '../components/TaskTable.jsx';
 import CreateTaskModal         from '../components/CreateTaskModal.jsx';
 import TaskDetailDrawer        from '../components/TaskDetailDrawer.jsx';
 
-function StatCard({ label, count, color, onClick, active }) {
+function StatCard({ label, count, color, barColor, onClick, active }) {
   return (
     <button
       onClick={onClick}
-      className={`bg-white rounded-2xl p-5 border shadow-sm text-left w-full transition-all
-        ${active ? 'border-[#F0654D] ring-2 ring-[#F0654D]/20 shadow-md' : 'border-black/5 hover:border-gray-200'}`}
+      className={`relative bg-white rounded-2xl p-5 border shadow-sm text-left w-full transition-all overflow-hidden hover:shadow-md
+        ${active ? 'border-[#F0654D]/40 ring-2 ring-[#F0654D]/15 bg-[#F0654D]/[0.02]' : 'border-black/[0.04] hover:border-gray-200'}`}
     >
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{label}</p>
-      <p className="text-3xl font-bold" style={{ color }}>{count}</p>
+      <span
+        className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full"
+        style={{ backgroundColor: active ? color : barColor ?? color, opacity: active ? 1 : 0.35 }}
+      />
+      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-2">{label}</p>
+      <p className="text-2xl font-bold" style={{ color }}>{count}</p>
     </button>
   );
 }
@@ -111,12 +115,17 @@ export default function TasksPage() {
   const nextEnabled = page < totalPages && !loading;
 
   return (
-    <main className="p-8 flex flex-col gap-6 min-w-0 overflow-y-auto">
+    <main className="p-8 flex flex-col gap-6 min-w-0 overflow-y-auto animate-page-enter">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Tasks</h1>
-        <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 bg-[#F0654D] hover:bg-[#E85B44] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">
+      <div className="flex items-start justify-between pb-5 border-b border-gray-100">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Tasks</h1>
+          <p className="text-sm text-gray-400 mt-0.5">
+            {query.scope === 'MINE' ? 'Tasks assigned to you' : 'All workspace tasks'}
+          </p>
+        </div>
+        <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 bg-[#F0654D] hover:bg-[#E85B44] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm" style={{ boxShadow: '0 2px 8px rgba(240,101,77,0.3)' }}>
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
             <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
@@ -126,11 +135,11 @@ export default function TasksPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        <StatCard label="Open"        count={stats.todo}       color="#4C8DFF" onClick={() => handleKpiClick('todo')}       active={activeKpi === 'todo'} />
-        <StatCard label="In Progress" count={stats.inProgress} color="#F4A23A" onClick={() => handleKpiClick('inProgress')} active={activeKpi === 'inProgress'} />
-        <StatCard label="Blocked"     count={stats.blocked}    color="#F05A5A" onClick={() => handleKpiClick('blocked')}    active={activeKpi === 'blocked'} />
-        <StatCard label="Overdue"     count={stats.overdue}    color="#EF4444" onClick={() => handleKpiClick('overdue')}    active={activeKpi === 'overdue'} />
-        <StatCard label="Done"        count={stats.done}       color="#43B96D" onClick={() => handleKpiClick('done')}       active={activeKpi === 'done'} />
+        <StatCard label="Open"        count={stats.todo}       color="#4C8DFF" barColor="#4C8DFF" onClick={() => handleKpiClick('todo')}       active={activeKpi === 'todo'} />
+        <StatCard label="In Progress" count={stats.inProgress} color="#F4A23A" barColor="#F4A23A" onClick={() => handleKpiClick('inProgress')} active={activeKpi === 'inProgress'} />
+        <StatCard label="Blocked"     count={stats.blocked}    color="#F05A5A" barColor="#F05A5A" onClick={() => handleKpiClick('blocked')}    active={activeKpi === 'blocked'} />
+        <StatCard label="Overdue"     count={stats.overdue}    color="#EF4444" barColor="#EF4444" onClick={() => handleKpiClick('overdue')}    active={activeKpi === 'overdue'} />
+        <StatCard label="Done"        count={stats.done}       color="#43B96D" barColor="#43B96D" onClick={() => handleKpiClick('done')}       active={activeKpi === 'done'} />
       </div>
 
       {/* Filters */}
@@ -155,25 +164,31 @@ export default function TasksPage() {
       />
 
       {/* Pagination */}
-      <div className="flex items-center justify-between text-sm text-gray-400">
-        <span>Showing {from}–{to} of {total} tasks</span>
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-400">
+          {total === 0 ? 'No tasks' : `Showing ${from}–${to} of ${total} tasks`}
+        </span>
+        <div className="flex items-center gap-2">
           <button
             disabled={!prevEnabled}
             onClick={() => setQuery({ page: page - 1 })}
-            className={`px-3 py-1.5 rounded-lg border border-gray-200 ${prevEnabled ? 'hover:bg-gray-50 text-gray-600 cursor-pointer' : 'text-gray-300 cursor-not-allowed'}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-sm font-medium transition-colors
+              ${prevEnabled ? 'border-gray-200 bg-white hover:bg-gray-50 text-gray-600 shadow-sm' : 'border-gray-100 text-gray-300 cursor-not-allowed bg-white'}`}
           >
-            Previous
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Prev
           </button>
-          <button className="px-3 py-1.5 rounded-lg bg-[#F0654D] text-white font-semibold">
-            {page} / {totalPages}
-          </button>
+          <span className="px-3 py-1.5 rounded-xl bg-[#F0654D] text-white text-sm font-semibold min-w-[64px] text-center">
+            {page} / {totalPages || 1}
+          </span>
           <button
             disabled={!nextEnabled}
             onClick={() => setQuery({ page: page + 1 })}
-            className={`px-3 py-1.5 rounded-lg border border-gray-200 ${nextEnabled ? 'hover:bg-gray-50 text-gray-600 cursor-pointer' : 'text-gray-300 cursor-not-allowed'}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-sm font-medium transition-colors
+              ${nextEnabled ? 'border-gray-200 bg-white hover:bg-gray-50 text-gray-600 shadow-sm' : 'border-gray-100 text-gray-300 cursor-not-allowed bg-white'}`}
           >
             Next
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
         </div>
       </div>

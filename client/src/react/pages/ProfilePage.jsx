@@ -119,8 +119,15 @@ export default function ProfilePage() {
   });
 
   return (
-    <main className="p-8 flex flex-col gap-6 min-w-0 overflow-y-auto">
-      <div className="bg-white rounded-2xl border border-black/5 shadow-sm p-8 flex flex-col items-center gap-5 max-w-lg">
+    <main className="p-8 flex flex-col gap-6 min-w-0 overflow-y-auto max-w-2xl">
+
+      {/* Header */}
+      <div className="pb-5 border-b border-gray-100">
+        <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
+        <p className="text-sm text-gray-400 mt-0.5">Manage your personal information and security.</p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-black/[0.04] shadow-sm p-8 flex flex-col items-center gap-5">
 
         {/* Avatar */}
         <div className="w-20 h-20 rounded-full bg-[#F0654D] flex items-center justify-center text-white text-2xl font-bold select-none">
@@ -155,7 +162,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Change Password */}
-      <div className="bg-white rounded-2xl border border-black/5 shadow-sm p-8 flex flex-col gap-5 max-w-lg">
+      <div className="bg-white rounded-2xl border border-black/[0.04] shadow-sm p-8 flex flex-col gap-5">
         <h3 className="text-base font-bold text-gray-800">Change Password</h3>
         <form onSubmit={handleChangePassword} className="flex flex-col gap-4">
           <div>

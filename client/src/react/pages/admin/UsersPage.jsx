@@ -4,8 +4,8 @@ import { useAuth } from '../../context/AuthContext.jsx';
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const ROLE_PILL = {
-  ADMIN: 'bg-red-50 text-[#F0654D]',
-  SUPER: 'bg-blue-50 text-[#4C8DFF]',
+  ADMIN: 'bg-purple-100 text-purple-700',
+  SUPER: 'bg-blue-100 text-blue-700',
   USER:  'bg-gray-100 text-gray-600',
 };
 
@@ -43,7 +43,7 @@ function ChevronDown() {
 
 function SkeletonRow() {
   return (
-    <tr className="border-b border-gray-50">
+    <tr className="border-b border-gray-100">
       <td className="px-5 py-3.5">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse shrink-0" />
@@ -121,7 +121,10 @@ function AddUserModal({ departments, onClose, onCreated }) {
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
-            <h2 className="text-lg font-bold text-gray-800">Add User</h2>
+            <div>
+              <h2 className="text-lg font-bold text-gray-800">Add New User</h2>
+              <p className="text-xs text-gray-400 mt-0.5">Fill in the details below to create an account.</p>
+            </div>
             <button
               onClick={onClose}
               className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
@@ -184,38 +187,39 @@ function AddUserModal({ departments, onClose, onCreated }) {
               <p className="text-xs text-gray-400">User can change this after first login.</p>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="add-user-role" className={MODAL_LABEL}>Role</label>
-              <select
-                id="add-user-role"
-                value={role}
-                onChange={e => { setRole(e.target.value); setDeptId(''); }}
-                className={MODAL_INPUT}
-              >
-                <option value="USER">USER</option>
-                <option value="SUPER">SUPER</option>
-                <option value="ADMIN">ADMIN</option>
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="add-user-dept" className={MODAL_LABEL}>
-                Department{deptRequired && <span className="text-[#F0654D]"> *</span>}
-              </label>
-              <select
-                id="add-user-dept"
-                value={deptId}
-                onChange={e => setDeptId(e.target.value)}
-                className={MODAL_INPUT}
-              >
-                {deptRequired
-                  ? <option value="">Select a department…</option>
-                  : <option value="">No department / Org-wide</option>
-                }
-                {departments.map(d => (
-                  <option key={d.id} value={d.id}>{d.name}</option>
-                ))}
-              </select>
+            <div className="flex gap-4">
+              <div className="flex flex-col gap-1.5 flex-1">
+                <label htmlFor="add-user-role" className={MODAL_LABEL}>Role</label>
+                <select
+                  id="add-user-role"
+                  value={role}
+                  onChange={e => { setRole(e.target.value); setDeptId(''); }}
+                  className={MODAL_INPUT}
+                >
+                  <option value="USER">User</option>
+                  <option value="SUPER">Super</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5 flex-1">
+                <label htmlFor="add-user-dept" className={MODAL_LABEL}>
+                  Department{deptRequired && <span className="text-[#F0654D]"> *</span>}
+                </label>
+                <select
+                  id="add-user-dept"
+                  value={deptId}
+                  onChange={e => setDeptId(e.target.value)}
+                  className={MODAL_INPUT}
+                >
+                  {deptRequired
+                    ? <option value="">Select department…</option>
+                    : <option value="">Org-wide</option>
+                  }
+                  {departments.map(d => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {error && (
@@ -397,14 +401,18 @@ export default function UsersPage() {
   // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <main className="p-8 flex flex-col gap-6 min-w-0 overflow-y-auto">
+    <main className="p-8 flex flex-col gap-6 min-w-0 overflow-y-auto animate-page-enter">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-800">Users</h1>
+      <div className="pb-5 border-b border-gray-100 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-gray-900">Users</h1>
+          <span className="text-sm font-semibold bg-gray-100 text-gray-500 px-2.5 py-0.5 rounded-full">{total}</span>
+        </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-[#F0654D] hover:bg-[#E85B44] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+          className="flex items-center gap-2 bg-[#F0654D] hover:bg-[#E85B44] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm"
+          style={{ boxShadow: '0 2px 8px rgba(240,101,77,0.3)' }}
         >
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
             <path d="M6.5 1v11M1 6.5h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -422,9 +430,9 @@ export default function UsersPage() {
             className={FILTER_CLS}
           >
             <option value="">All Roles</option>
-            <option value="USER">USER</option>
-            <option value="SUPER">SUPER</option>
-            <option value="ADMIN">ADMIN</option>
+            <option value="USER">User</option>
+            <option value="SUPER">Super</option>
+            <option value="ADMIN">Admin</option>
           </select>
           <ChevronDown />
         </div>
@@ -443,16 +451,16 @@ export default function UsersPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-black/5 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-black/[0.04] shadow-sm overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-100">
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-5 py-3.5">Name</th>
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5 hidden sm:table-cell">Email</th>
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Role</th>
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5 hidden md:table-cell">Department</th>
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3.5">Status</th>
-              <th className="px-4 py-3.5" />
+            <tr className="bg-gray-50/80 border-b border-gray-100">
+              <th className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-5 py-3">Name</th>
+              <th className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-4 py-3 hidden sm:table-cell">Email</th>
+              <th className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-4 py-3">Role</th>
+              <th className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-4 py-3 hidden md:table-cell">Department</th>
+              <th className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-4 py-3">Status</th>
+              <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
@@ -476,7 +484,7 @@ export default function UsersPage() {
               const isEditingDept = editingDeptId === u.id;
 
               return (
-                <tr key={u.id} className="border-b border-gray-50 hover:bg-gray-50/40 transition-colors">
+                <tr key={u.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50/80 transition-colors duration-100">
 
                   {/* Name — click to edit */}
                   <td className="px-5 py-3.5">
@@ -524,9 +532,9 @@ export default function UsersPage() {
                         onChange={e => handleRoleChange(u.id, e.target.value)}
                         className="text-xs border border-gray-300 rounded-lg px-2 py-1 bg-white focus:outline-none focus:border-[#F0654D]"
                       >
-                        <option value="USER">USER</option>
-                        <option value="SUPER">SUPER</option>
-                        <option value="ADMIN">ADMIN</option>
+                        <option value="USER">User</option>
+                        <option value="SUPER">Super</option>
+                        <option value="ADMIN">Admin</option>
                       </select>
                     ) : (
                       <button
@@ -571,10 +579,15 @@ export default function UsersPage() {
 
                   {/* Status */}
                   <td className="px-4 py-3.5">
-                    {u.isActive
-                      ? <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-700">Active</span>
-                      : <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">Inactive</span>
-                    }
+                    {u.isActive ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />Active
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-600">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />Inactive
+                      </span>
+                    )}
                   </td>
 
                   {/* Actions */}
@@ -584,14 +597,14 @@ export default function UsersPage() {
                     ) : u.isActive ? (
                       <button
                         onClick={() => handleToggleActive(u.id)}
-                        className="text-xs text-gray-500 hover:text-red-500 hover:bg-red-50 px-3 py-1 rounded-lg transition-colors"
+                        className="text-sm font-medium text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded-lg transition-colors"
                       >
                         Deactivate
                       </button>
                     ) : (
                       <button
                         onClick={() => handleToggleActive(u.id)}
-                        className="text-xs text-green-600 hover:text-green-800 hover:bg-green-50 px-3 py-1 rounded-lg transition-colors"
+                        className="text-sm font-medium text-green-600 hover:text-green-800 hover:bg-green-50 px-3 py-1 rounded-lg transition-colors"
                       >
                         Activate
                       </button>
@@ -606,25 +619,31 @@ export default function UsersPage() {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between text-sm text-gray-400">
-        <span>Showing {from}–{to} of {total} users</span>
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-400">
+          {total === 0 ? 'No users' : `Showing ${from}–${to} of ${total} users`}
+        </span>
+        <div className="flex items-center gap-2">
           <button
             disabled={!prevEnabled}
             onClick={() => setPage(p => p - 1)}
-            className={`px-3 py-1.5 rounded-lg border border-gray-200 ${prevEnabled ? 'hover:bg-gray-50 text-gray-600 cursor-pointer' : 'text-gray-300 cursor-not-allowed'}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-sm font-medium transition-colors
+              ${prevEnabled ? 'border-gray-200 bg-white hover:bg-gray-50 text-gray-600 shadow-sm' : 'border-gray-100 text-gray-300 cursor-not-allowed bg-white'}`}
           >
-            Previous
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 11L5 7l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Prev
           </button>
-          <button className="px-3 py-1.5 rounded-lg bg-[#F0654D] text-white font-semibold">
-            {page} / {totalPages}
-          </button>
+          <span className="px-3 py-1.5 rounded-xl bg-[#F0654D] text-white text-sm font-semibold min-w-[64px] text-center">
+            {page} / {totalPages || 1}
+          </span>
           <button
             disabled={!nextEnabled}
             onClick={() => setPage(p => p + 1)}
-            className={`px-3 py-1.5 rounded-lg border border-gray-200 ${nextEnabled ? 'hover:bg-gray-50 text-gray-600 cursor-pointer' : 'text-gray-300 cursor-not-allowed'}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-sm font-medium transition-colors
+              ${nextEnabled ? 'border-gray-200 bg-white hover:bg-gray-50 text-gray-600 shadow-sm' : 'border-gray-100 text-gray-300 cursor-not-allowed bg-white'}`}
           >
             Next
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
         </div>
       </div>
