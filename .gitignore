@@ -25,4 +25,8 @@ client/dist
 
 # OS junk
 .DS_Store
-Thumbs.dbmasterplan-support/inspection/session.json
+Thumbs.db
+
+# Masterplan inspection — session tokens (sensitive)
+masterplan-support/inspection/session.json
+masterplan-support/inspection/session-authed.json

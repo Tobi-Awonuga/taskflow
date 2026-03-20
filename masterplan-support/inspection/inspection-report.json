@@ -1,37 +1,951 @@
 {
-  "00-resumed-session": {
-    "file": "screenshots/01-00-resumed-session.png",
-    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode",
-    "note": "Session resumed — checking where we are",
-    "ts": "2026-03-20T01:59:46.440Z"
+  "home": {
+    "title": "Dashboard | Masterplan ERP",
+    "url": "https://preview.masterplansolutions.com/",
+    "h1": [
+      "Edit Dashboard"
+    ],
+    "text": "Sales\nPurchasing\nManufacturing\nItems\nMRP\nEmployees\nQuality\nPLM\nMaintenance\nFinancials\nReceivables\nPayables\n\nTobi Awonuga  \n\n\n\n\nTraining & Support Coordinator  \n\nEdit Dashboard\n\nCompany Code:  \n\n1000 - CT Bakery\n\n    Plant:  \n\nNASHUA\n\nAPPROVAL REQUESTS\n\n0\n\nERROR LOADING SHIPPING - PICKED QUANTITY=0\n\n0\n\nDEMAND PLANNING REPORT\n\n301\n\nTO BY LOTNUMBER\n\n291\n\nPRODUCTION RCPT SUMMARY PAST 2 MONTH\n\n9404\n\nPURCHASE ORDER RECEIPT SCHEDULE\n\n219\n\nCYCLE COUNT\n\n7138\n\nRPO-SO-INV BY LOT\n\nCYCLE COUNT WEEKLY REPORT\n\n18\n\nTO REJECTED LAST 14 DAYS\n\n42\n\nLAST COUNT REPORT\n\n4099\n\nPO RECEIPTS BY LOTNUMBER\n\n3986\n\nDEMAND SOURCE\n\n301\n\nAAATEST\n\n2076\n\nINVENTORY VALUATION\n\n2076\n\nRSPO RECEIVING REPORT\n\n2076\n\nLAST PO PER ITEM\n\n579\n\nTRANSFERORDER LAST 2 DAYS\n\n694\n\nSHIPMENTS LAST 2 DAYS\n\n1016\n\nPURCHASEORDER RECEIPTS LAST 2 DAY\n\n437\n\nAAAAAAAAAAA\n\n2076\n\nRSPO ITEMS\n\n31\n© 2026 - Masterplan ERP Inc.",
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Global Search ...",
+        "required": false,
+        "label": ""
+      }
+    ],
+    "buttons": [
+      "APPROVAL REQUESTS0",
+      "ERROR LOADING SHIPPING - PICKED QUANTITY=00",
+      "DEMAND PLANNING REPORT301",
+      "TO BY LOTNUMBER291",
+      "PRODUCTION RCPT SUMMARY PAST 2 MONTH9404",
+      "PURCHASE ORDER RECEIPT SCHEDULE219",
+      "CYCLE COUNT7138",
+      "RPO-SO-INV BY LOT",
+      "CYCLE COUNT WEEKLY REPORT18",
+      "TO REJECTED LAST 14 DAYS42",
+      "LAST COUNT REPORT4099",
+      "PO RECEIPTS BY LOTNUMBER3986",
+      "DEMAND SOURCE301",
+      "AAATEST2076",
+      "INVENTORY VALUATION2076",
+      "RSPO RECEIVING REPORT2076",
+      "LAST PO PER ITEM579",
+      "TRANSFERORDER LAST 2 DAYS694",
+      "SHIPMENTS LAST 2 DAYS1016",
+      "PURCHASEORDER RECEIPTS LAST 2 DAY437"
+    ],
+    "tableHeaders": [],
+    "links": []
   },
-  "01-after-send": {
-    "file": "screenshots/02-01-after-send.png",
-    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode",
-    "note": "After triggering code send",
-    "ts": "2026-03-20T02:00:17.987Z"
+  "sidebar_structure": {
+    "html": "not found",
+    "text": ""
   },
-  "error-no-otp-field": {
-    "file": "screenshots/03-error-no-otp-field.png",
-    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode",
-    "note": "Could not find OTP input field",
-    "ts": "2026-03-20T02:00:18.035Z"
+  "items-menu-open": {
+    "file": "screenshots/deep-02-items-menu-open.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Items menu expanded"
   },
-  "02-otp-entered": {
-    "file": "screenshots/04-02-otp-entered.png",
-    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode",
-    "note": "OTP entered",
-    "ts": "2026-03-20T02:00:18.074Z"
+  "item-list": {
+    "file": "screenshots/deep-03-item-list.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Item master list"
   },
-  "03-post-otp": {
-    "file": "screenshots/05-03-post-otp.png",
-    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode",
-    "note": "After OTP submission",
-    "ts": "2026-03-20T02:00:20.119Z"
+  "item_list": {
+    "title": "Dashboard | Masterplan ERP",
+    "url": "https://preview.masterplansolutions.com/",
+    "h1": [
+      "Edit Dashboard"
+    ],
+    "text": "Sales\nPurchasing\nManufacturing\nItems\n\nTransactions\n\nItem Master\nCycle Count\nTransfer Order\nTraceability\nItem Inquiry\n\nLists\n\nItem List\nExceptions\nOpen Transfer Orders\nReport Center\n\nMRP\nEmployees\nQuality\nPLM\nMaintenance\nFinancials\nReceivables\nPayables\n\nTobi Awonuga  \n\n\n\n\nTraining & Support Coordinator  \n\nEdit Dashboard\n\nCompany Code:  \n\n1000 - CT Bakery\n\n    Plant:  \n\nNASHUA\n\nAPPROVAL REQUESTS\n\n0\n\nERROR LOADING SHIPPING - PICKED QUANTITY=0\n\n0\n\nDEMAND PLANNING REPORT\n\n301\n\nTO BY LOTNUMBER\n\n291\n\nPRODUCTION RCPT SUMMARY PAST 2 MONTH\n\n9404\n\nPURCHASE ORDER RECEIPT SCHEDULE\n\n219\n\nCYCLE COUNT\n\n7138\n\nRPO-SO-INV BY LOT\n\nCYCLE COUNT WEEKLY REPORT\n\n18\n\nTO REJECTED LAST 14 DAYS\n\n42\n\nLAST COUNT REPORT\n\n4099\n\nPO RECEIPTS BY LOTNUMBER\n\n3986\n\nDEMAND SOURCE\n\n301\n\nAAATEST\n\n2076\n\nINVENTORY VALUATION\n\n2076\n\nRSPO RECEIVING REPORT\n\n2076\n\nLAST PO PER ITEM\n\n579\n\nTRANSFERORDER LAST 2 DAYS\n\n694\n\nSHIPMENTS LAST 2 DAYS\n\n1016\n\nPURCHASEORDER RECEIPTS LAST 2 DAY\n\n437\n\nAAAAAAAAAAA\n\n2076\n\nRSPO ITEMS\n\n31\n© 2026 - Masterplan ERP Inc.\nItem Master",
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Global Search ...",
+        "required": false,
+        "label": ""
+      }
+    ],
+    "buttons": [
+      "APPROVAL REQUESTS0",
+      "ERROR LOADING SHIPPING - PICKED QUANTITY=00",
+      "DEMAND PLANNING REPORT301",
+      "TO BY LOTNUMBER291",
+      "PRODUCTION RCPT SUMMARY PAST 2 MONTH9404",
+      "PURCHASE ORDER RECEIPT SCHEDULE219",
+      "CYCLE COUNT7138",
+      "RPO-SO-INV BY LOT",
+      "CYCLE COUNT WEEKLY REPORT18",
+      "TO REJECTED LAST 14 DAYS42",
+      "LAST COUNT REPORT4099",
+      "PO RECEIPTS BY LOTNUMBER3986",
+      "DEMAND SOURCE301",
+      "AAATEST2076",
+      "INVENTORY VALUATION2076",
+      "RSPO RECEIVING REPORT2076",
+      "LAST PO PER ITEM579",
+      "TRANSFERORDER LAST 2 DAYS694",
+      "SHIPMENTS LAST 2 DAYS1016",
+      "PURCHASEORDER RECEIPTS LAST 2 DAY437"
+    ],
+    "tableHeaders": [],
+    "links": [
+      {
+        "text": "Item Master",
+        "href": "/"
+      },
+      {
+        "text": "Cycle Count",
+        "href": "/"
+      },
+      {
+        "text": "Transfer Order",
+        "href": "/"
+      },
+      {
+        "text": "Traceability",
+        "href": "/"
+      },
+      {
+        "text": "Item Inquiry",
+        "href": "/"
+      },
+      {
+        "text": "Item List",
+        "href": "/items_itemlist"
+      },
+      {
+        "text": "Exceptions",
+        "href": "/items_exceptions"
+      },
+      {
+        "text": "Open Transfer Orders",
+        "href": "/items_transferorders"
+      },
+      {
+        "text": "Report Center",
+        "href": "/"
+      }
+    ]
   },
-  "login_result": {
-    "success": false,
-    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode",
-    "text": "Server Error\n500 - Internal server error.\nThere is a problem with the resource you are looking for, and it cannot be displayed."
+  "purchasing-menu": {
+    "file": "screenshots/deep-04-purchasing-menu.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Purchasing menu expanded"
+  },
+  "purchase-orders": {
+    "file": "screenshots/deep-05-purchase-orders.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Purchase orders list"
+  },
+  "purchase_orders": {
+    "title": "Dashboard | Masterplan ERP",
+    "url": "https://preview.masterplansolutions.com/",
+    "h1": [
+      "Edit Dashboard"
+    ],
+    "text": "Sales\nPurchasing\n\nTransactions\n\nRFQ\nPurchase Orders\nGoods Receipt\nSupplier Return\nSearch History\n\nLists\n\nSuppliers\nOpen RFQs\nOpen Purchase Orders\nOpen Supplier Returns\nReport Center\n\nManufacturing\nItems\nMRP\nEmployees\nQuality\nPLM\nMaintenance\nFinancials\nReceivables\nPayables\n\nTobi Awonuga  \n\n\n\n\nTraining & Support Coordinator  \n\nEdit Dashboard\n\nCompany Code:  \n\n1000 - CT Bakery\n\n    Plant:  \n\nNASHUA\n\nAPPROVAL REQUESTS\n\n0\n\nERROR LOADING SHIPPING - PICKED QUANTITY=0\n\n0\n\nDEMAND PLANNING REPORT\n\n301\n\nTO BY LOTNUMBER\n\n291\n\nPRODUCTION RCPT SUMMARY PAST 2 MONTH\n\n9404\n\nPURCHASE ORDER RECEIPT SCHEDULE\n\n219\n\nCYCLE COUNT\n\n7138\n\nRPO-SO-INV BY LOT\n\nCYCLE COUNT WEEKLY REPORT\n\n18\n\nTO REJECTED LAST 14 DAYS\n\n42\n\nLAST COUNT REPORT\n\n4099\n\nPO RECEIPTS BY LOTNUMBER\n\n3986\n\nDEMAND SOURCE\n\n301\n\nAAATEST\n\n2076\n\nINVENTORY VALUATION\n\n2076\n\nRSPO RECEIVING REPORT\n\n2076\n\nLAST PO PER ITEM\n\n579\n\nTRANSFERORDER LAST 2 DAYS\n\n694\n\nSHIPMENTS LAST 2 DAYS\n\n1016\n\nPURCHASEORDER RECEIPTS LAST 2 DAY\n\n437\n\nAAAAAAAAAAA\n\n2076\n\nRSPO ITEMS\n\n31\n© 2026 - Masterplan ERP Inc.\nPurchase Orders",
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Global Search ...",
+        "required": false,
+        "label": ""
+      }
+    ],
+    "buttons": [
+      "APPROVAL REQUESTS0",
+      "ERROR LOADING SHIPPING - PICKED QUANTITY=00",
+      "DEMAND PLANNING REPORT301",
+      "TO BY LOTNUMBER291",
+      "PRODUCTION RCPT SUMMARY PAST 2 MONTH9404",
+      "PURCHASE ORDER RECEIPT SCHEDULE219",
+      "CYCLE COUNT7138",
+      "RPO-SO-INV BY LOT",
+      "CYCLE COUNT WEEKLY REPORT18",
+      "TO REJECTED LAST 14 DAYS42",
+      "LAST COUNT REPORT4099",
+      "PO RECEIPTS BY LOTNUMBER3986",
+      "DEMAND SOURCE301",
+      "AAATEST2076",
+      "INVENTORY VALUATION2076",
+      "RSPO RECEIVING REPORT2076",
+      "LAST PO PER ITEM579",
+      "TRANSFERORDER LAST 2 DAYS694",
+      "SHIPMENTS LAST 2 DAYS1016",
+      "PURCHASEORDER RECEIPTS LAST 2 DAY437"
+    ],
+    "tableHeaders": [],
+    "links": [
+      {
+        "text": "RFQ",
+        "href": "/"
+      },
+      {
+        "text": "Purchase Orders",
+        "href": "/"
+      },
+      {
+        "text": "Goods Receipt",
+        "href": "/"
+      },
+      {
+        "text": "Supplier Return",
+        "href": "/"
+      },
+      {
+        "text": "Search History",
+        "href": "/"
+      },
+      {
+        "text": "Suppliers",
+        "href": "/purchasing_suppliers"
+      },
+      {
+        "text": "Open RFQs",
+        "href": "/purchasing_requestforquotes"
+      },
+      {
+        "text": "Open Purchase Orders",
+        "href": "/purchasing_purchaseorders"
+      },
+      {
+        "text": "Open Supplier Returns",
+        "href": "/purchasing_supplierreturns"
+      },
+      {
+        "text": "Report Center",
+        "href": "/"
+      }
+    ]
+  },
+  "po-receiving": {
+    "file": "screenshots/deep-06-po-receiving.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "PO Receiving screen"
+  },
+  "po_receiving": {
+    "title": "Dashboard | Masterplan ERP",
+    "url": "https://preview.masterplansolutions.com/",
+    "h1": [
+      "Edit Dashboard"
+    ],
+    "text": "Sales\nPurchasing\n\nTransactions\n\nRFQ\nPurchase Orders\nGoods Receipt\nSupplier Return\nSearch History\n\nLists\n\nSuppliers\nOpen RFQs\nOpen Purchase Orders\nOpen Supplier Returns\nReport Center\n\nManufacturing\nItems\nMRP\nEmployees\nQuality\nPLM\nMaintenance\nFinancials\nReceivables\nPayables\n\nTobi Awonuga  \n\n\n\n\nTraining & Support Coordinator  \n\nEdit Dashboard\n\nCompany Code:  \n\n1000 - CT Bakery\n\n    Plant:  \n\nNASHUA\n\nAPPROVAL REQUESTS\n\n0\n\nERROR LOADING SHIPPING - PICKED QUANTITY=0\n\n0\n\nDEMAND PLANNING REPORT\n\n301\n\nTO BY LOTNUMBER\n\n291\n\nPRODUCTION RCPT SUMMARY PAST 2 MONTH\n\n9404\n\nPURCHASE ORDER RECEIPT SCHEDULE\n\n219\n\nCYCLE COUNT\n\n7138\n\nRPO-SO-INV BY LOT\n\nCYCLE COUNT WEEKLY REPORT\n\n18\n\nTO REJECTED LAST 14 DAYS\n\n42\n\nLAST COUNT REPORT\n\n4099\n\nPO RECEIPTS BY LOTNUMBER\n\n3986\n\nDEMAND SOURCE\n\n301\n\nAAATEST\n\n2076\n\nINVENTORY VALUATION\n\n2076\n\nRSPO RECEIVING REPORT\n\n2076\n\nLAST PO PER ITEM\n\n579\n\nTRANSFERORDER LAST 2 DAYS\n\n694\n\nSHIPMENTS LAST 2 DAYS\n\n1016\n\nPURCHASEORDER RECEIPTS LAST 2 DAY\n\n437\n\nAAAAAAAAAAA\n\n2076\n\nRSPO ITEMS\n\n31\n© 2026 - Masterplan ERP Inc.\nGoods Receipt",
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Global Search ...",
+        "required": false,
+        "label": ""
+      }
+    ],
+    "buttons": [
+      "APPROVAL REQUESTS0",
+      "ERROR LOADING SHIPPING - PICKED QUANTITY=00",
+      "DEMAND PLANNING REPORT301",
+      "TO BY LOTNUMBER291",
+      "PRODUCTION RCPT SUMMARY PAST 2 MONTH9404",
+      "PURCHASE ORDER RECEIPT SCHEDULE219",
+      "CYCLE COUNT7138",
+      "RPO-SO-INV BY LOT",
+      "CYCLE COUNT WEEKLY REPORT18",
+      "TO REJECTED LAST 14 DAYS42",
+      "LAST COUNT REPORT4099",
+      "PO RECEIPTS BY LOTNUMBER3986",
+      "DEMAND SOURCE301",
+      "AAATEST2076",
+      "INVENTORY VALUATION2076",
+      "RSPO RECEIVING REPORT2076",
+      "LAST PO PER ITEM579",
+      "TRANSFERORDER LAST 2 DAYS694",
+      "SHIPMENTS LAST 2 DAYS1016",
+      "PURCHASEORDER RECEIPTS LAST 2 DAY437"
+    ],
+    "tableHeaders": [],
+    "links": [
+      {
+        "text": "RFQ",
+        "href": "/"
+      },
+      {
+        "text": "Purchase Orders",
+        "href": "/"
+      },
+      {
+        "text": "Goods Receipt",
+        "href": "/"
+      },
+      {
+        "text": "Supplier Return",
+        "href": "/"
+      },
+      {
+        "text": "Search History",
+        "href": "/"
+      },
+      {
+        "text": "Suppliers",
+        "href": "/purchasing_suppliers"
+      },
+      {
+        "text": "Open RFQs",
+        "href": "/purchasing_requestforquotes"
+      },
+      {
+        "text": "Open Purchase Orders",
+        "href": "/purchasing_purchaseorders"
+      },
+      {
+        "text": "Open Supplier Returns",
+        "href": "/purchasing_supplierreturns"
+      },
+      {
+        "text": "Report Center",
+        "href": "/"
+      }
+    ]
+  },
+  "manufacturing-menu": {
+    "file": "screenshots/deep-07-manufacturing-menu.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Manufacturing menu expanded"
+  },
+  "production-orders": {
+    "file": "screenshots/deep-08-production-orders.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Production orders"
+  },
+  "production_orders": {
+    "title": "Dashboard | Masterplan ERP",
+    "url": "https://preview.masterplansolutions.com/",
+    "h1": [
+      "Edit Dashboard"
+    ],
+    "text": "Sales\nPurchasing\nManufacturing\n\nTransactions\n\nEstimating\nProduction Orders\nConvert Sales Orders\nProduction Schedule\nSearch History\n\nLists\n\nWork Centers\nOpen Production Orders\nOpen Estimates\nReport Center\n\nItems\nMRP\nEmployees\nQuality\nPLM\nMaintenance\nFinancials\nReceivables\nPayables\n\nTobi Awonuga  \n\n\n\n\nTraining & Support Coordinator  \n\nEdit Dashboard\n\nCompany Code:  \n\n1000 - CT Bakery\n\n    Plant:  \n\nNASHUA\n\nAPPROVAL REQUESTS\n\n0\n\nERROR LOADING SHIPPING - PICKED QUANTITY=0\n\n0\n\nDEMAND PLANNING REPORT\n\n301\n\nTO BY LOTNUMBER\n\n291\n\nPRODUCTION RCPT SUMMARY PAST 2 MONTH\n\n9404\n\nPURCHASE ORDER RECEIPT SCHEDULE\n\n219\n\nCYCLE COUNT\n\n7138\n\nRPO-SO-INV BY LOT\n\nCYCLE COUNT WEEKLY REPORT\n\n18\n\nTO REJECTED LAST 14 DAYS\n\n42\n\nLAST COUNT REPORT\n\n4099\n\nPO RECEIPTS BY LOTNUMBER\n\n3986\n\nDEMAND SOURCE\n\n301\n\nAAATEST\n\n2076\n\nINVENTORY VALUATION\n\n2076\n\nRSPO RECEIVING REPORT\n\n2076\n\nLAST PO PER ITEM\n\n579\n\nTRANSFERORDER LAST 2 DAYS\n\n694\n\nSHIPMENTS LAST 2 DAYS\n\n1016\n\nPURCHASEORDER RECEIPTS LAST 2 DAY\n\n437\n\nAAAAAAAAAAA\n\n2076\n\nRSPO ITEMS\n\n31\n© 2026 - Masterplan ERP Inc.\nProduction Orders",
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Global Search ...",
+        "required": false,
+        "label": ""
+      }
+    ],
+    "buttons": [
+      "APPROVAL REQUESTS0",
+      "ERROR LOADING SHIPPING - PICKED QUANTITY=00",
+      "DEMAND PLANNING REPORT301",
+      "TO BY LOTNUMBER291",
+      "PRODUCTION RCPT SUMMARY PAST 2 MONTH9404",
+      "PURCHASE ORDER RECEIPT SCHEDULE219",
+      "CYCLE COUNT7138",
+      "RPO-SO-INV BY LOT",
+      "CYCLE COUNT WEEKLY REPORT18",
+      "TO REJECTED LAST 14 DAYS42",
+      "LAST COUNT REPORT4099",
+      "PO RECEIPTS BY LOTNUMBER3986",
+      "DEMAND SOURCE301",
+      "AAATEST2076",
+      "INVENTORY VALUATION2076",
+      "RSPO RECEIVING REPORT2076",
+      "LAST PO PER ITEM579",
+      "TRANSFERORDER LAST 2 DAYS694",
+      "SHIPMENTS LAST 2 DAYS1016",
+      "PURCHASEORDER RECEIPTS LAST 2 DAY437"
+    ],
+    "tableHeaders": [],
+    "links": [
+      {
+        "text": "Estimating",
+        "href": "/"
+      },
+      {
+        "text": "Production Orders",
+        "href": "/"
+      },
+      {
+        "text": "Convert Sales Orders",
+        "href": "/"
+      },
+      {
+        "text": "Production Schedule",
+        "href": "/"
+      },
+      {
+        "text": "Search History",
+        "href": "/"
+      },
+      {
+        "text": "Work Centers",
+        "href": "/manufacturing_workcenters"
+      },
+      {
+        "text": "Open Production Orders",
+        "href": "/manufacturing_productionorders"
+      },
+      {
+        "text": "Open Estimates",
+        "href": "/manufacturing_estimates"
+      },
+      {
+        "text": "Report Center",
+        "href": "/"
+      }
+    ]
+  },
+  "transfer_orders": {
+    "title": "Transfer Orders | Masterplan ERP",
+    "url": "https://preview.masterplansolutions.com/items_transferorders",
+    "h1": [
+      "Transfer Orders"
+    ],
+    "text": "Sales\nPurchasing\nManufacturing\nItems\n\nTransactions\n\nItem Master\nCycle Count\nTransfer Order\nTraceability\nItem Inquiry\n\nLists\n\nItem List\nExceptions\nOpen Transfer Orders\nReport Center\n\nMRP\nEmployees\nQuality\nPLM\nMaintenance\nFinancials\nReceivables\nPayables\n\nTobi Awonuga  \n\n\n\n\nTraining & Support Coordinator  \n\nTransfer Orders\nContains\n\nCompany Code:  \n\n1000 - CT Bakery\n\n    Plant:  \n\nNASHUA\n\nReady To Pick\n\n0\n\nReady To Ship\n\n0\n\nReady To Receive\n\n5\n\nReceived\n\n1437\n\nNew Transfer Order\nTransfer Order\n\tOrig. Plant\n\tDest. Company Code\n\tDest. Plant\n\tDescription\n\tTransfer Date\n\tExpected Date\n\tContact\n\nRows per page:\n\n10\n\n0-0 of 0\n\n© 2026 - Masterplan ERP Inc.\nOpen Transfer Orders",
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Global Search ...",
+        "required": false,
+        "label": ""
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Filter",
+        "required": false,
+        "label": ""
+      }
+    ],
+    "buttons": [
+      "Ready To Pick0",
+      "Ready To Ship0",
+      "Ready To Receive5",
+      "Received1437",
+      "New Transfer Order"
+    ],
+    "tableHeaders": [
+      "Transfer Order",
+      "Orig. Plant",
+      "Dest. Company Code",
+      "Dest. Plant",
+      "Description",
+      "Transfer Date",
+      "Expected Date",
+      "Contact"
+    ],
+    "links": [
+      {
+        "text": "Item Master",
+        "href": "/items_transferorders"
+      },
+      {
+        "text": "Cycle Count",
+        "href": "/items_transferorders"
+      },
+      {
+        "text": "Transfer Order",
+        "href": "/items_transferorders"
+      },
+      {
+        "text": "Traceability",
+        "href": "/items_transferorders"
+      },
+      {
+        "text": "Item Inquiry",
+        "href": "/items_transferorders"
+      },
+      {
+        "text": "Item List",
+        "href": "/items_itemlist"
+      },
+      {
+        "text": "Exceptions",
+        "href": "/items_exceptions"
+      },
+      {
+        "text": "Open Transfer Orders",
+        "href": "/items_transferorders"
+      },
+      {
+        "text": "Report Center",
+        "href": "/items_transferorders"
+      }
+    ]
+  },
+  "transfer-orders": {
+    "file": "screenshots/deep-09-transfer-orders.png",
+    "url": "https://preview.masterplansolutions.com/items_transferorders",
+    "note": "Transfer orders"
+  },
+  "sales-menu": {
+    "file": "screenshots/deep-10-sales-menu.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Sales menu expanded"
+  },
+  "sales-orders": {
+    "file": "screenshots/deep-11-sales-orders.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Sales orders list"
+  },
+  "sales_orders": {
+    "title": "Dashboard | Masterplan ERP",
+    "url": "https://preview.masterplansolutions.com/",
+    "h1": [
+      "Edit Dashboard"
+    ],
+    "text": "Sales\n\nTransactions\n\nQuotes\nSales Orders\nShipping\nCustomer Returns\nSearch History\n\nLists\n\nCustomers\nDelivery Blocks\nOpen Quotes\nOpen Sales Orders\nOpen Customer Returns\nReport Center\n\nPurchasing\nManufacturing\nItems\nMRP\nEmployees\nQuality\nPLM\nMaintenance\nFinancials\nReceivables\nPayables\n\nTobi Awonuga  \n\n\n\n\nTraining & Support Coordinator  \n\nEdit Dashboard\n\nCompany Code:  \n\n1000 - CT Bakery\n\n    Plant:  \n\nNASHUA\n\nAPPROVAL REQUESTS\n\n0\n\nERROR LOADING SHIPPING - PICKED QUANTITY=0\n\n0\n\nDEMAND PLANNING REPORT\n\n301\n\nTO BY LOTNUMBER\n\n291\n\nPRODUCTION RCPT SUMMARY PAST 2 MONTH\n\n9404\n\nPURCHASE ORDER RECEIPT SCHEDULE\n\n219\n\nCYCLE COUNT\n\n7138\n\nRPO-SO-INV BY LOT\n\nCYCLE COUNT WEEKLY REPORT\n\n18\n\nTO REJECTED LAST 14 DAYS\n\n42\n\nLAST COUNT REPORT\n\n4099\n\nPO RECEIPTS BY LOTNUMBER\n\n3986\n\nDEMAND SOURCE\n\n301\n\nAAATEST\n\n2076\n\nINVENTORY VALUATION\n\n2076\n\nRSPO RECEIVING REPORT\n\n2076\n\nLAST PO PER ITEM\n\n579\n\nTRANSFERORDER LAST 2 DAYS\n\n694\n\nSHIPMENTS LAST 2 DAYS\n\n1016\n\nPURCHASEORDER RECEIPTS LAST 2 DAY\n\n437\n\nAAAAAAAAAAA\n\n2076\n\nRSPO ITEMS\n\n31\n© 2026 - Masterplan ERP Inc.\nSales Orders",
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Global Search ...",
+        "required": false,
+        "label": ""
+      }
+    ],
+    "buttons": [
+      "APPROVAL REQUESTS0",
+      "ERROR LOADING SHIPPING - PICKED QUANTITY=00",
+      "DEMAND PLANNING REPORT301",
+      "TO BY LOTNUMBER291",
+      "PRODUCTION RCPT SUMMARY PAST 2 MONTH9404",
+      "PURCHASE ORDER RECEIPT SCHEDULE219",
+      "CYCLE COUNT7138",
+      "RPO-SO-INV BY LOT",
+      "CYCLE COUNT WEEKLY REPORT18",
+      "TO REJECTED LAST 14 DAYS42",
+      "LAST COUNT REPORT4099",
+      "PO RECEIPTS BY LOTNUMBER3986",
+      "DEMAND SOURCE301",
+      "AAATEST2076",
+      "INVENTORY VALUATION2076",
+      "RSPO RECEIVING REPORT2076",
+      "LAST PO PER ITEM579",
+      "TRANSFERORDER LAST 2 DAYS694",
+      "SHIPMENTS LAST 2 DAYS1016",
+      "PURCHASEORDER RECEIPTS LAST 2 DAY437"
+    ],
+    "tableHeaders": [],
+    "links": [
+      {
+        "text": "Quotes",
+        "href": "/"
+      },
+      {
+        "text": "Sales Orders",
+        "href": "/"
+      },
+      {
+        "text": "Shipping",
+        "href": "/"
+      },
+      {
+        "text": "Customer Returns",
+        "href": "/"
+      },
+      {
+        "text": "Search History",
+        "href": "/"
+      },
+      {
+        "text": "Customers",
+        "href": "/sales_customers"
+      },
+      {
+        "text": "Delivery Blocks",
+        "href": "/sales_deliveryblocks"
+      },
+      {
+        "text": "Open Quotes",
+        "href": "/sales_quotes"
+      },
+      {
+        "text": "Open Sales Orders",
+        "href": "/sales_salesorders"
+      },
+      {
+        "text": "Open Customer Returns",
+        "href": "/sales_customerreturns"
+      },
+      {
+        "text": "Report Center",
+        "href": "/"
+      }
+    ]
+  },
+  "shipping": {
+    "title": "Dashboard | Masterplan ERP",
+    "url": "https://preview.masterplansolutions.com/",
+    "h1": [
+      "Edit Dashboard"
+    ],
+    "text": "Sales\n\nTransactions\n\nQuotes\nSales Orders\nShipping\nCustomer Returns\nSearch History\n\nLists\n\nCustomers\nDelivery Blocks\nOpen Quotes\nOpen Sales Orders\nOpen Customer Returns\nReport Center\n\nPurchasing\nManufacturing\nItems\nMRP\nEmployees\nQuality\nPLM\nMaintenance\nFinancials\nReceivables\nPayables\n\nTobi Awonuga  \n\n\n\n\nTraining & Support Coordinator  \n\nEdit Dashboard\n\nCompany Code:  \n\n1000 - CT Bakery\n\n    Plant:  \n\nNASHUA\n\nAPPROVAL REQUESTS\n\n0\n\nERROR LOADING SHIPPING - PICKED QUANTITY=0\n\n0\n\nDEMAND PLANNING REPORT\n\n301\n\nTO BY LOTNUMBER\n\n291\n\nPRODUCTION RCPT SUMMARY PAST 2 MONTH\n\n9404\n\nPURCHASE ORDER RECEIPT SCHEDULE\n\n219\n\nCYCLE COUNT\n\n7138\n\nRPO-SO-INV BY LOT\n\nCYCLE COUNT WEEKLY REPORT\n\n18\n\nTO REJECTED LAST 14 DAYS\n\n42\n\nLAST COUNT REPORT\n\n4099\n\nPO RECEIPTS BY LOTNUMBER\n\n3986\n\nDEMAND SOURCE\n\n301\n\nAAATEST\n\n2076\n\nINVENTORY VALUATION\n\n2076\n\nRSPO RECEIVING REPORT\n\n2076\n\nLAST PO PER ITEM\n\n579\n\nTRANSFERORDER LAST 2 DAYS\n\n694\n\nSHIPMENTS LAST 2 DAYS\n\n1016\n\nPURCHASEORDER RECEIPTS LAST 2 DAY\n\n437\n\nAAAAAAAAAAA\n\n2076\n\nRSPO ITEMS\n\n31\n© 2026 - Masterplan ERP Inc.\nShipping",
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Global Search ...",
+        "required": false,
+        "label": ""
+      }
+    ],
+    "buttons": [
+      "APPROVAL REQUESTS0",
+      "ERROR LOADING SHIPPING - PICKED QUANTITY=00",
+      "DEMAND PLANNING REPORT301",
+      "TO BY LOTNUMBER291",
+      "PRODUCTION RCPT SUMMARY PAST 2 MONTH9404",
+      "PURCHASE ORDER RECEIPT SCHEDULE219",
+      "CYCLE COUNT7138",
+      "RPO-SO-INV BY LOT",
+      "CYCLE COUNT WEEKLY REPORT18",
+      "TO REJECTED LAST 14 DAYS42",
+      "LAST COUNT REPORT4099",
+      "PO RECEIPTS BY LOTNUMBER3986",
+      "DEMAND SOURCE301",
+      "AAATEST2076",
+      "INVENTORY VALUATION2076",
+      "RSPO RECEIVING REPORT2076",
+      "LAST PO PER ITEM579",
+      "TRANSFERORDER LAST 2 DAYS694",
+      "SHIPMENTS LAST 2 DAYS1016",
+      "PURCHASEORDER RECEIPTS LAST 2 DAY437"
+    ],
+    "tableHeaders": [],
+    "links": [
+      {
+        "text": "Quotes",
+        "href": "/"
+      },
+      {
+        "text": "Sales Orders",
+        "href": "/"
+      },
+      {
+        "text": "Shipping",
+        "href": "/"
+      },
+      {
+        "text": "Customer Returns",
+        "href": "/"
+      },
+      {
+        "text": "Search History",
+        "href": "/"
+      },
+      {
+        "text": "Customers",
+        "href": "/sales_customers"
+      },
+      {
+        "text": "Delivery Blocks",
+        "href": "/sales_deliveryblocks"
+      },
+      {
+        "text": "Open Quotes",
+        "href": "/sales_quotes"
+      },
+      {
+        "text": "Open Sales Orders",
+        "href": "/sales_salesorders"
+      },
+      {
+        "text": "Open Customer Returns",
+        "href": "/sales_customerreturns"
+      },
+      {
+        "text": "Report Center",
+        "href": "/"
+      }
+    ]
+  },
+  "quality-menu": {
+    "file": "screenshots/deep-13-quality-menu.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Quality menu expanded"
+  },
+  "quality": {
+    "title": "Dashboard | Masterplan ERP",
+    "url": "https://preview.masterplansolutions.com/",
+    "h1": [
+      "Edit Dashboard"
+    ],
+    "text": "Sales\nPurchasing\nManufacturing\nItems\nMRP\nEmployees\nQuality\n\nTransactions\n\nCorrective Action\nDeviation Request\nNew Feedback\nNon-Conformance\nTool Calibration\n\nLists\n\nCalibration Tools\nFeedback List\nQuality Documents\nInspection Holds\nOpen Corrective Actions\nOpen Deviation Requests\nOpen Non-Conformances\nSupplier Performance\nReport Center\n\nPLM\nMaintenance\nFinancials\nReceivables\nPayables\n\nTobi Awonuga  \n\n\n\n\nTraining & Support Coordinator  \n\nEdit Dashboard\n\nCompany Code:  \n\n1000 - CT Bakery\n\n    Plant:  \n\nNASHUA\n\nAPPROVAL REQUESTS\n\n0\n\nERROR LOADING SHIPPING - PICKED QUANTITY=0\n\n0\n\nDEMAND PLANNING REPORT\n\n301\n\nTO BY LOTNUMBER\n\n291\n\nPRODUCTION RCPT SUMMARY PAST 2 MONTH\n\n9404\n\nPURCHASE ORDER RECEIPT SCHEDULE\n\n219\n\nCYCLE COUNT\n\n7138\n\nRPO-SO-INV BY LOT\n\nCYCLE COUNT WEEKLY REPORT\n\n18\n\nTO REJECTED LAST 14 DAYS\n\n42\n\nLAST COUNT REPORT\n\n4099\n\nPO RECEIPTS BY LOTNUMBER\n\n3986\n\nDEMAND SOURCE\n\n301\n\nAAATEST\n\n2076\n\nINVENTORY VALUATION\n\n2076\n\nRSPO RECEIVING REPORT\n\n2076\n\nLAST PO PER ITEM\n\n579\n\nTRANSFERORDER LAST 2 DAYS\n\n694\n\nSHIPMENTS LAST 2 DAYS\n\n1016\n\nPURCHASEORDER RECEIPTS LAST 2 DAY\n\n437\n\nAAAAAAAAAAA\n\n2076\n\nRSPO ITEMS\n\n31\n© 2026 - Masterplan ERP Inc.\nQuality",
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Global Search ...",
+        "required": false,
+        "label": ""
+      }
+    ],
+    "buttons": [
+      "APPROVAL REQUESTS0",
+      "ERROR LOADING SHIPPING - PICKED QUANTITY=00",
+      "DEMAND PLANNING REPORT301",
+      "TO BY LOTNUMBER291",
+      "PRODUCTION RCPT SUMMARY PAST 2 MONTH9404",
+      "PURCHASE ORDER RECEIPT SCHEDULE219",
+      "CYCLE COUNT7138",
+      "RPO-SO-INV BY LOT",
+      "CYCLE COUNT WEEKLY REPORT18",
+      "TO REJECTED LAST 14 DAYS42",
+      "LAST COUNT REPORT4099",
+      "PO RECEIPTS BY LOTNUMBER3986",
+      "DEMAND SOURCE301",
+      "AAATEST2076",
+      "INVENTORY VALUATION2076",
+      "RSPO RECEIVING REPORT2076",
+      "LAST PO PER ITEM579",
+      "TRANSFERORDER LAST 2 DAYS694",
+      "SHIPMENTS LAST 2 DAYS1016",
+      "PURCHASEORDER RECEIPTS LAST 2 DAY437"
+    ],
+    "tableHeaders": [],
+    "links": [
+      {
+        "text": "Corrective Action",
+        "href": "/"
+      },
+      {
+        "text": "Deviation Request",
+        "href": "/"
+      },
+      {
+        "text": "New Feedback",
+        "href": "/"
+      },
+      {
+        "text": "Non-Conformance",
+        "href": "/"
+      },
+      {
+        "text": "Tool Calibration",
+        "href": "/"
+      },
+      {
+        "text": "Calibration Tools",
+        "href": "/quality_calibrationtools"
+      },
+      {
+        "text": "Feedback List",
+        "href": "/quality_feedbacklist"
+      },
+      {
+        "text": "Quality Documents",
+        "href": "/"
+      },
+      {
+        "text": "Inspection Holds",
+        "href": "/quality_inspectionholds"
+      },
+      {
+        "text": "Open Corrective Actions",
+        "href": "/quality_correctiveactions"
+      },
+      {
+        "text": "Open Deviation Requests",
+        "href": "/quality_deviationrequests"
+      },
+      {
+        "text": "Open Non-Conformances",
+        "href": "/quality_nonconformances"
+      },
+      {
+        "text": "Supplier Performance",
+        "href": "/quality_supplierperformance"
+      },
+      {
+        "text": "Report Center",
+        "href": "/"
+      }
+    ]
+  },
+  "mrp-menu": {
+    "file": "screenshots/deep-14-mrp-menu.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "MRP menu expanded"
+  },
+  "inventory": {
+    "title": "Dashboard | Masterplan ERP",
+    "url": "https://preview.masterplansolutions.com/",
+    "h1": [
+      "Edit Dashboard"
+    ],
+    "text": "Sales\nPurchasing\nManufacturing\nItems\nMRP\n\nTransactions\n\nForecast\nPegged Shortage\nSupplier Schedule\nWorkbench\n\nLists\n\nMessages\nRecommendations\nShortage\nReport Center\n\nEmployees\nQuality\nPLM\nMaintenance\nFinancials\nReceivables\nPayables\n\nTobi Awonuga  \n\n\n\n\nTraining & Support Coordinator  \n\nEdit Dashboard\n\nCompany Code:  \n\n1000 - CT Bakery\n\n    Plant:  \n\nNASHUA\n\nAPPROVAL REQUESTS\n\n0\n\nERROR LOADING SHIPPING - PICKED QUANTITY=0\n\n0\n\nDEMAND PLANNING REPORT\n\n301\n\nTO BY LOTNUMBER\n\n291\n\nPRODUCTION RCPT SUMMARY PAST 2 MONTH\n\n9404\n\nPURCHASE ORDER RECEIPT SCHEDULE\n\n219\n\nCYCLE COUNT\n\n7138\n\nRPO-SO-INV BY LOT\n\nCYCLE COUNT WEEKLY REPORT\n\n18\n\nTO REJECTED LAST 14 DAYS\n\n42\n\nLAST COUNT REPORT\n\n4099\n\nPO RECEIPTS BY LOTNUMBER\n\n3986\n\nDEMAND SOURCE\n\n301\n\nAAATEST\n\n2076\n\nINVENTORY VALUATION\n\n2076\n\nRSPO RECEIVING REPORT\n\n2076\n\nLAST PO PER ITEM\n\n579\n\nTRANSFERORDER LAST 2 DAYS\n\n694\n\nSHIPMENTS LAST 2 DAYS\n\n1016\n\nPURCHASEORDER RECEIPTS LAST 2 DAY\n\n437\n\nAAAAAAAAAAA\n\n2076\n\nRSPO ITEMS\n\n31\n© 2026 - Masterplan ERP Inc.\nMRP",
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "name": "",
+        "id": "",
+        "placeholder": "Global Search ...",
+        "required": false,
+        "label": ""
+      }
+    ],
+    "buttons": [
+      "APPROVAL REQUESTS0",
+      "ERROR LOADING SHIPPING - PICKED QUANTITY=00",
+      "DEMAND PLANNING REPORT301",
+      "TO BY LOTNUMBER291",
+      "PRODUCTION RCPT SUMMARY PAST 2 MONTH9404",
+      "PURCHASE ORDER RECEIPT SCHEDULE219",
+      "CYCLE COUNT7138",
+      "RPO-SO-INV BY LOT",
+      "CYCLE COUNT WEEKLY REPORT18",
+      "TO REJECTED LAST 14 DAYS42",
+      "LAST COUNT REPORT4099",
+      "PO RECEIPTS BY LOTNUMBER3986",
+      "DEMAND SOURCE301",
+      "AAATEST2076",
+      "INVENTORY VALUATION2076",
+      "RSPO RECEIVING REPORT2076",
+      "LAST PO PER ITEM579",
+      "TRANSFERORDER LAST 2 DAYS694",
+      "SHIPMENTS LAST 2 DAYS1016",
+      "PURCHASEORDER RECEIPTS LAST 2 DAY437"
+    ],
+    "tableHeaders": [],
+    "links": [
+      {
+        "text": "Forecast",
+        "href": "/"
+      },
+      {
+        "text": "Pegged Shortage",
+        "href": "/"
+      },
+      {
+        "text": "Supplier Schedule",
+        "href": "/mrp_supplierschedule"
+      },
+      {
+        "text": "Workbench",
+        "href": "/"
+      },
+      {
+        "text": "Messages",
+        "href": "/mrp_messages"
+      },
+      {
+        "text": "Recommendations",
+        "href": "/mrp_recommendations"
+      },
+      {
+        "text": "Shortage",
+        "href": "/mrp_shortage"
+      },
+      {
+        "text": "Report Center",
+        "href": "/"
+      }
+    ]
+  },
+  "labels": {
+    "file": "screenshots/deep-16-labels.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Labels — location unknown"
+  },
+  "nav-sales": {
+    "file": "screenshots/deep-17-nav-sales.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Sales menu fully expanded"
+  },
+  "nav-purchasing": {
+    "file": "screenshots/deep-18-nav-purchasing.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Purchasing menu fully expanded"
+  },
+  "nav-manufacturing": {
+    "file": "screenshots/deep-19-nav-manufacturing.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Manufacturing menu fully expanded"
+  },
+  "nav-items": {
+    "file": "screenshots/deep-20-nav-items.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Items menu fully expanded"
+  },
+  "nav-mrp": {
+    "file": "screenshots/deep-21-nav-mrp.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "MRP menu fully expanded"
+  },
+  "nav-quality": {
+    "file": "screenshots/deep-22-nav-quality.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Quality menu fully expanded"
+  },
+  "nav-plm": {
+    "file": "screenshots/deep-23-nav-plm.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "PLM menu fully expanded"
+  },
+  "nav-maintenance": {
+    "file": "screenshots/deep-24-nav-maintenance.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Maintenance menu fully expanded"
+  },
+  "nav-financials": {
+    "file": "screenshots/deep-25-nav-financials.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Financials menu fully expanded"
+  },
+  "nav-receivables": {
+    "file": "screenshots/deep-26-nav-receivables.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Receivables menu fully expanded"
+  },
+  "nav-payables": {
+    "file": "screenshots/deep-27-nav-payables.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Payables menu fully expanded"
+  },
+  "nav-employees": {
+    "file": "screenshots/deep-28-nav-employees.png",
+    "url": "https://preview.masterplansolutions.com/",
+    "note": "Employees menu fully expanded"
+  },
+  "full_nav_structure": {
+    "Sales": [],
+    "Purchasing": [],
+    "Manufacturing": [],
+    "Items": [],
+    "MRP": [],
+    "Quality": [],
+    "PLM": [],
+    "Maintenance": [],
+    "Financials": [],
+    "Receivables": [],
+    "Payables": [],
+    "Employees": []
   }
 }
