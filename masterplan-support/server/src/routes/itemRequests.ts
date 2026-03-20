@@ -5,6 +5,7 @@ import { itemRequests, approvals, users } from '../db/schema.js';
 import { authenticate, requireRole, AuthRequest } from '../middleware/auth.js';
 import { nextItemRequestNumber } from '../lib/numberGenerator.js';
 import { logAudit } from '../lib/auditLogger.js';
+import { sendMail, itemCreatedEmailHtml } from '../lib/mailer.js';
 
 const router = Router();
 
@@ -282,7 +283,8 @@ router.post('/:id/reject', requireRole('admin', 'approver'), async (req: AuthReq
 });
 
 // PATCH /api/item-requests/:id/erp-code
-// Requester confirms the Masterplan code after creating the item
+// Requester confirms the Masterplan code after creating the item.
+// Triggers an automatic email notification to the ERP coordinator.
 router.patch('/:id/erp-code', async (req: AuthRequest, res) => {
   const id = parseInt(req.params.id);
   const { masterplanCode, creationPath } = req.body as { masterplanCode: string; creationPath?: string };
@@ -295,6 +297,12 @@ router.patch('/:id/erp-code', async (req: AuthRequest, res) => {
   if (req.user!.userId !== request.requesterId && req.user!.role !== 'admin') {
     return res.status(403).json({ error: 'Only the requester or admin can update this field' });
   }
+
+  // Fetch requester's name for the notification email
+  const [requester] = await db
+    .select({ name: users.name, email: users.email })
+    .from(users)
+    .where(eq(users.id, request.requesterId));
 
   const [updated] = await db
     .update(itemRequests)
@@ -310,6 +318,27 @@ router.patch('/:id/erp-code', async (req: AuthRequest, res) => {
     description: `Item ${request.requestNumber} created in Masterplan as ${masterplanCode}`,
     metadata: { creationPath: creationPath ?? 'unknown' },
     ipAddress: req.ip,
+  });
+
+  // Send notification email to ERP coordinator — fire and forget (never blocks the response)
+  const ERP_NOTIFY_EMAIL = process.env.ERP_NOTIFY_EMAIL ?? 'tobi.awonuga@ctbakery.com';
+  const timestamp = new Date().toLocaleString('en-US', {
+    timeZone: 'America/New_York',
+    dateStyle: 'full',
+    timeStyle: 'short',
+  });
+
+  const { subject, html, text } = itemCreatedEmailHtml({
+    requesterName:  requester?.name  ?? 'Unknown user',
+    requestNumber:  request.requestNumber,
+    proposedName:   request.proposedName,
+    masterplanCode,
+    creationPath:   creationPath ?? 'unknown',
+    timestamp,
+  });
+
+  sendMail({ to: ERP_NOTIFY_EMAIL, subject, html, text }).catch((err) => {
+    console.error('[mailer] Failed to send item-created notification:', err);
   });
 
   return res.json(updated);

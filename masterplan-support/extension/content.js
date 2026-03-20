@@ -234,6 +234,15 @@
         </ul>
       </div>` : ''}
 
+      <div id="ctb-notice">
+        <strong>Before proceeding:</strong>
+        <ul>
+          <li>Send an email confirming the item specs with the requester</li>
+          <li>Verify all specs against the <strong>FPS file on the T-drive</strong> before creating this item</li>
+          <li>Questions? Contact ERP: <a href="mailto:tobi.awonuga@ctbakery.com">tobi.awonuga@ctbakery.com</a></li>
+        </ul>
+      </div>
+
       <div id="ctb-body">
         <p>An approved request is required before creating a new item in Masterplan.</p>
         <div class="ctb-input-row">
