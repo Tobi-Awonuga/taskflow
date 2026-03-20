@@ -1,24 +1,37 @@
 {
-  "01-login-page": {
-    "screenshot": "screenshots/01-01-login-page.png",
-    "note": "Masterplan login page as presented to users",
-    "url": "https://preview.masterplansolutions.com/SignIn/",
-    "timestamp": "2026-03-20T01:52:59.791Z"
+  "00-resumed-session": {
+    "file": "screenshots/01-00-resumed-session.png",
+    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode",
+    "note": "Session resumed — checking where we are",
+    "ts": "2026-03-20T01:59:46.440Z"
   },
-  "02-after-login": {
-    "screenshot": "screenshots/02-02-after-login.png",
-    "note": "After login attempt — URL: https://preview.masterplansolutions.com/SignIn/Account/SendCode?RememberMe=False&userkey=nmuB9zBExkkQTOlmfKvuTQ%3D%3D&username=QMEdp7mWZ61D7Iu2TSfX9ARhq2pddYMYAE5Xh7hkT%2BU%3D",
-    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode?RememberMe=False&userkey=nmuB9zBExkkQTOlmfKvuTQ%3D%3D&username=QMEdp7mWZ61D7Iu2TSfX9ARhq2pddYMYAE5Xh7hkT%2BU%3D",
-    "timestamp": "2026-03-20T01:53:23.140Z"
+  "01-after-send": {
+    "file": "screenshots/02-01-after-send.png",
+    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode",
+    "note": "After triggering code send",
+    "ts": "2026-03-20T02:00:17.987Z"
   },
-  "blocker": {
-    "type": "mfa_or_captcha",
-    "pageText": "\n\n\n\n\n\n\n\n\n\nSend.\nSend verification code\nSelect Two-Factor Authentication Provider:\n\nEmail Code\n\n\n\n\n© 2026 - Masterplan ERP Inc."
+  "error-no-otp-field": {
+    "file": "screenshots/03-error-no-otp-field.png",
+    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode",
+    "note": "Could not find OTP input field",
+    "ts": "2026-03-20T02:00:18.035Z"
   },
-  "03-login-state-unknown": {
-    "screenshot": "screenshots/04-03-login-state-unknown.png",
-    "note": "Login state unclear",
-    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode?RememberMe=False&userkey=nmuB9zBExkkQTOlmfKvuTQ%3D%3D&username=QMEdp7mWZ61D7Iu2TSfX9ARhq2pddYMYAE5Xh7hkT%2BU%3D",
-    "timestamp": "2026-03-20T01:53:23.190Z"
+  "02-otp-entered": {
+    "file": "screenshots/04-02-otp-entered.png",
+    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode",
+    "note": "OTP entered",
+    "ts": "2026-03-20T02:00:18.074Z"
+  },
+  "03-post-otp": {
+    "file": "screenshots/05-03-post-otp.png",
+    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode",
+    "note": "After OTP submission",
+    "ts": "2026-03-20T02:00:20.119Z"
+  },
+  "login_result": {
+    "success": false,
+    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode",
+    "text": "Server Error\n500 - Internal server error.\nThere is a problem with the resource you are looking for, and it cannot be displayed."
   }
 }
