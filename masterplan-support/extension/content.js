@@ -4,8 +4,8 @@
  *
  * Detects two item creation paths in Masterplan:
  *   1. New Item  : frmITEMS_ItemMaster.aspx?TimeStamp=<unix>&NewUI=TRUE  (no ItemMasterID)
- *   2. Copy Item : RadWindow dialog appears on existing item page after user
- *                  clicks action menu → "Copy to New Item"
+ *   2. Copy Item : User clicks "Copy to New Item" in the action menu on an
+ *                  existing item page. Guard fires on that click, not on page load.
  *
  * Confirmed selectors from DOM recon (2026-03-20):
  *   Save button : #btnSave  (input[type="button"], class="button blue")
@@ -19,8 +19,9 @@
   'use strict';
 
   // ── Constants ─────────────────────────────────────────────────────────────
-  const OVERLAY_ID   = 'ctb-guard-overlay';
-  const SAVE_BTN_ID  = 'btnSave';
+  const OVERLAY_ID        = 'ctb-guard-overlay';
+  const BYPASS_MODAL_ID   = 'ctb-bypass-modal';
+  const SAVE_BTN_ID       = 'btnSave';
 
   // IDs of main Item Master form fields — used to exclude from copy modal search
   const MAIN_FIELD_IDS = new Set([
@@ -41,13 +42,13 @@
 
     if (!path.includes('frmitems_itemmaster.aspx')) return null;
 
-    const hasTimestamp   = params.has('TimeStamp') && /^\d+$/.test(params.get('TimeStamp') || '');
+    const hasTimestamp    = params.has('TimeStamp') && /^\d+$/.test(params.get('TimeStamp') || '');
     const hasItemMasterId = params.has('ItemMasterID');
 
     // New blank item: TimeStamp present, no ItemMasterID
     if (hasTimestamp && !hasItemMasterId) return 'new_item';
 
-    // Existing item page: ItemMasterID present → watch for copy modal
+    // Existing item page: ItemMasterID present → watch for copy click
     if (hasItemMasterId) return 'existing_item';
 
     return null;
@@ -73,7 +74,6 @@
     btn.removeAttribute('data-ctb-locked');
     btn.title = '';
 
-    // Stop re-lock observer
     if (saveLockObserver) {
       saveLockObserver.disconnect();
       saveLockObserver = null;
@@ -111,10 +111,9 @@
     // Strategy B: walk the DOM for a visible "Copy to New Item" heading
     const allEls = document.querySelectorAll('td, div, span, h2, h3, h4');
     for (const el of allEls) {
-      if (el.children.length > 2) continue; // skip large containers
+      if (el.children.length > 2) continue;
       const text = (el.textContent || '').trim();
       if (text === 'Copy to New Item' && el.offsetParent !== null) {
-        // Walk up until we find a container with inputs
         let container = el.parentElement;
         while (container && container !== document.body) {
           if (container.querySelectorAll('input[type="text"]').length >= 1) return container;
@@ -128,12 +127,10 @@
   }
 
   // ── Find copy modal inputs ────────────────────────────────────────────────
-  // From screenshot: modal has "New Item Number" (editable) and "New Item Name" inputs
   function getCopyModalInputs(container) {
     const result = { itemNumber: null, itemName: null };
     if (!container) return result;
 
-    // Try .rwDialogInput first (Telerik prompt)
     const rwInputs = container.querySelectorAll('.rwDialogInput');
     if (rwInputs.length >= 1) {
       result.itemNumber = rwInputs[0];
@@ -141,17 +138,71 @@
       return result;
     }
 
-    // Fallback: find inputs near "New Item Number" / "New Item Name" label text
     const rows = container.querySelectorAll('tr, div');
     for (const row of rows) {
-      const text = row.textContent || '';
+      const text  = row.textContent || '';
       const input = row.querySelector('input[type="text"]');
       if (!input) continue;
       if (text.includes('New Item Number') && !result.itemNumber) result.itemNumber = input;
-      if (text.includes('New Item Name') && !result.itemName)   result.itemName   = input;
+      if (text.includes('New Item Name')   && !result.itemName)   result.itemName   = input;
     }
 
     return result;
+  }
+
+  // ── Copy click interception ───────────────────────────────────────────────
+  // Instead of watching DOM mutations on page load (which fires too early on
+  // pre-rendered Telerik dialogs), we listen for the user's actual click on
+  // "Copy to New Item" and only THEN start watching for the modal to appear.
+
+  function watchForCopyClick() {
+    document.addEventListener('click', onCopyClickCapture, true);
+  }
+
+  function onCopyClickCapture(e) {
+    if (guardActive) return;
+
+    // Walk up from the clicked element looking for "Copy to New Item" text
+    let node = e.target;
+    while (node && node !== document.body) {
+      const text = (node.textContent || '').trim();
+      if (text === 'Copy to New Item') {
+        document.removeEventListener('click', onCopyClickCapture, true);
+        detectedMode = 'copy_item';
+        // Let Masterplan's click handler run first, then watch for its modal
+        setTimeout(watchForModalAfterCopyClick, 50);
+        return;
+      }
+      node = node.parentElement;
+    }
+  }
+
+  function watchForModalAfterCopyClick() {
+    // If the modal is already visible (fast render), go straight to inject
+    const container = findCopyModalContainer();
+    if (container) {
+      injectOverlay('copy_item');
+      return;
+    }
+
+    // Otherwise watch for it to appear — give up after 3 s
+    const timeout = setTimeout(() => observer.disconnect(), 3000);
+
+    const observer = new MutationObserver(() => {
+      const c = findCopyModalContainer();
+      if (c) {
+        observer.disconnect();
+        clearTimeout(timeout);
+        injectOverlay('copy_item');
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class', 'hidden', 'display'],
+    });
   }
 
   // ── Overlay injection ─────────────────────────────────────────────────────
@@ -189,7 +240,7 @@
           <input
             id="ctb-request-input"
             type="text"
-            placeholder="Request number — e.g. ITM-2024-0001"
+            placeholder="Approved request number"
             autocomplete="off"
             spellcheck="false"
           />
@@ -233,23 +284,21 @@
 
     document.body.appendChild(overlay);
 
-    // Lock Save immediately
     lockSave();
     watchSaveLock();
 
-    // Wire events
     document.getElementById('ctb-validate-btn').addEventListener('click', handleValidate);
     document.getElementById('ctb-request-input').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') handleValidate();
     });
     document.getElementById('ctb-complete-btn').addEventListener('click', handleComplete);
-    document.getElementById('ctb-bypass-btn').addEventListener('click', handleBypass);
+    document.getElementById('ctb-bypass-btn').addEventListener('click', handleBypassClick);
   }
 
   // ── Validate ──────────────────────────────────────────────────────────────
   async function handleValidate() {
-    const input    = document.getElementById('ctb-request-input');
-    const statusEl = document.getElementById('ctb-validate-status');
+    const input         = document.getElementById('ctb-request-input');
+    const statusEl      = document.getElementById('ctb-validate-status');
     const requestNumber = (input?.value || '').trim().toUpperCase();
 
     if (!requestNumber) {
@@ -293,7 +342,6 @@
     document.getElementById('ctb-s-type').textContent = req.itemType     || '—';
     document.getElementById('ctb-s-uom').textContent  = req.uom          || '—';
 
-    // On copy path: auto-populate the copy modal's inputs with approved values
     if (detectedMode === 'copy_item') {
       prefillCopyModal(req.proposedCode, req.proposedName);
     }
@@ -319,8 +367,8 @@
 
   // ── Complete ──────────────────────────────────────────────────────────────
   async function handleComplete() {
-    const codeInput = document.getElementById('ctb-code-input');
-    const statusEl  = document.getElementById('ctb-complete-status');
+    const codeInput      = document.getElementById('ctb-code-input');
+    const statusEl       = document.getElementById('ctb-complete-status');
     const masterplanCode = (codeInput?.value || '').trim().toUpperCase();
 
     if (!masterplanCode) {
@@ -362,55 +410,56 @@
     }
   }
 
-  // ── Bypass ────────────────────────────────────────────────────────────────
-  async function handleBypass() {
-    const confirmed = window.confirm(
-      'CT Bakery — Item Creation Guard\n\n' +
-      'Proceeding without an approved request bypasses the item governance process.\n\n' +
-      'This bypass will be logged with your name and timestamp and reviewed by management.\n\n' +
-      'Continue?'
-    );
-    if (!confirmed) return;
+  // ── Bypass — show custom modal instead of window.confirm ──────────────────
+  function handleBypassClick() {
+    if (document.getElementById(BYPASS_MODAL_ID)) return;
 
-    // Log bypass — fire and forget
-    chrome.runtime.sendMessage({
-      type:      'LOG_BYPASS',
-      url:       window.location.href,
-      mode:      detectedMode,
-      timestamp: new Date().toISOString(),
-    }).catch(() => {});
+    const modal = document.createElement('div');
+    modal.id = BYPASS_MODAL_ID;
+    modal.innerHTML = `
+      <div id="ctb-bypass-box">
+        <div id="ctb-bypass-box-header">
+          <span>⚠</span> Bypass Item Creation Guard
+        </div>
+        <div id="ctb-bypass-box-body">
+          <p>Proceeding without an approved request bypasses the item governance process.</p>
+          <p><strong>This bypass will be logged with your name and timestamp and reviewed by management.</strong></p>
+        </div>
+        <div id="ctb-bypass-box-actions">
+          <button id="ctb-bypass-cancel">Cancel</button>
+          <button id="ctb-bypass-confirm">I Accept Responsibility — Proceed</button>
+        </div>
+      </div>
+    `;
 
-    unlockSave();
-    guardActive = false;
-    const overlay = document.getElementById(OVERLAY_ID);
-    if (overlay) overlay.remove();
+    document.body.appendChild(modal);
+
+    document.getElementById('ctb-bypass-cancel').addEventListener('click', () => {
+      modal.remove();
+    });
+
+    document.getElementById('ctb-bypass-confirm').addEventListener('click', async () => {
+      modal.remove();
+
+      chrome.runtime.sendMessage({
+        type:      'LOG_BYPASS',
+        url:       window.location.href,
+        mode:      detectedMode,
+        timestamp: new Date().toISOString(),
+      }).catch(() => {});
+
+      unlockSave();
+      guardActive = false;
+      const overlay = document.getElementById(OVERLAY_ID);
+      if (overlay) overlay.remove();
+    });
   }
 
   // ── Status helper ─────────────────────────────────────────────────────────
   function setStatus(el, type, msg) {
     if (!el) return;
-    el.textContent  = msg;
-    el.className    = `ctb-status${type ? ' ctb-status-' + type : ''}`;
-  }
-
-  // ── MutationObserver for copy modal ───────────────────────────────────────
-  function watchForCopyModal() {
-    const observer = new MutationObserver(() => {
-      if (guardActive) return;
-      const container = findCopyModalContainer();
-      if (container) {
-        detectedMode = 'copy_item';
-        injectOverlay('copy_item');
-        observer.disconnect();
-      }
-    });
-
-    observer.observe(document.body, {
-      childList:      true,
-      subtree:        true,
-      attributes:     true,
-      attributeFilter: ['style', 'class', 'hidden', 'display'],
-    });
+    el.textContent = msg;
+    el.className   = `ctb-status${type ? ' ctb-status-' + type : ''}`;
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────
@@ -419,7 +468,6 @@
 
     if (urlMode === 'new_item') {
       detectedMode = 'new_item';
-      // Wait for ASP.NET form to fully render before injecting
       const poll = setInterval(() => {
         if (getSaveBtn()) {
           clearInterval(poll);
@@ -428,10 +476,9 @@
       }, 150);
 
     } else if (urlMode === 'existing_item') {
-      // Stay dormant; activate only when the Copy modal appears
-      watchForCopyModal();
+      // Stay dormant — only activate when user explicitly clicks "Copy to New Item"
+      watchForCopyClick();
     }
-    // All other pages: do nothing
   }
 
   if (document.readyState === 'loading') {
