@@ -1,0 +1,11 @@
+{
+  "name": "masterplan-inspection",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "inspect": "node inspect.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.41.2"
+  }
+}

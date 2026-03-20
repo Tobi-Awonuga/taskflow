@@ -1,0 +1,24 @@
+{
+  "01-login-page": {
+    "screenshot": "screenshots/01-01-login-page.png",
+    "note": "Masterplan login page as presented to users",
+    "url": "https://preview.masterplansolutions.com/SignIn/",
+    "timestamp": "2026-03-20T01:52:59.791Z"
+  },
+  "02-after-login": {
+    "screenshot": "screenshots/02-02-after-login.png",
+    "note": "After login attempt — URL: https://preview.masterplansolutions.com/SignIn/Account/SendCode?RememberMe=False&userkey=nmuB9zBExkkQTOlmfKvuTQ%3D%3D&username=QMEdp7mWZ61D7Iu2TSfX9ARhq2pddYMYAE5Xh7hkT%2BU%3D",
+    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode?RememberMe=False&userkey=nmuB9zBExkkQTOlmfKvuTQ%3D%3D&username=QMEdp7mWZ61D7Iu2TSfX9ARhq2pddYMYAE5Xh7hkT%2BU%3D",
+    "timestamp": "2026-03-20T01:53:23.140Z"
+  },
+  "blocker": {
+    "type": "mfa_or_captcha",
+    "pageText": "\n\n\n\n\n\n\n\n\n\nSend.\nSend verification code\nSelect Two-Factor Authentication Provider:\n\nEmail Code\n\n\n\n\n© 2026 - Masterplan ERP Inc."
+  },
+  "03-login-state-unknown": {
+    "screenshot": "screenshots/04-03-login-state-unknown.png",
+    "note": "Login state unclear",
+    "url": "https://preview.masterplansolutions.com/SignIn/Account/SendCode?RememberMe=False&userkey=nmuB9zBExkkQTOlmfKvuTQ%3D%3D&username=QMEdp7mWZ61D7Iu2TSfX9ARhq2pddYMYAE5Xh7hkT%2BU%3D",
+    "timestamp": "2026-03-20T01:53:23.190Z"
+  }
+}

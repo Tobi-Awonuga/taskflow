@@ -1,0 +1,22 @@
+{
+  "name": "masterplan-support-automation",
+  "version": "1.0.0",
+  "description": "CT Bakery — Playwright scripts for read-only Masterplan data extraction",
+  "type": "module",
+  "scripts": {
+    "extract:pos": "tsx scripts/extract-pos.ts",
+    "extract:inventory": "tsx scripts/extract-inventory.ts",
+    "extract:production": "tsx scripts/extract-production.ts",
+    "audit:items": "tsx scripts/audit-item-master.ts",
+    "run:all": "npm run extract:pos && npm run extract:inventory && npm run extract:production"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.41.2",
+    "dotenv": "^16.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
