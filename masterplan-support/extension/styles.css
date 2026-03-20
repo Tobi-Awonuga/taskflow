@@ -1,0 +1,216 @@
+/* CT Bakery — Item Creation Guard overlay styles */
+
+#ctb-guard-overlay {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 340px;
+  background: #ffffff;
+  border: 2px solid #c0392b;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  color: #1a1a1a;
+  z-index: 2147483647; /* Maximum z-index — always on top */
+  overflow: hidden;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+#ctb-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #c0392b;
+  color: #ffffff;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+#ctb-logo {
+  font-size: 18px;
+}
+
+#ctb-title {
+  flex: 1;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+#ctb-brand {
+  font-size: 11px;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+
+/* ── Copy warning ────────────────────────────────────────────────────────── */
+#ctb-copy-warning {
+  background: #fff3cd;
+  border-bottom: 1px solid #ffc107;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #7d5a00;
+  line-height: 1.5;
+}
+
+#ctb-copy-warning strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #856404;
+}
+
+#ctb-copy-warning ul {
+  margin: 6px 0 0 0;
+  padding-left: 18px;
+}
+
+#ctb-copy-warning li {
+  margin: 2px 0;
+}
+
+/* ── Body (request input) ────────────────────────────────────────────────── */
+#ctb-body {
+  padding: 14px;
+}
+
+#ctb-body p {
+  margin: 0 0 10px 0;
+  color: #444;
+  line-height: 1.45;
+}
+
+/* ── Input rows ──────────────────────────────────────────────────────────── */
+.ctb-input-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.ctb-input-row input[type="text"] {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  background: #fff;
+  color: #1a1a1a;
+}
+
+.ctb-input-row input[type="text"]:focus {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.15);
+}
+
+.ctb-input-row button {
+  padding: 7px 12px;
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.ctb-input-row button:hover {
+  background: #a93226;
+}
+
+.ctb-input-row button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+/* ── Status messages ─────────────────────────────────────────────────────── */
+.ctb-status {
+  min-height: 18px;
+  font-size: 12px;
+  line-height: 1.4;
+  border-radius: 3px;
+  padding: 0;
+}
+
+.ctb-status-error {
+  color: #c0392b;
+  font-weight: 500;
+}
+
+.ctb-status-loading {
+  color: #555;
+  font-style: italic;
+}
+
+.ctb-status-success {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+/* ── Approved spec panel ─────────────────────────────────────────────────── */
+#ctb-approved {
+  padding: 14px;
+}
+
+#ctb-approved-badge {
+  font-weight: 700;
+  color: #27ae60;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+#ctb-spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+#ctb-spec-table th {
+  text-align: left;
+  color: #666;
+  font-weight: 600;
+  padding: 3px 8px 3px 0;
+  white-space: nowrap;
+  width: 36%;
+}
+
+#ctb-spec-table td {
+  color: #1a1a1a;
+  font-weight: 500;
+  padding: 3px 0;
+  word-break: break-word;
+}
+
+.ctb-instr {
+  margin: 0 0 10px 0;
+  font-size: 12px;
+  color: #555;
+  line-height: 1.45;
+}
+
+/* ── Footer / bypass ─────────────────────────────────────────────────────── */
+#ctb-footer {
+  border-top: 1px solid #eee;
+  padding: 8px 14px;
+  text-align: center;
+}
+
+#ctb-bypass-btn {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 11px;
+  cursor: pointer;
+  text-decoration: underline;
+  font-family: inherit;
+  padding: 0;
+}
+
+#ctb-bypass-btn:hover {
+  color: #c0392b;
+}

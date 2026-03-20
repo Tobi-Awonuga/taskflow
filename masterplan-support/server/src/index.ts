@@ -16,7 +16,25 @@ const app = express();
 const PORT = process.env.PORT ?? 3001;
 
 // ── Middleware ────────────────────────────────
-app.use(cors({ origin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173' }));
+const allowedOrigins = [
+  process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow: our web client, Chrome/Firefox extensions, server-to-server (no origin)
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      origin.startsWith('chrome-extension://') ||
+      origin.startsWith('moz-extension://')
+    ) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

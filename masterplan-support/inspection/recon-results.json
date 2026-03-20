@@ -1,0 +1,2268 @@
+{
+  "new_item_form": {
+    "label": "new_item_form",
+    "url": "https://no1.masterplansolutions.com/items_itemlist",
+    "buttons": [
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "MuiButtonBase-root MuiIconButton-root sc-lnAgIa eGkRSI MuiIconButton-colorInherit",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "MuiButtonBase-root MuiIconButton-root sc-hhGHuG kGoPoN MuiIconButton-colorInherit",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-text sc-dmqHEX sc-iAEyYk  jEtwfD MuiButton-textSizeSmall MuiButton-sizeSmall",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-text sc-dmqHEX sc-iAEyYk blarqi jEtwfD MuiButton-textSizeSmall MuiButton-sizeSmall",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Make1186",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-contained sc-dmqHEX czSWLV",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Buy1106",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-contained sc-dmqHEX czSWLV",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "All Items2292",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-contained sc-dmqHEX czSWLV",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "All Items2292",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-contained sc-dmqHEX czSWLV",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "All Items2292",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-contained sc-dmqHEX czSWLV",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "All Items2292",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-contained sc-dmqHEX czSWLV",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "All Items2292",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-contained sc-dmqHEX czSWLV",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "All Items2292",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-contained sc-dmqHEX czSWLV",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "All Items2292",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-contained sc-dmqHEX czSWLV",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "New Item",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-outlined sc-dmqHEX czSWLV MuiButton-outlinedPrimary",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Cycle Count",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-outlined sc-dmqHEX czSWLV MuiButton-outlinedPrimary",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Item Inquiry",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-outlined sc-dmqHEX czSWLV MuiButton-outlinedPrimary",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Standard Cost Workbench",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-outlined sc-dmqHEX czSWLV MuiButton-outlinedPrimary",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Search",
+        "class": "MuiButtonBase-root MuiButton-root MuiButton-outlined sc-dmqHEX czSWLV MuiButton-outlinedPrimary",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit Mui-disabled Mui-disabled",
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit Mui-disabled Mui-disabled",
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "type": "button",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit",
+        "disabled": false
+      }
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "",
+        "name": "",
+        "placeholder": "Global Search ...",
+        "value": "",
+        "label": "",
+        "class": "MuiInputBase-input"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "",
+        "name": "",
+        "placeholder": "",
+        "value": "1",
+        "label": "",
+        "class": "MuiSelect-nativeInput"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "",
+        "name": "",
+        "placeholder": "Filter",
+        "value": "",
+        "label": "",
+        "class": "MuiInputBase-input MuiInputBase-inputAdornedStart"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "",
+        "name": "",
+        "placeholder": "",
+        "value": "1",
+        "label": "",
+        "class": "MuiSelect-nativeInput"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "",
+        "name": "",
+        "placeholder": "",
+        "value": "4",
+        "label": "",
+        "class": "MuiSelect-nativeInput"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "",
+        "name": "",
+        "placeholder": "",
+        "value": "_",
+        "label": "",
+        "class": "MuiSelect-nativeInput"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "",
+        "name": "",
+        "placeholder": "",
+        "value": "_",
+        "label": "",
+        "class": "MuiSelect-nativeInput"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "",
+        "name": "",
+        "placeholder": "",
+        "value": "_",
+        "label": "",
+        "class": "MuiSelect-nativeInput"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "",
+        "name": "",
+        "placeholder": "",
+        "value": "10",
+        "label": "",
+        "class": "MuiSelect-nativeInput"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "",
+        "name": "",
+        "placeholder": "",
+        "value": "10",
+        "label": "",
+        "class": "MuiSelect-nativeInput"
+      }
+    ],
+    "headings": [
+      {
+        "tag": "H3",
+        "id": "",
+        "class": "MuiTypography-root MuiTypography-h3 MuiTypography-gutterBottom MuiTypography-displayInline",
+        "text": "Item List"
+      }
+    ],
+    "modals": []
+  },
+  "tab_switch_test": {
+    "error": "page.click: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=\"Inventory\"')\u001b[22m\n"
+  },
+  "all_clickable_elements": [
+    {
+      "tag": "DIV",
+      "id": "",
+      "class": "left",
+      "text": "Item Master"
+    },
+    {
+      "tag": "SPAN",
+      "id": "lblTitle",
+      "class": "moduleText",
+      "text": "Item Master"
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "class": "right",
+      "text": "|"
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "class": "",
+      "text": "|"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label4",
+      "class": "FieldLabel",
+      "text": "Item Number"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label16",
+      "class": "FieldLabel",
+      "text": "Revision"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label141",
+      "class": "FieldLabel",
+      "text": "Item Name"
+    },
+    {
+      "tag": "SPAN",
+      "id": "lblOrderDate0",
+      "class": "FieldLabel",
+      "text": "Company Code"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label61",
+      "class": "FieldLabel",
+      "text": "Created Date"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label62",
+      "class": "FieldLabel",
+      "text": "Modified Date"
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "class": "RadOffice2010Div",
+      "text": "1000 - CT Bakery"
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "class": "",
+      "text": "1000 - CT Bakery"
+    },
+    {
+      "tag": "SPAN",
+      "id": "lnkCompanyCodePanel",
+      "class": "RadAjaxPanel",
+      "text": "1000 - CT Bakery"
+    },
+    {
+      "tag": "A",
+      "id": "lnkCompanyCode",
+      "class": "LinkButton",
+      "text": "1000 - CT Bakery"
+    },
+    {
+      "tag": "LI",
+      "id": "",
+      "class": "",
+      "text": "Item Info"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "class": "current",
+      "text": "Item Info"
+    },
+    {
+      "tag": "LI",
+      "id": "",
+      "class": "",
+      "text": "Inventory"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "class": "",
+      "text": "Inventory"
+    },
+    {
+      "tag": "LI",
+      "id": "",
+      "class": "",
+      "text": "Manufacturing"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "class": "",
+      "text": "Manufacturing"
+    },
+    {
+      "tag": "LI",
+      "id": "",
+      "class": "",
+      "text": "Purchasing"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "class": "",
+      "text": "Purchasing"
+    },
+    {
+      "tag": "LI",
+      "id": "",
+      "class": "",
+      "text": "Sales"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "class": "",
+      "text": "Sales"
+    },
+    {
+      "tag": "LI",
+      "id": "",
+      "class": "",
+      "text": "Material"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "class": "",
+      "text": "Material"
+    },
+    {
+      "tag": "LI",
+      "id": "",
+      "class": "",
+      "text": "Planning"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "class": "",
+      "text": "Planning"
+    },
+    {
+      "tag": "LI",
+      "id": "",
+      "class": "",
+      "text": "Financials"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "class": "",
+      "text": "Financials"
+    },
+    {
+      "tag": "LI",
+      "id": "",
+      "class": "",
+      "text": "Attachments"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "class": "",
+      "text": "Attachments"
+    },
+    {
+      "tag": "LI",
+      "id": "",
+      "class": "",
+      "text": "Additional Data"
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "class": "",
+      "text": "Additional Data"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label18",
+      "class": "FieldLabel",
+      "text": "Procurement"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label13",
+      "class": "FieldLabel",
+      "text": "Item Type"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label12",
+      "class": "FieldLabel",
+      "text": "Product Code"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label10",
+      "class": "FieldLabel",
+      "text": "Category"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label11",
+      "class": "FieldLabel",
+      "text": "Sub Category"
+    },
+    {
+      "tag": "DIV",
+      "id": "cmboProcurementPanel",
+      "class": "RadAjaxPanel",
+      "text": "select\n\t\t\t\n\t\tBuyMake"
+    },
+    {
+      "tag": "DIV",
+      "id": "cmboProcurement",
+      "class": "RadComboBox RadComboBox_Office2010Blue",
+      "text": "select\n\t\t\t\n\t\tBuyMake"
+    },
+    {
+      "tag": "A",
+      "id": "cmboProcurement_Arrow",
+      "class": "",
+      "text": "select"
+    },
+    {
+      "tag": "A",
+      "id": "cmboItemTypes_Arrow",
+      "class": "",
+      "text": "select"
+    },
+    {
+      "tag": "SPAN",
+      "id": "cmboProductCodesPanel",
+      "class": "RadAjaxPanel",
+      "text": "select\n\t\t\n\tConsumablesFGRM"
+    },
+    {
+      "tag": "DIV",
+      "id": "cmboProductCodes",
+      "class": "RadComboBox RadComboBox_Office2010Blue",
+      "text": "select\n\t\t\n\tConsumablesFGRM"
+    },
+    {
+      "tag": "A",
+      "id": "cmboProductCodes_Arrow",
+      "class": "",
+      "text": "select"
+    },
+    {
+      "tag": "A",
+      "id": "cmboCategories_Arrow",
+      "class": "",
+      "text": "select"
+    },
+    {
+      "tag": "SPAN",
+      "id": "cmboSubCategoriesPanel",
+      "class": "RadAjaxPanel",
+      "text": "select"
+    },
+    {
+      "tag": "DIV",
+      "id": "cmboSubCategories",
+      "class": "RadComboBox RadComboBox_Office2010Blue",
+      "text": "select"
+    },
+    {
+      "tag": "A",
+      "id": "cmboSubCategories_Arrow",
+      "class": "",
+      "text": "select"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label23",
+      "class": "FieldLabel",
+      "text": "Manufacturer"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label24",
+      "class": "FieldLabel",
+      "text": "MFG Part No."
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label60",
+      "class": "FieldLabel",
+      "text": "Costing Method"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label20",
+      "class": "FieldLabel",
+      "text": "Standard Cost"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label17",
+      "class": "FieldLabel",
+      "text": "Status"
+    },
+    {
+      "tag": "SPAN",
+      "id": "cmboManufacturersPanel",
+      "class": "RadAjaxPanel",
+      "text": "select\n\t\t\n\tIN HOUSE( New Manufacturer )"
+    },
+    {
+      "tag": "DIV",
+      "id": "cmboManufacturers",
+      "class": "RadComboBox RadComboBox_Office2010Blue",
+      "text": "select\n\t\t\n\tIN HOUSE( New Manufacturer )"
+    },
+    {
+      "tag": "A",
+      "id": "cmboManufacturers_Arrow",
+      "class": "",
+      "text": "select"
+    },
+    {
+      "tag": "SPAN",
+      "id": "cmboCostingMethodPanel",
+      "class": "RadAjaxPanel",
+      "text": "select\n\t\t\n\tActualAverageLIFOStandardFIFO"
+    },
+    {
+      "tag": "DIV",
+      "id": "cmboCostingMethod",
+      "class": "RadComboBox RadComboBox_Office2010Blue",
+      "text": "select\n\t\t\n\tActualAverageLIFOStandardFIFO"
+    },
+    {
+      "tag": "A",
+      "id": "cmboCostingMethod_Arrow",
+      "class": "",
+      "text": "select"
+    },
+    {
+      "tag": "A",
+      "id": "cmboStatus_Arrow",
+      "class": "",
+      "text": "select"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label6",
+      "class": "FieldLabel",
+      "text": "Description"
+    },
+    {
+      "tag": "SPAN",
+      "id": "lblDimAPanel",
+      "class": "RadAjaxPanel",
+      "text": "Clamshells/Case"
+    },
+    {
+      "tag": "SPAN",
+      "id": "lblDimA",
+      "class": "FieldLabel",
+      "text": "Clamshells/Case"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label34",
+      "class": "FieldLabel",
+      "text": "Image"
+    },
+    {
+      "tag": "DIV",
+      "id": "txtDescriptionPanel",
+      "class": "RadAjaxPanel",
+      "text": "Strawberry Drizzled Donuts"
+    },
+    {
+      "tag": "SPAN",
+      "id": "txtDescription_wrapper",
+      "class": "riSingle RadInput RadInput_Office2010Blue RadInputMultiline RadInputMultiline_Office2010Blue",
+      "text": "Strawberry Drizzled Donuts"
+    },
+    {
+      "tag": "SPAN",
+      "id": "LinkButton1Panel",
+      "class": "RadAjaxPanel",
+      "text": "Change Picture"
+    },
+    {
+      "tag": "A",
+      "id": "LinkButton1",
+      "class": "",
+      "text": "Change Picture"
+    },
+    {
+      "tag": "SPAN",
+      "id": "lblDimBPanel",
+      "class": "RadAjaxPanel",
+      "text": "Donuts/Clamshell"
+    },
+    {
+      "tag": "SPAN",
+      "id": "lblDimB",
+      "class": "FieldLabel",
+      "text": "Donuts/Clamshell"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label33",
+      "class": "FieldLabel",
+      "text": "Notes"
+    },
+    {
+      "tag": "SPAN",
+      "id": "lblDimCPanel",
+      "class": "RadAjaxPanel",
+      "text": "Cases/Pallet"
+    },
+    {
+      "tag": "SPAN",
+      "id": "lblDimC",
+      "class": "FieldLabel",
+      "text": "Cases/Pallet"
+    },
+    {
+      "tag": "SPAN",
+      "id": "lblDimDPanel",
+      "class": "RadAjaxPanel",
+      "text": "kg/case"
+    },
+    {
+      "tag": "SPAN",
+      "id": "lblDimD",
+      "class": "FieldLabel",
+      "text": "kg/case"
+    },
+    {
+      "tag": "SPAN",
+      "id": "Label143",
+      "class": "FieldLabel",
+      "text": "Internal Notes"
+    }
+  ],
+  "copy_modal": {
+    "label": "copy_modal",
+    "url": "https://no1.masterplansolutions.com/frmITEMS_ItemMaster.aspx?ItemMasterID=2&NewUI=TRUE",
+    "buttons": [
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "btnSave",
+        "name": "btnSave",
+        "value": "Save item",
+        "text": "",
+        "class": "button blue",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "btnSearch",
+        "name": "btnSearch",
+        "value": "Search",
+        "text": "",
+        "class": "button white",
+        "disabled": true
+      },
+      {
+        "tag": "INPUT",
+        "type": "submit",
+        "id": "cmdReset",
+        "name": "cmdReset",
+        "value": "Reset",
+        "text": "",
+        "class": "button white",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "submit",
+        "id": "btnTracking",
+        "name": "btnTracking",
+        "value": " ",
+        "text": "",
+        "class": "button white popup",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "submit",
+        "id": "btnClose",
+        "name": "btnClose",
+        "value": "X",
+        "text": "",
+        "class": "button closeX",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "btnNewLineItem",
+        "name": "",
+        "value": "Add Warehouse",
+        "text": "",
+        "class": "button white",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "RadAvailableStockGrid_ctl00_ctl04_GECBtnExpandColumn",
+        "name": "RadAvailableStockGrid$ctl00$ctl04$GECBtnExpandColumn",
+        "value": " ",
+        "text": "",
+        "class": "rgExpand",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "RadAvailableStockGrid_ctl00_ctl07_GECBtnExpandColumn",
+        "name": "RadAvailableStockGrid$ctl00$ctl07$GECBtnExpandColumn",
+        "value": " ",
+        "text": "",
+        "class": "rgExpand",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "RadAvailableStockGrid_ctl00_ctl10_GECBtnExpandColumn",
+        "name": "RadAvailableStockGrid$ctl00$ctl10$GECBtnExpandColumn",
+        "value": " ",
+        "text": "",
+        "class": "rgExpand",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "RadAvailableStockGrid_ctl00_ctl13_GECBtnExpandColumn",
+        "name": "RadAvailableStockGrid$ctl00$ctl13$GECBtnExpandColumn",
+        "value": " ",
+        "text": "",
+        "class": "rgExpand",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "btnNewLabor",
+        "name": "",
+        "value": "Add New",
+        "text": "",
+        "class": "button white",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "btnLaborCopy",
+        "name": "",
+        "value": "Copy Functions",
+        "text": "",
+        "class": "button white",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "btnImportInspections",
+        "name": "",
+        "value": "Import Inspections",
+        "text": "",
+        "class": "button white",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "RadLaborOperationsGrid_ctl00_ctl04_DragDropColumnRowDragHandle",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "rgDrag",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "btn btn-mini dropdown-toggle",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "RadLaborOperationsGrid_ctl00_ctl06_DragDropColumnRowDragHandle",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "rgDrag",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "btn btn-mini dropdown-toggle",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "RadLaborOperationsGrid_ctl00_ctl08_DragDropColumnRowDragHandle",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "rgDrag",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "btn btn-mini dropdown-toggle",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "RadLaborOperationsGrid_ctl00_ctl10_DragDropColumnRowDragHandle",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "rgDrag",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "btn btn-mini dropdown-toggle",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "btnAddSupplierItemLink",
+        "name": "",
+        "value": "Add Supplier Item",
+        "text": "",
+        "class": "button white",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "btnImportPriceBreaks",
+        "name": "",
+        "value": "Import",
+        "text": "",
+        "class": "button white",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "btnNewPrice",
+        "name": "",
+        "value": "Add Price",
+        "text": "",
+        "class": "button white",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "btnAddCustomerItemLink",
+        "name": "",
+        "value": "Add Customer Item",
+        "text": "",
+        "class": "button white",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "",
+        "name": "",
+        "value": "",
+        "text": "Edit",
+        "class": "btn btn-mini",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "submit",
+        "id": "recipeToggle",
+        "name": "recipeToggle",
+        "value": "Recipe",
+        "text": "",
+        "class": "toggleTab toggleWhite",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "submit",
+        "id": "allergenToggle",
+        "name": "allergenToggle",
+        "value": "Allergens",
+        "text": "",
+        "class": "toggleTab toggleBlue",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "btnNewMaterial",
+        "name": "",
+        "value": "Add Material",
+        "text": "",
+        "class": "button white",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "btnCopyBOM",
+        "name": "",
+        "value": "Copy From",
+        "text": "",
+        "class": "button white",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "btnImportBOM",
+        "name": "",
+        "value": "Import",
+        "text": "",
+        "class": "button white",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "type": "button",
+        "id": "btnNewAttachment",
+        "name": "",
+        "value": "Add Attachment",
+        "text": "",
+        "class": "button white",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "type": "submit",
+        "id": "btnOrderTypes",
+        "name": "",
+        "value": "",
+        "text": "",
+        "class": "btn btn-mini dropdown-toggle",
+        "disabled": false
+      }
+    ],
+    "inputs": [
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtItemNumber",
+        "name": "txtItemNumber",
+        "placeholder": "",
+        "value": "00117",
+        "label": "",
+        "class": "riTextBox riRead"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtRevision",
+        "name": "txtRevision",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtItemName",
+        "name": "txtItemName",
+        "placeholder": "",
+        "value": "Strawberry Drizzled Donuts",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtCreateDate",
+        "name": "txtCreateDate",
+        "placeholder": "",
+        "value": "01/01/1900",
+        "label": "",
+        "class": "riTextBox riRead"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtLastModifiedDate",
+        "name": "txtLastModifiedDate",
+        "placeholder": "",
+        "value": "12/01/2025",
+        "label": "",
+        "class": "riTextBox riRead"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboProcurement_Input",
+        "name": "cmboProcurement",
+        "placeholder": "",
+        "value": "Make",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboItemTypes_Input",
+        "name": "cmboItemTypes",
+        "placeholder": "",
+        "value": "Case",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboProductCodes_Input",
+        "name": "cmboProductCodes",
+        "placeholder": "",
+        "value": "FG",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboCategories_Input",
+        "name": "cmboCategories",
+        "placeholder": "",
+        "value": "Medium Round",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboSubCategories_Input",
+        "name": "cmboSubCategories",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboManufacturers_Input",
+        "name": "cmboManufacturers",
+        "placeholder": "",
+        "value": "( New Manufacturer )",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtManufacturerPartNumber",
+        "name": "txtManufacturerPartNumber",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboCostingMethod_Input",
+        "name": "cmboCostingMethod",
+        "placeholder": "",
+        "value": "Actual",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtStandardCost",
+        "name": "txtStandardCost",
+        "placeholder": "",
+        "value": "8.99",
+        "label": "",
+        "class": "riTextBox riRead"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboStatus_Input",
+        "name": "cmboStatus",
+        "placeholder": "",
+        "value": "Active",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "TEXTAREA",
+        "type": "textarea",
+        "id": "txtDescription",
+        "name": "txtDescription",
+        "placeholder": "",
+        "value": "Strawberry Drizzled Donuts",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtDimA",
+        "name": "txtDimA",
+        "placeholder": "",
+        "value": "14.00000",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtDimB",
+        "name": "txtDimB",
+        "placeholder": "",
+        "value": "6.00000",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "TEXTAREA",
+        "type": "textarea",
+        "id": "txtNotes",
+        "name": "txtNotes",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtDimC",
+        "name": "txtDimC",
+        "placeholder": "",
+        "value": "54.00000",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtDimD",
+        "name": "txtDimD",
+        "placeholder": "",
+        "value": "7.82000",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "TEXTAREA",
+        "type": "textarea",
+        "id": "txtInternalNotes",
+        "name": "txtInternalNotes",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboInventoryQtyUOM_Input",
+        "name": "cmboInventoryQtyUOM",
+        "placeholder": "",
+        "value": "Case",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboInventoryPriceUOM_Input",
+        "name": "cmboInventoryPriceUOM",
+        "placeholder": "",
+        "value": "Per Case",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboIssueMethod_Input",
+        "name": "cmboIssueMethod",
+        "placeholder": "",
+        "value": "Manual",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboReplenishMethod_Input",
+        "name": "cmboReplenishMethod",
+        "placeholder": "",
+        "value": "Make to Stock",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtStartingSerialNumber",
+        "name": "txtStartingSerialNumber",
+        "placeholder": "",
+        "value": "0",
+        "label": "",
+        "class": "riTextBox riDisabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtStartingLotNumber",
+        "name": "txtStartingLotNumber",
+        "placeholder": "",
+        "value": "0",
+        "label": "",
+        "class": "riTextBox riDisabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtWeight",
+        "name": "txtWeight",
+        "placeholder": "",
+        "value": "7.82000",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboWeightUOM_Input",
+        "name": "cmboWeightUOM",
+        "placeholder": "",
+        "value": "Z-Case (Inactive)",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboTotalWeightUOM_Input",
+        "name": "cmboTotalWeightUOM",
+        "placeholder": "",
+        "value": "gm",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtVolume",
+        "name": "txtVolume",
+        "placeholder": "",
+        "value": "0.00000",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboVolumeUOM_Input",
+        "name": "cmboVolumeUOM",
+        "placeholder": "",
+        "value": "EACH",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtGlobalTradeItemNumber",
+        "name": "txtGlobalTradeItemNumber",
+        "placeholder": "",
+        "value": "10843480001177",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboAllergenType_Input",
+        "name": "cmboAllergenType",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboInventoryBarcodes_Input",
+        "name": "cmboInventoryBarcodes",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboEngineer_Input",
+        "name": "cmboEngineer",
+        "placeholder": "",
+        "value": "Support, Masterplan .",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtEngineeringLevel",
+        "name": "txtEngineeringLevel",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "riTextBox riRead"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtEffectiveDate",
+        "name": "txtEffectiveDate",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "riTextBox riRead"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtLastMfgCost",
+        "name": "txtLastMfgCost",
+        "placeholder": "",
+        "value": "0.00000",
+        "label": "",
+        "class": "riTextBox riRead"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtDrawingNumber",
+        "name": "txtDrawingNumber",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtMaxMFGLot",
+        "name": "txtMaxMFGLot",
+        "placeholder": "",
+        "value": "0",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboPreferedSupplier_Input",
+        "name": "cmboPreferedSupplier",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboPurchasingQtyUOMs_Input",
+        "name": "cmboPurchasingQtyUOMs",
+        "placeholder": "",
+        "value": "Case",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboPurchasingPriceUOMs_Input",
+        "name": "cmboPurchasingPriceUOMs",
+        "placeholder": "",
+        "value": "Per Case",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtLastCost",
+        "name": "txtLastCost",
+        "placeholder": "",
+        "value": "0.00000",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtLastPriceChange",
+        "name": "txtLastPriceChange",
+        "placeholder": "",
+        "value": "1/1/1900",
+        "label": "",
+        "class": "riTextBox riRead"
+      },
+      {
+        "tag": "TEXTAREA",
+        "type": "textarea",
+        "id": "txtShippingInstructions",
+        "name": "txtShippingInstructions",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtLastQuotedPrice",
+        "name": "txtLastQuotedPrice",
+        "placeholder": "",
+        "value": "0.00000",
+        "label": "",
+        "class": "riTextBox riRead"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtLastQuotedDate",
+        "name": "txtLastQuotedDate",
+        "placeholder": "",
+        "value": "1/1/1900",
+        "label": "",
+        "class": "riTextBox riRead"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtLastOrderDate",
+        "name": "txtLastOrderDate",
+        "placeholder": "",
+        "value": "1/8/2026",
+        "label": "",
+        "class": "riTextBox riRead"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtNextCost",
+        "name": "txtNextCost",
+        "placeholder": "",
+        "value": "0.00000",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtDaysRFQGoodFor",
+        "name": "txtDaysRFQGoodFor",
+        "placeholder": "",
+        "value": "0",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtHTSCode",
+        "name": "txtHTSCode",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboSalesQtyUOMs_Input",
+        "name": "cmboSalesQtyUOMs",
+        "placeholder": "",
+        "value": "Case",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboSalesPriceUOMs_Input",
+        "name": "cmboSalesPriceUOMs",
+        "placeholder": "",
+        "value": "Per Case",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtPercent",
+        "name": "txtPercent",
+        "placeholder": "",
+        "value": "0.00%",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtLastSellingPrice",
+        "name": "txtLastSellingPrice",
+        "placeholder": "",
+        "value": "0.00",
+        "label": "",
+        "class": "riTextBox riRead"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboCheckATP_Input",
+        "name": "cmboCheckATP",
+        "placeholder": "",
+        "value": "None",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboPricingMethod_Input",
+        "name": "cmboPricingMethod",
+        "placeholder": "",
+        "value": "Markup %",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboConfigurations_Input",
+        "name": "cmboConfigurations",
+        "placeholder": "",
+        "value": "( None Selected )",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboBOMTypes_Input",
+        "name": "cmboBOMTypes",
+        "placeholder": "",
+        "value": "Discrete",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtEngineeringLevelBOM",
+        "name": "txtEngineeringLevelBOM",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "riTextBox riRead"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboPlanningMethod_Input",
+        "name": "cmboPlanningMethod",
+        "placeholder": "",
+        "value": "MRP Workbench",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtOrderMultiple",
+        "name": "txtOrderMultiple",
+        "placeholder": "",
+        "value": "0.00000",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtMinimumOrderQty",
+        "name": "txtMinimumOrderQty",
+        "placeholder": "",
+        "value": "0.00000",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboOrderInterval_Input",
+        "name": "cmboOrderInterval",
+        "placeholder": "",
+        "value": "( None Selected )",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtLeadTimeDays",
+        "name": "txtLeadTimeDays",
+        "placeholder": "",
+        "value": "0",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboMRPController_Input",
+        "name": "cmboMRPController",
+        "placeholder": "",
+        "value": "( None Selected )",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboAltItem_Input",
+        "name": "cmboAltItem",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtSafetyStock",
+        "name": "txtSafetyStock",
+        "placeholder": "",
+        "value": "0",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtShelfLife",
+        "name": "txtShelfLife",
+        "placeholder": "",
+        "value": "360",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtStandardDelivery",
+        "name": "txtStandardDelivery",
+        "placeholder": "",
+        "value": "0",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboForecastControl_Input",
+        "name": "cmboForecastControl",
+        "placeholder": "",
+        "value": "( None Selected )",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboBucketType_Input",
+        "name": "cmboBucketType",
+        "placeholder": "",
+        "value": "( None Selected )",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtAcceptableEarlyDays",
+        "name": "txtAcceptableEarlyDays",
+        "placeholder": "",
+        "value": "0",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtPaperWorkDays",
+        "name": "txtPaperWorkDays",
+        "placeholder": "",
+        "value": "0",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtDockToShelf",
+        "name": "txtDockToShelf",
+        "placeholder": "",
+        "value": "0",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtLotSize",
+        "name": "txtLotSize",
+        "placeholder": "",
+        "value": "1",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtLastLotSize",
+        "name": "txtLastLotSize",
+        "placeholder": "",
+        "value": "0",
+        "label": "",
+        "class": "riTextBox riDisabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboMaterialGroups_Input",
+        "name": "cmboMaterialGroups",
+        "placeholder": "",
+        "value": "( None Selected )",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtPeriodOrderQuantity",
+        "name": "txtPeriodOrderQuantity",
+        "placeholder": "",
+        "value": "1",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboForecastSource_Input",
+        "name": "cmboForecastSource",
+        "placeholder": "",
+        "value": "( None Selected )",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboForecastDistribution_Input",
+        "name": "cmboForecastDistribution",
+        "placeholder": "",
+        "value": "( None Selected )",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboInspectionPlans_Input",
+        "name": "cmboInspectionPlans",
+        "placeholder": "",
+        "value": "( None Selected )",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "txtPickBeforeExpirationDays",
+        "name": "txtPickBeforeExpirationDays",
+        "placeholder": "",
+        "value": "240",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "cmboGLControl_Input",
+        "name": "cmboGLControl",
+        "placeholder": "",
+        "value": "Product Code",
+        "label": "",
+        "class": "rcbInput radPreventDecorate"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "AdditionalData14",
+        "name": "AdditionalData14",
+        "placeholder": "",
+        "value": "",
+        "label": "",
+        "class": "riTextBox riEnabled"
+      },
+      {
+        "tag": "INPUT",
+        "type": "text",
+        "id": "",
+        "name": "",
+        "placeholder": "",
+        "value": "{2}",
+        "label": "",
+        "class": "rwDialogInput"
+      }
+    ],
+    "headings": [
+      {
+        "tag": "H1",
+        "id": "",
+        "class": "",
+        "text": "Allergens"
+      },
+      {
+        "tag": "H1",
+        "id": "",
+        "class": "",
+        "text": "Related Allergens"
+      }
+    ],
+    "modals": []
+  },
+  "url_after_copy_click": "https://no1.masterplansolutions.com/frmITEMS_ItemMaster.aspx?ItemMasterID=2&NewUI=TRUE",
+  "new_item_url_params": "https://no1.masterplansolutions.com/items_itemlist",
+  "copy_modal_url": "https://no1.masterplansolutions.com/frmITEMS_ItemMaster.aspx?ItemMasterID=2&NewUI=TRUE"
+}

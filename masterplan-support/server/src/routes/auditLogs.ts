@@ -5,6 +5,42 @@ import { auditLogs, users } from '../db/schema.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
 
 const router = Router();
+
+// ── PUBLIC: Extension bypass log ──────────────────────────────────────────
+// Called by the extension when a user bypasses the guard without an approved
+// request. Logged without requiring auth so the event is always captured.
+router.post('/bypass', async (req, res) => {
+  const { url, mode, timestamp } = req.body as {
+    url?: string;
+    mode?: string;
+    timestamp?: string;
+  };
+
+  // Attempt to identify the user from Bearer token if present
+  let userId: number | undefined;
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith('Bearer ')) {
+    try {
+      const jwt = await import('jsonwebtoken');
+      const payload = jwt.default.verify(authHeader.slice(7), process.env.JWT_SECRET!) as { userId?: number };
+      userId = payload?.userId;
+    } catch { /* no-op — bypass log should never fail */ }
+  }
+
+  await db.insert(auditLogs).values({
+    userId:      userId ?? null,
+    action:      'bypass',
+    entityType:  'item_creation_guard',
+    entityId:    null,
+    description: `Item Creation Guard bypassed — mode: ${mode ?? 'unknown'}, url: ${url ?? 'unknown'}`,
+    metadata:    JSON.stringify({ url, mode, timestamp, source: 'extension' }),
+    ipAddress:   req.ip,
+  });
+
+  return res.json({ ok: true });
+});
+
+// All routes below require auth
 router.use(authenticate, requireRole('admin', 'approver'));
 
 // GET /api/audit-logs

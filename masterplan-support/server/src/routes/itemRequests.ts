@@ -7,6 +7,55 @@ import { nextItemRequestNumber } from '../lib/numberGenerator.js';
 import { logAudit } from '../lib/auditLogger.js';
 
 const router = Router();
+
+// ── PUBLIC: Extension validation endpoint ─────────────────────────────────
+// Called by the browser extension — no auth required.
+// Returns approved request details only if status === 'approved'.
+// Used by the extension to validate a request number before allowing item creation.
+router.get('/validate/:requestNumber', async (req, res) => {
+  const { requestNumber } = req.params;
+
+  const [request] = await db
+    .select()
+    .from(itemRequests)
+    .where(eq(itemRequests.requestNumber, requestNumber.toUpperCase()));
+
+  if (!request) {
+    return res.status(404).json({ error: `No request found with number "${requestNumber}"` });
+  }
+
+  if (request.status !== 'approved') {
+    const messages: Record<string, string> = {
+      pending:        'This request is still pending approval.',
+      under_review:   'This request is under review.',
+      rejected:       'This request was rejected and cannot be used.',
+      cancelled:      'This request has been cancelled.',
+      created_in_erp: 'This request has already been used to create an item.',
+    };
+    return res.status(400).json({
+      error: messages[request.status] ?? `Request status is "${request.status}" — must be "approved" to proceed.`,
+    });
+  }
+
+  // Return only the fields the extension needs to display guidance
+  return res.json({
+    request: {
+      id:            request.id,
+      requestNumber: request.requestNumber,
+      proposedCode:  request.proposedCode,
+      proposedName:  request.proposedName,
+      itemType:      request.itemType,
+      category:      request.category,
+      uom:           request.uom,
+      supplier:      request.supplier,
+      allergenFlags: JSON.parse(request.allergenFlags || '[]'),
+      storageLocation: request.storageLocation,
+      businessReason:  request.businessReason,
+    },
+  });
+});
+
+// All routes below this line require authentication
 router.use(authenticate);
 
 // GET /api/item-requests
@@ -236,7 +285,7 @@ router.post('/:id/reject', requireRole('admin', 'approver'), async (req: AuthReq
 // Requester confirms the Masterplan code after creating the item
 router.patch('/:id/erp-code', async (req: AuthRequest, res) => {
   const id = parseInt(req.params.id);
-  const { masterplanCode } = req.body as { masterplanCode: string };
+  const { masterplanCode, creationPath } = req.body as { masterplanCode: string; creationPath?: string };
 
   const [request] = await db.select().from(itemRequests).where(eq(itemRequests.id, id));
   if (!request) return res.status(404).json({ error: 'Not found' });
@@ -259,6 +308,7 @@ router.patch('/:id/erp-code', async (req: AuthRequest, res) => {
     entityType: 'item_request',
     entityId: id,
     description: `Item ${request.requestNumber} created in Masterplan as ${masterplanCode}`,
+    metadata: { creationPath: creationPath ?? 'unknown' },
     ipAddress: req.ip,
   });
 
